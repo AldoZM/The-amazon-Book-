@@ -1,0 +1,75 @@
+\problema{Vertical Order Traversal of a Binary Tree}{987}{src/02-arboles/987-vertical-order.cpp}{H}
+
+A cada nodo del árbol le asignamos una \emph{columna} y una \emph{fila}: la
+raíz vive en columna \texttt{0}, fila \texttt{0}; el hijo izquierdo se mueve
+una columna a la izquierda y una fila hacia abajo; el hijo derecho, una
+columna a la derecha y una fila hacia abajo. Debemos devolver los valores
+agrupados de columna menor a mayor; dentro de cada columna, ordenados por
+fila ascendente; y si dos nodos caen exactamente en la misma columna y la
+misma fila, se desempatan por \textbf{valor ascendente}. Este último detalle
+es justo lo que distingue a este problema del más sencillo \#314 y lo que lo
+hace Hard: no basta con recorrer el árbol, hay que ordenar con un criterio
+compuesto de tres niveles.
+
+\paragraph{Intuición.} Si en vez de pensar en "izquierda/derecha" pensamos en
+coordenadas, cada nodo termina siendo una terna
+$(\text{columna}, \text{fila}, \text{valor})$. Una vez que tenemos todas las
+ternas, el problema se reduce a \emph{ordenarlas}: por columna, luego por
+fila, luego por valor. El orden natural de una tupla ya hace exactamente eso.
+No hace falta ninguna estructura de datos sofisticada: un DFS que acumula
+ternas y un \texttt{sort} al final resuelven el problema completo.
+
+\begin{center}
+\begin{verbatim}
+          3
+        /   \
+       9     20
+            /  \
+          15    7
+\end{verbatim}
+\end{center}
+
+\begin{center}
+\begin{tabular}{lll}
+\textbf{columna} & \textbf{fila} & \textbf{valor} \\
+$-1$ & 1 & 9 \\
+$0$  & 0 & 3 \\
+$0$  & 2 & 15 \\
+$1$  & 1 & 20 \\
+$2$  & 2 & 7 \\
+\end{tabular}
+\end{center}
+
+Al agrupar por columna (ya ordenado) obtenemos
+\texttt{[[9],[3,15],[20],[7]]}: exactamente el resultado esperado.
+
+\paragraph{Solución.} Un DFS (o BFS, es indistinto) recorre el árbol y por
+cada nodo guarda la terna \texttt{(columna, fila, valor)} en un vector. El
+hijo izquierdo se visita con \texttt{columna-1, fila+1}; el derecho con
+\texttt{columna+1, fila+1}. Al terminar, ordenamos el vector de ternas: como
+\texttt{tuple<int,int,int>} ya compara componente a componente, un solo
+\texttt{sort} deja todo en el orden pedido, incluido el desempate por valor.
+Por último recorremos el vector ordenado agrupando los valores consecutivos
+que comparten columna.
+
+El caso donde el desempate por valor realmente importa: en el árbol completo
+\texttt{[1,2,3,4,5,6,7]}, el nodo \texttt{5} (hijo derecho de \texttt{2}) y el
+nodo \texttt{6} (hijo izquierdo de \texttt{3}) caen ambos en columna \texttt{0},
+fila \texttt{2}. Sin el desempate por valor el orden entre ellos sería
+ambiguo; con él, \texttt{5} siempre va antes que \texttt{6}.
+
+\lstinputlisting{src/02-arboles/987-vertical-order.cpp}
+
+\complejidad{$O(n \log n)$}{$O(n)$}
+
+\paragraph{Notas de entrevista (Amazon).} El error típico es asumir que un
+recorrido en orden (BFS por niveles o DFS in-order) ya entrega el resultado
+final: no es así, porque nodos de columnas distintas pueden intercalarse en
+el mismo nivel del recorrido. La forma robusta es separar completamente las
+dos fases: primero \emph{recolectar} toda la información posicional de cada
+nodo (columna, fila, valor) sin preocuparse por el orden, y después
+\emph{ordenar} con el criterio compuesto correcto. Vale la pena mencionar en
+la entrevista que este problema es la versión "difícil" de LeetCode 314
+(Binary Tree Vertical Order Traversal): la diferencia entera está en el
+desempate por valor cuando coinciden columna y fila, algo fácil de pasar por
+alto si se resuelve de memoria.
