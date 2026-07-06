@@ -1,0 +1,42 @@
+\problema{Construct Binary Tree from Preorder and Inorder Traversal}{105}{src/02-arboles/105-construct-binary-tree-from-preorder-and-inorder-traversal.cpp}{M}
+
+Dados dos arreglos de enteros \texttt{preorder} e \texttt{inorder}, donde el primero
+es el recorrido en preorden de un árbol binario y el segundo es su recorrido en
+inorden, reconstruye y devuelve el árbol binario original. (Se garantiza que no
+hay valores duplicados en el árbol).
+
+\paragraph{Intuición.} Analicemos la naturaleza de los dos recorridos:
+\begin{itemize}
+    \item \textbf{Preorden (Preorder):} El formato es \texttt{[RAÍZ, [Elementos del Subárbol Izquierdo], [Elementos del Subárbol Derecho]]}.
+    \item \textbf{Inorden (Inorder):} El formato es \texttt{[[Elementos del Subárbol Izquierdo], RAÍZ, [Elementos del Subárbol Derecho]]}.
+\end{itemize}
+
+El arreglo \texttt{preorder} siempre nos da un regalo inestimable: su primer
+elemento es \textbf{garantizadamente} la raíz del árbol actual. Una vez que
+sabemos quién es la raíz, podemos buscar ese valor en el arreglo
+\texttt{inorder}. Todo lo que quede a la izquierda de ese valor en \texttt{inorder}
+pertenecerá al subárbol izquierdo, y todo lo que quede a la derecha será del
+subárbol derecho.
+
+Por ejemplo, si la raíz es 3 y la encontramos en el índice $i$ de
+\texttt{inorder}, sabemos que hay exactamente $i$ elementos en el subárbol izquierdo.
+Esto nos indica que los siguientes $i$ elementos en \texttt{preorder} forman el
+subárbol izquierdo, y el resto forman el derecho.
+
+\paragraph{Solución.} Podemos aplicar recursión, "consumiendo" elementos de
+\texttt{preorder} uno por uno como las raíces de los subárboles que vamos
+construyendo. Para que la búsqueda de la raíz en \texttt{inorder} no tome
+$O(n)$ en cada paso (lo que haría la solución $O(n^2)$), creamos un mapa hash al
+inicio que nos dice el índice de cualquier valor en $O(1)$.
+
+\lstinputlisting{src/02-arboles/105-construct-binary-tree-from-preorder-and-inorder-traversal.cpp}
+
+\complejidad{$O(n)$}{$O(n)$}
+
+\paragraph{Notas de entrevista (Amazon).} Este es un problema clásico de
+"divide y vencerás". El detalle técnico más importante es pasar el índice de
+\texttt{preorder} por \textbf{referencia} (\texttt{int\& preIndex}) para que
+el avance secuencial de la raíz se mantenga sincronizado a través de todas las
+llamadas recursivas. Si lo pasas por valor, los subárboles derechos procesarán
+las raíces equivocadas. La memoria extra $O(n)$ viene del mapa hash y de la pila
+recursiva.
