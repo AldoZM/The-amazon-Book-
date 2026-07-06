@@ -1,0 +1,71 @@
+\problema{Network Delay Time}{743}{src/01-grafos/743-network-delay-time.cpp}{M}
+
+Hay \texttt{n} nodos numerados de \texttt{1} a \texttt{n}, conectados por
+aristas \emph{dirigidas y con peso}: \texttt{times[i] = [u, v, w]} significa
+que una señal enviada desde \texttt{u} tarda \texttt{w} unidades de tiempo en
+llegar a \texttt{v}. Enviamos una señal desde el nodo \texttt{k}. Queremos el
+tiempo mínimo que tarda en que la señal llegue a \emph{todos} los nodos, o
+\texttt{-1} si algún nodo nunca la recibe.
+
+\paragraph{Intuición.} Hasta ahora los problemas de grafos del libro usaban
+BFS/DFS sencillos porque todas las aristas "cuestan" lo mismo (un paso). Aquí
+las aristas tienen pesos distintos, así que ya no basta con procesar por
+capas: procesar los nodos en el orden en que el BFS los descubre no garantiza
+que se descubran en orden de menor a mayor distancia real. Necesitamos el
+algoritmo de \textbf{Dijkstra}: en vez de una cola normal usamos una cola de
+prioridad (min-heap) que siempre nos da el nodo con la menor distancia
+acumulada todavía no confirmada.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+2 --1--> 1\\
+2 --1--> 3 --1--> 4\\
+\end{tabular}
+\end{center}
+
+\noindent Con \texttt{times = [[2,1,1],[2,3,1],[3,4,1]]}, \texttt{n = 4},
+\texttt{k = 2}: desde \texttt{2} la señal llega a \texttt{1} en tiempo
+\texttt{1}, a \texttt{3} en tiempo \texttt{1} y a \texttt{4} (pasando por
+\texttt{3}) en tiempo \texttt{2}. El nodo más lento en enterarse es \texttt{4},
+así que la respuesta es \texttt{2}.
+
+\paragraph{Solución.} Construimos la lista de adyacencia con pares
+\texttt{(vecino, peso)} y un arreglo \texttt{dist} inicializado a infinito,
+salvo \texttt{dist[k] = 0}. Metemos \texttt{(0, k)} en un min-heap ordenado
+por distancia. En cada paso sacamos el par con menor distancia; si esa
+distancia ya quedó obsoleta (mejoramos ese nodo por otro camino mientras
+tanto), la ignoramos. Si no, \emph{relajamos} cada arista saliente: si llegar
+al vecino pasando por el nodo actual es más barato que lo que teníamos
+registrado, actualizamos \texttt{dist} del vecino y lo volvemos a meter al
+heap.
+
+Esto funciona porque, con pesos \textbf{no negativos}, la primera vez que
+sacamos un nodo del heap su distancia ya es la definitiva: cualquier otro
+camino alternativo tendría que pasar por un nodo cuya distancia parcial ya es
+mayor o igual, y sumarle más peso solo lo empeora, nunca lo mejora. Si
+existieran pesos negativos esta garantía se rompe (un camino "más largo" en
+número de aristas podría terminar siendo más barato) y haría falta
+Bellman-Ford en su lugar.
+
+Al terminar, si algún nodo se quedó con distancia infinita es porque nunca lo
+alcanzamos: devolvemos \texttt{-1}. Si todos los nodos tienen distancia
+finita, la respuesta es la máxima de esas distancias: la red completa "se
+entera" hasta que se entera el nodo más lejano.
+
+\lstinputlisting{src/01-grafos/743-network-delay-time.cpp}
+
+\complejidad{$O(E \log V)$}{$O(V + E)$}
+
+\paragraph{Notas de entrevista (Amazon).} Este problema es el ejemplo
+canónico de Dijkstra con cola de prioridad, y suele usarse para verificar que
+el candidato entiende \emph{por qué} el algoritmo requiere pesos no
+negativos (vale la pena mencionarlo aunque no lo pregunten). Otro punto que
+se evalúa es el manejo de entradas obsoletas en el heap: como no existe una
+operación barata de "disminuir clave" en el \texttt{priority\_queue} de la
+STL, simplemente insertamos duplicados y los descartamos comparando contra
+\texttt{dist} al sacarlos, en vez de intentar borrarlos del heap. Casos
+borde a mencionar: un solo nodo (\texttt{k} tarda \texttt{0} en llegar a sí
+mismo), un nodo sin ninguna arista de entrada (inalcanzable, \texttt{-1}), y
+la trampa de asumir que la ruta con menos aristas es siempre la más rápida
+cuando en realidad hay que comparar el peso acumulado.
