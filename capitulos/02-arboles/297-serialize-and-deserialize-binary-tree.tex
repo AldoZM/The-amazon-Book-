@@ -1,0 +1,51 @@
+\problema{Serialize and Deserialize Binary Tree}{297}{src/02-arboles/297-serialize-and-deserialize-binary-tree.cpp}{D}
+
+El proceso de \emph{serializar} consiste en transformar una estructura de datos
+(como un árbol) en un formato lineal (como una cadena de texto) que pueda ser
+enviado por la red o guardado en disco. El proceso inverso,
+\emph{deserializar}, toma esa cadena y reconstruye la estructura original en
+memoria de forma exacta. Diseña el algoritmo para lograr esto con un árbol binario.
+
+\paragraph{Intuición.} Existen varias formas válidas de recorrer un árbol y
+plasmarlo en texto (BFS por niveles como lo hace LeetCode internamente, o DFS).
+El enfoque más elegante y rápido de programar es el recorrido DFS en
+\textbf{preorden} (Raíz, Izquierda, Derecha).
+
+Si recorremos el árbol así, y guardamos un carácter especial (digamos \texttt{"N"})
+cada vez que nos topemos con un puntero nulo, la cadena resultante tendrá toda
+la información necesaria para reconstruirse a sí misma sin ambigüedades.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+ & 1 & \\
+2 & & 3\\
+\end{tabular}
+\end{center}
+
+\noindent Usando preorden y comas como separadores, el árbol de arriba genera
+la cadena: \texttt{"1,2,N,N,3,N,N,"}.
+
+\paragraph{Solución.} Para la serialización, usamos una recursión simple en
+preorden, concatenando el valor del nodo y las llamadas recursivas.
+
+Para la deserialización, el truco está en \emph{consumir} la cadena en el mismo
+orden (preorden). El primer valor que leamos será obligatoriamente la raíz.
+Después de crear la raíz, llamamos a la recursión para que consuma de la cadena
+todo lo que pertenezca al subárbol izquierdo, y luego lo que pertenezca al
+subárbol derecho. Usar un \texttt{stringstream} de C++ (pasado por referencia)
+hace que "consumir tokens separados por comas" sea extremadamente sencillo y
+elegante.
+
+\lstinputlisting{src/02-arboles/297-serialize-and-deserialize-binary-tree.cpp}
+
+\complejidad{$O(n)$}{$O(n)$}
+
+\paragraph{Notas de entrevista (Amazon).} Al ser un problema "Hard", los
+entrevistadores buscan ver tu dominio de las herramientas del lenguaje. Usar
+\texttt{std::stringstream} con \texttt{getline} en C++ demuestra madurez. Otro
+punto a favor: menciona por qué el recorrido BFS (por niveles) también es
+válido pero suele requerir más código (colas y manejo de nulos por nivel),
+mientras que DFS preorden brilla por la brevedad de su implementación recursiva.
+Evita usar variables globales enteras para el índice del string; en su lugar,
+pasa el estado (el stream o un iterador) por referencia.
