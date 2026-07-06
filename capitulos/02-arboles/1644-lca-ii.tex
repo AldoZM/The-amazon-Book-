@@ -1,0 +1,50 @@
+\problema{Lowest Common Ancestor of a Binary Tree II}{1644}{src/02-arboles/1644-lca-ii.cpp}{M}
+
+Es la variante del problema 236 donde \textbf{p y/o q pueden NO existir} en
+el árbol. Si alguno de los dos falta, debemos devolver \texttt{nullptr} en
+vez de un ancestro cualquiera.
+
+\paragraph{Intuición.} En 236 podíamos cortar la búsqueda apenas
+encontrábamos p o q, porque el enunciado garantizaba que ambos vivían en el
+árbol: encontrar uno era suficiente para confiar en el resultado. Aquí esa
+garantía desaparece. Si cortáramos temprano y el otro nodo resultara no
+existir, devolveríamos un LCA falso. La solución: recorrer el árbol
+\emph{completo}, sin atajos, y llevar un contador de cuántos de los dos
+nodos objetivo se encontraron de verdad. Sólo si el contador llega a 2
+confiamos en el candidato a LCA; si es 0 o 1, alguno falta y respondemos
+\texttt{nullptr}.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+     & 3 &     \\
+  5  &   &  1  \\
+6\ 2 &   & 0\ 8\\
+     &7\ 4&    \\
+\end{tabular}
+\end{center}
+
+\noindent Con este árbol: \texttt{LCA(5, 1) = 3}, \texttt{LCA(5, 4) = 5},
+pero \texttt{LCA(5, 99) = nullptr} porque 99 no está en el árbol, y
+\texttt{LCA(99, 88) = nullptr} porque ninguno de los dos existe.
+
+\paragraph{Solución.} Usamos el mismo DFS post-order de 236 (\texttt{dfs}
+devuelve, para cada subárbol, el candidato a LCA), pero SIEMPRE evaluamos
+ambos hijos antes de revisar el nodo actual (sin retorno anticipado), y cada
+vez que el nodo actual es p o q incrementamos un contador pasado por
+referencia. Al final, el resultado sólo es válido si el contador es
+exactamente 2:
+
+\lstinputlisting{src/02-arboles/1644-lca-ii.cpp}
+
+\complejidad{$O(n)$}{$O(h)$}
+
+\paragraph{Notas de entrevista (Amazon).} Deja claro en voz alta la
+diferencia con 236: aquí no hay garantía de existencia, así que el corte
+temprano (\texttt{if root == p or root == q: return root}) es incorrecto
+porque puede devolver un LCA falso cuando el otro nodo no está. La técnica
+del contador por referencia es la forma limpia de confirmar existencia sin
+un segundo recorrido; también es válida una alternativa de dos pasadas (una
+para verificar que p y q existen, otra para calcular el LCA como en 236),
+pero es menos elegante y hace doble trabajo. Casos borde: p o q ausentes,
+ambos ausentes, p es ancestro de q (o viceversa), y árbol de un solo nodo.
