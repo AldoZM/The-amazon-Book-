@@ -1,0 +1,67 @@
+\problema{Number of Connected Components}{323}{src/01-grafos/323-connected-components.cpp}{M}
+
+Hay \texttt{n} nodos, numerados de \texttt{0} a \texttt{n - 1}, y una lista
+\texttt{edges} de pares $[a, b]$ que representan aristas \textbf{no
+dirigidas}. Queremos contar cuántos componentes conexos tiene el grafo.
+
+\paragraph{Intuición.} Empezamos suponiendo lo peor: que cada nodo vive
+solo, aislado, formando su propio componente. Eso nos da \texttt{n}
+componentes de entrada. Cada arista es una oportunidad de fusión: si conecta
+dos nodos que ya viven en el mismo componente, no cambia nada (la arista es
+``redundante'' para efectos de contar componentes); pero si conecta dos
+nodos de componentes distintos, esos dos componentes se convierten en uno
+solo y el contador baja en $1$. Al final de procesar todas las aristas, el
+contador tiene la respuesta.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{c}
+$n=5$, edges $=[[0,1],[1,2],[3,4]]$\\[4pt]
+0 --- 1 --- 2 \qquad\qquad 3 --- 4\\[4pt]
+2 componentes: $\{0,1,2\}$ y $\{3,4\}$
+\end{tabular}
+\end{center}
+
+\paragraph{Solución (Union-Find / DSU).} La estructura ideal para este
+``ir fusionando conjuntos'' es \textbf{Union-Find} (Disjoint Set Union):
+cada nodo apunta a un padre, y la \emph{raíz} de un nodo identifica a qué
+componente pertenece. Dos operaciones:
+\begin{itemize}
+\item \texttt{find(x)}: sigue los punteros de padre hasta la raíz del
+  conjunto de \texttt{x}. Aplicamos \emph{compresión de caminos}: cada nodo
+  visitado en el camino se re-apunta directamente a la raíz, para que
+  futuras búsquedas sean casi instantáneas.
+\item \texttt{unir(a, b)}: si \texttt{find(a)} y \texttt{find(b)} son
+  distintas, cuelga una raíz de la otra usando \emph{unión por rango}
+  (la raíz de árbol más pequeño cuelga de la más grande, para mantener los
+  árboles bajos) y decrementa el contador de componentes.
+\end{itemize}
+Inicializamos cada nodo como su propio padre (\texttt{n} componentes) y
+recorremos las aristas una vez, uniendo cuando sea necesario.
+
+\lstinputlisting{src/01-grafos/323-connected-components.cpp}
+
+\complejidad{$O(n + e\cdot\alpha(n))$}{$O(n)$}
+
+\noindent donde $\alpha(n)$ es la función inversa de Ackermann (crece tan
+lento que para cualquier $n$ práctico es prácticamente una constante), y
+$e$ es el número de aristas.
+
+\paragraph{Notas de entrevista (Amazon).} Este problema es el ejemplo
+canónico de Union-Find y es hermano directo del \textbf{261. Graph Valid
+Tree}: ahí, en vez de contar componentes, se pregunta si el grafo termina
+siendo un único árbol (exactamente $n-1$ aristas y ninguna arista que una
+dos nodos ya en el mismo componente, es decir, ningún ciclo). También es
+primo del patrón de ``contar islas'' (200, 695): en lugar de recorrer una
+cuadrícula con DFS/BFS marcando visitados, aquí el grafo viene dado
+explícitamente como lista de aristas, pero la idea de fondo es la misma:
+contar cuántos grupos conectados existen. De hecho, este problema también
+se puede resolver con DFS o BFS clásico, construyendo una lista de
+adyacencia y contando cuántas veces arrancamos una exploración desde un
+nodo no visitado. Menciona ambos enfoques en la entrevista: DFS/BFS es más
+directo de explicar, pero Union-Find es más eficiente cuando las aristas
+llegan de forma incremental (por ejemplo, si el entrevistador pregunta un
+seguimiento tipo ``¿y si las aristas se agregan una a una y quieres saber
+el número de componentes después de cada una?''). Casos borde: sin
+aristas (cada nodo es su propio componente), un solo nodo, y aristas
+repetidas o que no cambian el número de componentes.
