@@ -1,0 +1,47 @@
+\problema{Word Search}{79}{src/01-grafos/79-word-search.cpp}{M}
+
+Nos dan una cuadrícula de letras (\texttt{board}) y una palabra
+(\texttt{word}). Queremos saber si la palabra se puede formar recorriendo
+celdas adyacentes en horizontal o vertical (nunca en diagonal), sin usar la
+misma celda dos veces dentro de un mismo camino.
+
+\paragraph{Intuición.} Piensa que vas letra por letra de la palabra, parado
+en una celda, y buscas a cuál vecina moverte para encontrar la siguiente
+letra. Si te atoras, retrocedes (\emph{backtracking}) y pruebas otro camino.
+Para no pisar dos veces la misma celda en el mismo intento, la marcamos
+temporalmente (por ejemplo con \texttt{'\#'}) mientras la estamos usando, y
+la restauramos a su letra original en cuanto retrocedemos, de modo que otros
+caminos sí puedan usarla.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{cccc}
+A & B & C & E\\
+S & F & C & S\\
+A & D & E & E\\
+\end{tabular}
+\end{center}
+
+\noindent En esta cuadrícula, \texttt{"ABCCED"} existe (bajando por la
+columna central de la \texttt{C} y luego a la \texttt{E} y la \texttt{D}), y
+\texttt{"SEE"} también existe. En cambio \texttt{"ABCB"} no existe: tras usar
+la primera \texttt{B}, la única forma de volver a una \texttt{B} obligaría a
+reutilizar una celda ya visitada en ese mismo camino.
+
+\paragraph{Solución.} Probamos cada celda de la cuadrícula como posible
+punto de partida (\texttt{word[0]}) y hacemos DFS con backtracking: si la
+celda actual coincide con la letra esperada, la marcamos como visitada y
+probamos las 4 vecinas buscando la siguiente letra; si ningún vecino
+completa el camino, restauramos la celda antes de volver.
+
+\lstinputlisting{src/01-grafos/79-word-search.cpp}
+
+\complejidad{$O(m\cdot n\cdot 4^{L})$, con $L$ la longitud de \texttt{word}}{$O(L)$ por la recursión}
+
+\paragraph{Notas de entrevista (Amazon).} El punto clave es el backtracking:
+marcar la celda al entrar y \textbf{siempre} restaurarla al salir, incluso
+si el camino tuvo éxito antes de regresar la llamada. Si no puedes mutar la
+cuadrícula de entrada, usa una matriz \texttt{visited} paralela en vez de
+\texttt{'\#'}. Casos borde: palabra de una sola letra (basta con que exista
+en la cuadrícula), cuadrícula de una sola celda, y palabras que reutilizarían
+una celda (deben fallar).
