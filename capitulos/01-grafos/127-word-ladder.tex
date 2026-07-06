@@ -1,0 +1,59 @@
+\problema{Word Ladder}{127}{src/01-grafos/127-word-ladder.cpp}{H}
+
+Dadas \texttt{beginWord}, \texttt{endWord} y una lista \texttt{wordList},
+buscamos la longitud de la secuencia de transformación \emph{más corta} de
+\texttt{beginWord} a \texttt{endWord}, donde cada paso cambia exactamente una
+letra y cada palabra intermedia debe existir en \texttt{wordList}. La
+longitud cuenta las palabras (incluyendo begin y end); si no existe tal
+secuencia, o \texttt{endWord} no está en \texttt{wordList}, devolvemos
+\texttt{0}.
+
+\paragraph{Intuición.} Cada palabra es un nodo de un grafo implícito: hay
+arista entre dos palabras si difieren en exactamente una letra. Buscar la
+transformación más corta es buscar el camino más corto en un grafo no
+ponderado, y eso es justo lo que resuelve un BFS por niveles: cada nivel del
+BFS corresponde a un paso de transformación.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{c}
+hit \\
+$|$ \\
+hot \\
+\end{tabular}
+\quad
+\begin{tabular}{cc}
+dot & lot \\
+$|$ & $|$ \\
+dog & log \\
+\end{tabular}
+\quad
+\begin{tabular}{c}
+cog \\
+\end{tabular}
+\end{center}
+
+\paragraph{Solución.} No construimos el grafo explícitamente porque sería
+carísimo con muchas palabras: en su lugar generamos los vecinos de una
+palabra ``sobre la marcha''. Para cada posición probamos las 26 letras del
+alfabeto distintas a la original y comprobamos si la palabra resultante está
+en el conjunto de \texttt{wordList} (un \texttt{unordered\_set} da
+pertenencia en $O(1)$). El BFS avanza por capas (\texttt{cola.size()} al
+inicio de cada nivel) y marcamos palabras visitadas para no reprocesarlas.
+
+\lstinputlisting{src/01-grafos/127-word-ladder.cpp}
+
+\complejidad{$O(N \cdot L^2 \cdot 26)$}{$O(N \cdot L)$}
+
+\noindent donde $N$ es el número de palabras en \texttt{wordList} y $L$ la
+longitud de cada palabra.
+
+\paragraph{Notas de entrevista (Amazon).} El primer chequeo obligatorio es
+verificar que \texttt{endWord} esté en \texttt{wordList}; si no, la respuesta
+es \texttt{0} sin hacer ningún BFS. El error típico es generar vecinos
+comparando contra cada palabra de la lista letra por letra ($O(N \cdot L)$
+por palabra), en vez de generar las variaciones directamente y consultarlas
+en un conjunto ($O(L \cdot 26)$ por palabra), lo cual escala mucho mejor
+cuando \texttt{wordList} es grande. También vale la pena mencionar
+Bidirectional BFS (buscar simultáneamente desde beginWord y endWord) como
+optimización adicional para reducir el factor de ramificación efectivo.
