@@ -1,0 +1,10 @@
+\problema{All Nodes Distance K in Binary Tree}{863}{src/02-arboles/863-all-nodes-distance-k-in-binary-tree.cpp}{Media}
+\complejidad{O(N)}{O(N)}
+
+En los árboles binarios estándar, los nodos solo tienen referencias a sus hijos. Esto significa que podemos viajar hacia abajo fácilmente, pero no podemos ``subir'' hacia los ancestros. Sin embargo, cuando se nos pide encontrar todos los nodos a una distancia $K$ de un nodo objetivo, la respuesta podría estar tanto en los subárboles de ese nodo como en otras partes del árbol a las que solo se puede llegar pasando por sus ancestros.
+
+Para resolver esto, podemos dividir el problema en dos fases. Primero, transformamos el árbol en un grafo no dirigido. Hacemos un recorrido inicial (por ejemplo, DFS) para construir un diccionario (mapa hash) que asocie cada nodo con su padre. Con esto, cada nodo ahora conoce a sus tres vecinos potenciales: hijo izquierdo, hijo derecho y padre.
+
+En la segunda fase, el problema se reduce a encontrar los nodos a distancia $K$ en un grafo. Para ello, utilizamos una Búsqueda en Anchura (BFS). Comenzamos desde el nodo objetivo, insertándolo en una cola y marcándolo como visitado (usando un conjunto o \textit{set}). Expandimos nuestra búsqueda nivel por nivel: en cada paso, desencolamos un nodo y encolamos a sus hijos y a su padre, siempre que no hayan sido visitados antes. Cuando alcanzamos el nivel $K$ de nuestra BFS, todos los nodos que se encuentren actualmente en la cola son exactamente los que están a distancia $K$ del objetivo.
+
+\lstinputlisting{src/02-arboles/863-all-nodes-distance-k-in-binary-tree.cpp}
