@@ -1,0 +1,67 @@
+\problema{Graph Valid Tree}{261}{src/01-grafos/261-graph-valid-tree.cpp}{M}
+
+Nos dan $n$ nodos etiquetados de $0$ a $n-1$ y una lista de aristas no
+dirigidas. Queremos saber si ese grafo forma un \emph{árbol} válido.
+
+\paragraph{Intuición.} Un árbol es, por definición, un grafo conectado y sin
+ciclos. Por lo tanto hay que revisar ambas condiciones. La observación clave
+es aritmética: un árbol con $n$ nodos tiene \textbf{exactamente} $n-1$
+aristas. Si hay menos, es imposible que todo esté conectado; si hay más,
+forzosamente sobra alguna arista que cierra un ciclo. Así que primero
+descartamos por conteo, y luego sólo falta comprobar que, con exactamente
+$n-1$ aristas, ninguna de ellas cierre un ciclo (si no hay ciclos y el
+conteo de aristas es $n-1$, la conectividad total queda garantizada).
+
+\begin{center}
+\ttfamily
+\begin{tabular}{c}
+árbol válido ($n=5$)\\[2pt]
+\begin{tabular}{ccccc}
+ & & 0 & & \\
+ & 1 & 2 & 3 & \\
+ 4 & & & &
+\end{tabular}\\[4pt]
+aristas: [0,1] [0,2] [0,3] [1,4] \quad$\to$\quad 4 = n-1 \quad$\to$\quad \textbf{true}
+\end{tabular}
+\end{center}
+
+\paragraph{Union-Find (patrón nuevo).} Para detectar ciclos de forma
+eficiente usamos \emph{Union-Find} (o \emph{Disjoint Set Union}, DSU), una
+estructura que no habíamos usado antes en este libro:
+
+\begin{itemize}
+  \item Cada nodo arranca siendo su propio representante (su propio
+    conjunto), guardado en un arreglo \texttt{padre}.
+  \item \texttt{find(x)} sigue los punteros \texttt{padre} hasta llegar a la
+    raíz del conjunto de \texttt{x}. Con \textbf{compresión de caminos}, cada
+    nodo visitado en el trayecto se re-liga directamente a la raíz, así que
+    consultas futuras son casi instantáneas.
+  \item \texttt{unite(x, y)} busca las raíces de \texttt{x} y \texttt{y}.
+    Si ya comparten raíz, \texttt{x} y \texttt{y} ya estaban conectados por
+    otro camino distinto de esta arista, y añadirla formaría un
+    \textbf{ciclo}: devolvemos \texttt{false}. Si las raíces son distintas,
+    fusionamos los conjuntos usando \textbf{unión por rango}: la raíz del
+    árbol de menor altura cuelga de la raíz del árbol más alto, para que los
+    árboles del DSU se mantengan planos y las operaciones sigan siendo
+    rápidas.
+\end{itemize}
+
+\paragraph{Solución.} Primero descartamos si el número de aristas no es
+$n-1$. Después recorremos cada arista llamando a \texttt{unite}; si alguna
+llamada detecta que ambos extremos ya comparten raíz, hay un ciclo y
+regresamos \texttt{false} de inmediato. Si procesamos todas las aristas sin
+encontrar ciclos, el grafo es un árbol válido.
+
+\lstinputlisting{src/01-grafos/261-graph-valid-tree.cpp}
+
+\complejidad{casi $O(n + e\cdot\alpha(n))$}{$O(n)$}
+
+\paragraph{Notas de entrevista (Amazon).} Menciona primero el atajo de
+conteo ($n-1$ aristas) porque descarta la mayoría de los casos triviales sin
+tocar el DSU. Explica por qué la unión por rango y la compresión de caminos
+son necesarias: sin ellas, \texttt{find} podría degenerar a $O(n)$ por
+llamada en el peor caso (una cadena larga), mientras que con ambas
+optimizaciones la complejidad amortizada es prácticamente constante ($\alpha$
+es la inversa de Ackermann). Casos borde a mencionar: $n=1$ sin aristas (es
+un árbol trivial válido), grafo con ciclo, grafo desconectado en varios
+componentes, y aristas de más o de menos respecto a $n-1$.
