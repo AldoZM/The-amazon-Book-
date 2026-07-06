@@ -1,0 +1,54 @@
+\problema{Validate Binary Search Tree}{98}{src/02-arboles/98-validate-binary-search-tree.cpp}{M}
+
+Dada la raíz de un árbol binario, determina si es un árbol de búsqueda binaria
+(BST) válido. Para que un BST sea válido, el subárbol izquierdo de cada nodo
+debe contener solo nodos con claves \textbf{menores} que la clave del nodo, el
+subárbol derecho debe contener solo nodos con claves \textbf{mayores}, y ambos
+subárboles deben ser también BST válidos.
+
+\paragraph{Intuición.} El error más común al resolver este problema es verificar
+solamente que el hijo izquierdo sea menor y el hijo derecho sea mayor que el
+nodo actual. Esto \emph{no} es suficiente. Un nodo que esté muy abajo en el
+subárbol derecho de la raíz podría tener un valor menor que la raíz, violando
+así la propiedad fundamental del BST (donde \textbf{todo} el subárbol derecho
+debe ser mayor que la raíz).
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+ & 5 & \\
+1 & & 4\\
+ & 3 & 6\\
+\end{tabular}
+\end{center}
+
+\noindent En este ejemplo, $3 < 4$ y $6 > 4$, por lo que el nodo 4 y sus hijos
+parecen correctos localmente. Sin embargo, el nodo $3$ está en el subárbol
+derecho de la raíz $5$, pero no es mayor que $5$. ¡El árbol es inválido!
+
+\paragraph{Solución.} En lugar de verificar solo relaciones padre-hijo, debemos
+mantener un \emph{rango válido} \texttt{(minimo, maximo)} a medida que bajamos
+por el árbol en nuestra recursión. Todo nodo que visitemos debe caer
+estrictamente dentro de ese rango.
+\begin{itemize}
+    \item Al principio, la raíz puede tener cualquier valor: \texttt{(LONG\_MIN, LONG\_MAX)}.
+    \item Cuando bajamos al hijo izquierdo, el límite \textbf{superior} del rango se actualiza al valor del nodo actual.
+    \item Cuando bajamos al hijo derecho, el límite \textbf{inferior} del rango se actualiza al valor del nodo actual.
+\end{itemize}
+
+Usamos el tipo \texttt{long} de C++ para los límites \texttt{minimo} y
+\texttt{maximo} porque los valores de los nodos pueden ser \texttt{INT\_MIN} o
+\texttt{INT\_MAX}, y si usáramos \texttt{int}, fallarían las comparaciones en
+esos casos extremos (overflow/underflow). El código:
+
+\lstinputlisting{src/02-arboles/98-validate-binary-search-tree.cpp}
+
+\complejidad{$O(n)$}{$O(h)$}
+
+\paragraph{Notas de entrevista (Amazon).} Cuidado especial con los casos borde
+como los límites de los enteros de 32 bits (\texttt{INT\_MAX} y \texttt{INT\_MIN}).
+Es preferible usar \texttt{long} o parámetros de puntero nulo para representar el
+infinito. Además, asegúrate de mencionar que el espacio auxiliar de la recursión es
+$O(h)$ donde $h$ es la altura del árbol, lo cual se convierte en $O(n)$ en el
+peor caso (árbol degenerado como una lista ligada) y $O(\log n)$ en el mejor caso
+(árbol balanceado).
