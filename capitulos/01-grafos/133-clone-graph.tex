@@ -1,0 +1,49 @@
+\problema{Clone Graph}{133}{src/01-grafos/133-clone-graph.cpp}{M}
+
+Nos dan una referencia a un nodo de un grafo no dirigido y \emph{conexo}.
+Cada nodo tiene un valor entero (\texttt{val}) y una lista de vecinos
+(\texttt{neighbors}). Queremos devolver una \textbf{copia profunda} de todo
+el grafo: cada nodo de la copia debe ser un objeto nuevo, con el mismo valor
+y las mismas conexiones que el original.
+
+\paragraph{Intuición.} Es un DFS normal, con un truco: en vez de un simple
+arreglo de \texttt{visitados}, usamos un mapa \texttt{original -> copia}. La
+primera vez que vemos un nodo original creamos su copia y la registramos en
+el mapa \emph{antes} de recorrer sus vecinos. Así, si el grafo tiene un ciclo
+(muy común, ya que es no dirigido), al volver a toparnos con un nodo ya
+visitado simplemente devolvemos la copia guardada en el mapa, en lugar de
+clonarlo de nuevo o caer en una recursión infinita.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+1 & --- & 2\\
+$|$ & & $|$\\
+4 & --- & 3\\
+\end{tabular}
+\end{center}
+
+\noindent Lista de adyacencia de este ejemplo: $1:[2,4]$, $2:[1,3]$,
+$3:[2,4]$, $4:[1,3]$. Al clonar desde el nodo $1$, el DFS visita $2$, que a
+su vez intenta visitar $1$ otra vez: como $1$ ya está en el mapa, se
+reutiliza su copia en lugar de recrearla.
+
+\paragraph{Solución.} DFS recursivo con
+\texttt{unordered\_map<Node*, Node*>} como memoria de clones. Al entrar a un
+nodo: si ya tiene copia registrada, la devolvemos; si no, creamos la copia,
+la registramos de inmediato (esto rompe los ciclos) y luego clonamos
+recursivamente cada vecino para llenar \texttt{neighbors} de la copia.
+
+\lstinputlisting{src/01-grafos/133-clone-graph.cpp}
+
+\complejidad{$O(V+E)$}{$O(V)$}
+
+\paragraph{Notas de entrevista (Amazon).} El error típico es registrar la
+copia en el mapa \emph{después} de recorrer los vecinos: eso provoca
+recursión infinita en cuanto el grafo tiene un ciclo. Menciona también la
+alternativa con BFS y una cola (misma idea del mapa, pero iterativa, útil si
+te preocupa el límite de la pila de recursión en grafos muy grandes). Casos
+borde a cubrir: nodo nulo (grafo vacío) devuelve \texttt{nullptr}, un solo
+nodo sin vecinos, y verificar que los nodos de la copia sean direcciones de
+memoria distintas a las del original (una copia profunda real, no un
+alias).
