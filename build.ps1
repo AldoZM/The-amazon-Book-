@@ -4,7 +4,9 @@ $ErrorActionPreference = "Stop"
 $root = (git rev-parse --show-toplevel).Trim()
 # git ya devuelve separadores '/'; asegurar formato para vscode://file/
 $root = $root -replace '\\', '/'
-Set-Content -Path "paths.tex" -Value "\def\repopath{$root}" -Encoding utf8
-Write-Host "paths.tex -> \repopath{$root}"
+# Codificar espacios: un URI vscode://file/ no admite espacios crudos (ej. "Codigo Abierto")
+$rootUri = $root -replace ' ', '%20'
+Set-Content -Path "paths.tex" -Value "\def\repopath{$rootUri}" -Encoding utf8
+Write-Host "paths.tex -> \repopath{$rootUri}"
 latexmk -xelatex -interaction=nonstopmode -halt-on-error main.tex
 Write-Host "Listo: main.pdf"
