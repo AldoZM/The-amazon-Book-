@@ -1,0 +1,60 @@
+\problema{Alien Dictionary}{269}{src/01-grafos/269-alien-dictionary.cpp}{H}
+
+Nos dan una lista de palabras que ya están ordenadas según las reglas de un
+alfabeto alienígena que no conocemos. A partir de esas palabras hay que
+deducir un orden válido de las letras del alfabeto. Si la lista es
+inconsistente (no existe ningún orden posible), devolvemos \texttt{""}.
+
+\paragraph{Intuición.} Cada par de palabras \emph{adyacentes} en la lista nos
+regala como mucho una pista: el primer carácter en el que difieren nos dice
+``esta letra va antes que esa otra''. El resto de los caracteres no aporta
+nada sobre el alfabeto. Con todas esas pistas armamos un grafo dirigido
+letra $\to$ letra, y basta un orden topológico de ese grafo para responder.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{lll}
+wrt & wrf & \small (diff. índice 2: t $\to$ f)\\
+wrf & er & \small (diff. índice 0: w $\to$ e)\\
+er & ett & \small (diff. índice 1: r $\to$ t)\\
+ett & rftt & \small (diff. índice 0: e $\to$ r)\\
+\end{tabular}
+
+\medskip
+Grafo resultante:\quad w $\to$ e $\to$ r $\to$ t $\to$ f
+\end{center}
+
+\noindent En este ejemplo las aristas forman una sola cadena, así que el
+orden topológico es único: \texttt{"wertf"}.
+
+\paragraph{Solución.} Construimos el grafo comparando cada par de palabras
+consecutivas y tomando el primer par de caracteres distintos (esa es la
+única arista que aporta ese par). Luego aplicamos el algoritmo de Kahn:
+metemos en una cola las letras con grado de entrada 0, y las vamos sacando
+mientras liberamos a sus sucesoras. Si al final no procesamos todas las
+letras, había un ciclo y devolvemos \texttt{""}.
+
+Hay un caso borde que es fácil pasar por alto: si dos palabras adyacentes
+comparten todo su prefijo común pero la primera es \emph{más larga} que la
+segunda (por ejemplo \texttt{["abc", "ab"]}), eso viola el orden alfabético
+--- un prefijo siempre debe ir antes que la palabra que lo extiende --- así
+que devolvemos \texttt{""} de inmediato, sin llegar siquiera a construir el
+topológico.
+
+\lstinputlisting{src/01-grafos/269-alien-dictionary.cpp}
+
+\complejidad{$O(C)$}{$O(1)$}
+
+\noindent donde $C$ es la suma de las longitudes de todas las palabras (el
+recorrido para comparar palabras adyacentes domina sobre el topológico, que
+corre sobre a lo más 26 letras).
+
+\paragraph{Notas de entrevista (Amazon).} Es primo cercano de Course Schedule
+(207/210): mismo algoritmo de Kahn, pero aquí el reto está en construir
+correctamente el grafo a partir de las palabras. Los dos errores más comunes:
+(1) olvidar el caso de prefijo inválido y (2) tomar más de un carácter
+distinto por par de palabras (solo el \emph{primero} importa; el resto no
+dice nada). Recuerda también que el orden topológico casi nunca es único
+--- cualquier letra sin restricciones puede ir en varias posiciones --- así
+que en una entrevista conviene aclarar que basta con devolver \emph{un}
+orden válido, no ``el'' orden.
