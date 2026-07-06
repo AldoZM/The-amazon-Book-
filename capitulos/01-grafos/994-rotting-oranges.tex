@@ -1,0 +1,36 @@
+\problema{Rotting Oranges}{994}{src/01-grafos/994-rotting-oranges.cpp}{M}
+
+Tenemos una cuadrícula donde \texttt{0} es una celda vacía, \texttt{1} es una
+naranja fresca y \texttt{2} una naranja podrida. Cada minuto, toda naranja
+fresca adyacente (arriba, abajo, izquierda, derecha) a una podrida se pudre.
+Queremos el número de minutos hasta que no quede ninguna fresca, o
+\texttt{-1} si alguna nunca se pudre.
+
+\paragraph{Intuición.} La podredumbre se expande como una onda desde todas
+las naranjas podridas \emph{al mismo tiempo}. Eso es exactamente un BFS
+\emph{multi-fuente}: metemos todas las podridas en la cola y expandimos por
+capas; cada capa es un minuto. Contamos las frescas al inicio y las restamos
+conforme se pudren; si al final queda alguna, es imposible.
+
+\begin{center}
+\ttfamily
+minuto 0\quad
+\begin{tabular}{ccc}2&1&1\\1&1&0\\0&1&1\end{tabular}
+\;$\rightarrow$\;
+minuto 4\quad
+\begin{tabular}{ccc}2&2&2\\2&2&0\\0&2&2\end{tabular}
+\end{center}
+
+\paragraph{Solución.} BFS por niveles desde todas las podridas. La clave del
+manejo de casos borde: si no hay frescas al inicio, la respuesta es
+\texttt{0}; si terminan las capas y aún quedan frescas, es \texttt{-1}.
+
+\lstinputlisting{src/01-grafos/994-rotting-oranges.cpp}
+
+\complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
+
+\paragraph{Notas de entrevista (Amazon).} El error típico es empezar
+\texttt{minutos} en $-1$ o contar un minuto de más cuando la última capa no
+pudre nada. Aquí sólo incrementamos \texttt{minutos} mientras haya frescas
+que pudrir. Casos borde a mencionar: sin frescas ($0$), fresca aislada
+($-1$), todo vacío ($0$).
