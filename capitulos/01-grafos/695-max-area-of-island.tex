@@ -1,0 +1,38 @@
+\problema{Max Area of Island}{695}{src/01-grafos/695-max-area-of-island.cpp}{M}
+
+Nos dan una cuadrícula de \texttt{0} (agua) y \texttt{1} (tierra). Una
+\emph{isla} es un grupo de tierras conectadas en horizontal o vertical, y su
+\emph{área} es cuántas celdas de tierra la forman. Queremos el área de la
+isla más grande (0 si no hay tierra).
+
+\paragraph{Intuición.} Es el mismo sobrevuelo de \emph{Number of Islands},
+pero ahora no contamos islas: medimos cada una. Al pisar tierra nueva
+recorremos toda la isla conectada sumando 1 por celda y hundiéndola para no
+recontarla. Nos quedamos con el área máxima vista.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccccc}
+0 & 0 & 1 & 0 & 0\\
+0 & 0 & 1 & 1 & 0\\
+0 & 1 & 1 & 0 & 0\\
+0 & 0 & 0 & 0 & 1\\
+\end{tabular}
+\end{center}
+
+\noindent La isla central conecta \textbf{5} celdas; la celda suelta de abajo
+a la derecha es otra isla de área 1. La respuesta es \textbf{5}.
+
+\paragraph{Solución.} DFS que, en lugar de un valor booleano, devuelve el
+tamaño de la isla: \texttt{1} por la celda actual más la suma recursiva de sus
+cuatro vecinas. Hundimos cada celda visitada marcándola como agua.
+
+\lstinputlisting{src/01-grafos/695-max-area-of-island.cpp}
+
+\complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
+
+\paragraph{Notas de entrevista (Amazon).} Si te acaban de preguntar
+\emph{Number of Islands}, este es el seguimiento natural: cambia el DFS de
+``contar'' a ``medir''. Comenta que hundir la cuadrícula ahorra el arreglo
+\texttt{visited}; si no puedes mutar la entrada, usa BFS con cola o un
+conjunto de visitados. El máximo se puede llevar como acumulador global.
