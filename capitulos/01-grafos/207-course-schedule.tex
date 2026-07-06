@@ -1,0 +1,59 @@
+\problema{Course Schedule}{207}{src/01-grafos/207-course-schedule.cpp}{M}
+
+Hay \texttt{numCourses} cursos numerados de \texttt{0} a
+\texttt{numCourses - 1}, y una lista \texttt{prerequisites} de pares
+$[a, b]$ que significan ``para tomar el curso $a$ primero hay que tomar el
+curso $b$''. Queremos saber si es posible tomar todos los cursos.
+
+\paragraph{Intuición.} Cada par $[a, b]$ es una dependencia dirigida
+$b \rightarrow a$ (``$b$ habilita a $a$''). Si dibujamos todas las
+dependencias como un grafo dirigido, la pregunta ``¿puedo tomar todos los
+cursos?'' es exactamente ``¿este grafo tiene un ciclo?''. Si un grupo de
+cursos se necesita entre sí en círculo, ninguno de ellos puede ser el
+primero: es imposible. Si no hay ciclos, siempre existe un
+\textbf{orden topológico}: una forma de ordenar los cursos tal que cada uno
+aparece después de todos sus prerrequisitos.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{c}
+Con ciclo (imposible):\\[4pt]
+$0 \rightarrow 1 \rightarrow 0$ \quad (0 necesita 1, 1 necesita 0)
+\end{tabular}
+\qquad
+\begin{tabular}{c}
+Sin ciclo (posible):\\[4pt]
+$0 \rightarrow 1 \rightarrow 3$,\ \ $0 \rightarrow 2 \rightarrow 3$\\
+orden topológico: $0, 1, 2, 3$
+\end{tabular}
+\end{center}
+
+\paragraph{Grado de entrada (in-degree).} Es un concepto nuevo en este
+libro: el \emph{grado de entrada} de un curso es cuántos prerrequisitos le
+faltan por cumplir. Un curso con grado de entrada $0$ no depende de nada y
+se puede tomar de inmediato.
+
+\paragraph{Solución (algoritmo de Kahn).} Construimos la lista de
+adyacencia (\texttt{adj[b]} = cursos que dependen de \texttt{b}) y el grado
+de entrada de cada curso. Metemos en una cola todos los cursos con grado de
+entrada $0$. Sacamos uno a la vez, lo contamos como ``tomado'' y
+disminuimos en $1$ el grado de entrada de todo lo que dependía de él;
+cuando un curso llega a grado $0$, entra a la cola. Este proceso es un
+\textbf{BFS sobre grados de entrada} y va generando un orden topológico
+capa por capa. Si al final procesamos todos los cursos, no había ciclo; si
+alguno se quedó sin procesar (su grado de entrada nunca bajó a $0$ porque
+estaba atrapado en un ciclo), la respuesta es falsa.
+
+\lstinputlisting{src/01-grafos/207-course-schedule.cpp}
+
+\complejidad{$O(V+E)$}{$O(V+E)$}
+
+\paragraph{Notas de entrevista (Amazon).} Este problema es la puerta de
+entrada al patrón de \textbf{orden topológico}, muy común en preguntas de
+planeación de tareas y resolución de dependencias (build systems,
+compiladores, gestores de paquetes). Menciona ambas variantes: BFS con
+grados de entrada (algoritmo de Kahn, el que usamos aquí, útil también si
+se pide devolver el orden explícito) o DFS con detección de ciclo por
+colores (blanco/gris/negro). Casos borde: sin prerrequisitos (siempre
+posible), un ciclo que involucra solo a algunos cursos y no a todos, y
+cursos con múltiples prerrequisitos o múltiples dependientes.
