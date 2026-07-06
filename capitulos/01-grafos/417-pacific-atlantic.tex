@@ -1,0 +1,72 @@
+\problema{Pacific Atlantic Water Flow}{417}{src/01-grafos/417-pacific-atlantic.cpp}{M}
+
+Nos dan una matriz \texttt{heights} de tamaño $m\times n$ con la altura de
+cada celda. El océano Pacífico toca el borde superior y el borde izquierdo de
+la matriz; el océano Atlántico toca el borde inferior y el borde derecho. El
+agua fluye de una celda a una vecina (arriba, abajo, izquierda, derecha) si la
+altura de la vecina es \textbf{menor o igual} a la de la celda actual (el
+agua desciende o se mantiene, nunca sube). Queremos las coordenadas de las
+celdas desde las que el agua puede llegar a \textbf{ambos} océanos.
+
+\paragraph{Intuición.} Hacer un BFS/DFS de escurrimiento desde cada una de las
+$m\cdot n$ celdas para ver a qué océano llega sería $O((m\cdot n)^2)$: muy
+lento. La clave es invertir el problema: en lugar de preguntar ``¿a dónde
+llega el agua desde aquí?'', partimos de los bordes de cada océano y
+exploramos hacia adentro \emph{subiendo} de altura. Una celda vecina es
+alcanzable en este recorrido inverso si su altura es mayor o igual a la de la
+celda actual, porque en el sentido original el agua fluiría de esa vecina
+hacia la celda que estamos visitando. Así obtenemos, en una sola pasada por
+océano, el conjunto de celdas que logran drenar hasta él. La respuesta final
+es la intersección de ambos conjuntos.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccccc}
+1 & 2 & 2 & 3 & 5\\
+3 & 2 & 3 & 4 & 4\\
+2 & 4 & 5 & 3 & 1\\
+6 & 7 & 1 & 4 & 5\\
+5 & 1 & 1 & 2 & 4\\
+\end{tabular}
+\end{center}
+
+\noindent En este ejemplo, el resultado es
+$(0,4), (1,3), (1,4), (2,2), (3,0), (3,1), (4,0)$: desde cada una de estas
+celdas el agua puede descender hasta tocar tanto el borde superior/izquierdo
+como el inferior/derecho.
+
+\paragraph{Diagrama.} DFS inverso desde cada océano, subiendo de altura hacia
+adentro de la matriz:
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ll}
+Pacífico (fila 0 y columna 0) & Atlántico (fila $m$-1 y columna $n$-1)\\
+P P P P P & \phantom{A A A A} A\\
+P \phantom{P P P} & \phantom{A A A A} A\\
+P \phantom{P P P} & (subiendo de altura) \phantom{AA} A\\
+P \phantom{P P P} & \phantom{A A A A} A\\
+P \phantom{P P P} & A A A A A A A A\\
+\end{tabular}
+\end{center}
+
+\paragraph{Solución.} Dos matrices booleanas \texttt{pacifico} y
+\texttt{atlantico} marcan qué celdas alcanzan cada océano. Lanzamos un DFS
+desde cada celda del borde correspondiente; el DFS sólo avanza hacia una
+vecina cuya altura sea mayor o igual (nunca hacia una más baja, porque el
+agua no podría subir en el sentido inverso). Al final, las celdas marcadas en
+ambas matrices forman la respuesta:
+
+\lstinputlisting{src/01-grafos/417-pacific-atlantic.cpp}
+
+\complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
+
+\paragraph{Notas de entrevista (Amazon).} El truco central es reconocer que
+invertir el sentido del recorrido (partir de los océanos en vez de partir de
+cada celda) baja la complejidad de $O((m\cdot n)^2)$ a $O(m\cdot n)$; es un
+patrón que vale la pena mencionar en voz alta al entrevistador. Casos borde
+importantes: matriz $1\times1$ (la única celda toca los cuatro bordes a la
+vez), una sola fila o columna (la misma fila/columna es simultáneamente
+borde de ambos océanos), y mesetas de altura uniforme (el agua fluye
+libremente entre vecinas de igual altura porque la condición es ``menor o
+igual'').
