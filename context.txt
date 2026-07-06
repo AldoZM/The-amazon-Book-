@@ -173,8 +173,7 @@ Cada problema nuevo = repetir el patrón:
   e) Commit en español, SIN firma ni Co-Authored-By de IA.
   f) Marcar con \checkmark en capitulos/99-ruta.tex.
 
-BLOQUE 1 — Grafos (faltan 18):
-  695 Max Area of Island, 542 01 Matrix, 1091 Shortest Path in Binary Matrix,
+BLOQUE 1 — Grafos (faltan 15; 695/542/1091 ya HECHOS el 2026-07-05):
   417 Pacific Atlantic, 79 Word Search, 207 Course Schedule,
   210 Course Schedule II, 269 Alien Dictionary, 127 Word Ladder,
   126 Word Ladder II, 261 Graph Valid Tree, 323 Connected Components,
