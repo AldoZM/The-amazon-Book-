@@ -1,0 +1,57 @@
+\problema{Lowest Common Ancestor of a Binary Tree}{236}{src/02-arboles/236-lowest-common-ancestor.cpp}{M}
+
+Nos dan un árbol binario y dos nodos \texttt{p} y \texttt{q} que están
+garantizados presentes en el árbol. Queremos encontrar su \emph{ancestro
+común más bajo} (LCA, \emph{Lowest Common Ancestor}): el nodo más profundo
+que tiene tanto a \texttt{p} como a \texttt{q} entre sus descendientes (un
+nodo se considera descendiente de sí mismo).
+
+\paragraph{Intuición.} Piensa en el árbol como un árbol genealógico. Para
+encontrar al ancestro común de dos personas, bajas desde la raíz preguntando
+en cada nodo: "¿alguno de los dos que busco vive en mi rama izquierda?" y
+"¿en mi rama derecha?". Si uno vive a la izquierda y el otro a la derecha,
+tú (el nodo actual) eres el punto exacto donde sus caminos se separan: eres
+el LCA. Si ambos viven del mismo lado, la respuesta está más abajo, así que
+dejas que la rama que sí encontró algo te lo diga.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccccccc}
+ & & & 3 & & & \\
+ & 5 & & & & 1 & \\
+6 & & 2 & & 0 & & 8\\
+ & 7 & & 4 & & & \\
+\end{tabular}
+\end{center}
+
+\noindent En este árbol, $LCA(5,1)=3$ porque cada uno cuelga de una rama
+distinta de la raíz. En cambio $LCA(5,4)=5$ porque 5 es ancestro directo de
+4 (4 vive dentro del propio subárbol de 5). Y $LCA(6,4)=5$ porque tanto 6
+como 4 cuelgan del subárbol de 5, aunque en ramas distintas dentro de él.
+
+\paragraph{Solución.} Hacemos DFS recursivo tipo post-order. Cada llamada
+devuelve, para el subárbol que analiza, "el nodo relevante encontrado":
+\texttt{p}, \texttt{q}, el LCA ya identificado, o \texttt{nullptr} si
+ninguno de los dos está ahí.
+
+Si el nodo actual es \texttt{nullptr}, \texttt{p} o \texttt{q}, lo
+devolvemos de inmediato: no hace falta seguir bajando por esa rama, ya
+encontramos uno de los dos objetivos (o llegamos al final del árbol).
+Si la recursión a la izquierda y la de la derecha devuelven ambas algo no
+nulo, \texttt{p} y \texttt{q} se repartieron uno a cada lado, así que el
+nodo actual es el LCA. Si solo un lado devuelve algo, ese resultado se
+propaga hacia arriba sin cambios. El código completo (abre el archivo con
+clic en el título):
+
+\lstinputlisting{src/02-arboles/236-lowest-common-ancestor.cpp}
+
+\complejidad{$O(n)$}{$O(h)$}
+
+\paragraph{Notas de entrevista (Amazon).} Pregunta muy común. Puntos clave a
+mencionar: la solución no necesita comparar valores (funciona incluso con
+valores repetidos) porque compara punteros de nodo directamente. Si el
+árbol fuera un \emph{árbol de búsqueda binario} (BST), existe una solución
+más simple en $O(h)$ sin recursión doble, aprovechando el orden de los
+valores para decidir hacia qué lado bajar. Casos borde: \texttt{p} es
+ancestro de \texttt{q} (o viceversa), y \texttt{p}/\texttt{q} son hojas
+hermanas directas.
