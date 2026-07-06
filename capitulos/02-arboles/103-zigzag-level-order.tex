@@ -1,0 +1,56 @@
+\problema{Binary Tree Zigzag Level Order Traversal}{103}{src/02-arboles/103-zigzag-level-order.cpp}{M}
+
+Dada la raíz de un árbol binario, queremos su recorrido por niveles, pero
+alternando la dirección: el nivel 0 se lee de izquierda a derecha, el nivel 1
+de derecha a izquierda, el nivel 2 otra vez de izquierda a derecha, y así
+sucesivamente.
+
+\paragraph{Intuición.} Es el mismo BFS por niveles que usamos en
+994 (Rotting Oranges): procesamos la cola capa por capa, y el tamaño de la
+cola al inicio de cada vuelta nos dice cuántos nodos hay en ese nivel. La
+única novedad es la dirección: en los niveles pares guardamos los valores en
+orden normal, y en los impares los guardamos en orden inverso. Para no pagar
+el costo de invertir un vector completo, colocamos cada valor directamente en
+su posición final dentro del nivel (índice \texttt{i} o \texttt{capa-1-i}
+según la dirección).
+
+\begin{center}
+\ttfamily
+\begin{tabular}{c}
+3\\
+\end{tabular}
+\quad
+\begin{tabular}{cc}
+9 & 20\\
+\end{tabular}
+\quad
+\begin{tabular}{cc}
+15 & 7\\
+\end{tabular}
+\end{center}
+
+\noindent Árbol \texttt{[3,9,20,null,null,15,7]}: el nivel 0 es \texttt{[3]}
+(izquierda a derecha), el nivel 1 se recorre de derecha a izquierda dando
+\texttt{[20, 9]}, y el nivel 2 vuelve a izquierda a derecha con
+\texttt{[15, 7]}. Resultado: \texttt{[[3], [20, 9], [15, 7]]}.
+
+\paragraph{Solución.} BFS estándar por niveles con una cola. Mantenemos una
+bandera booleana que alterna en cada vuelta del \texttt{while}; cuando está
+activa, insertamos cada valor en la posición espejo del nivel en vez de
+simplemente hacer \texttt{push\_back}. Casos borde: árbol vacío devuelve
+\texttt{[]} de inmediato; un solo nodo devuelve \texttt{[[valor]]} sin
+alternar nada, porque sólo hay un nivel.
+
+\lstinputlisting{src/02-arboles/103-zigzag-level-order.cpp}
+
+\complejidad{$O(n)$}{$O(n)$}
+
+\paragraph{Notas de entrevista (Amazon).} El error típico es invertir el
+vector del nivel con una llamada aparte (\texttt{reverse}) en lugar de
+calcular la posición correcta al insertar; ambas son válidas en complejidad,
+pero calcular el índice directamente evita una pasada extra y demuestra que
+entiendes bien el layout de la capa. Vale la pena mencionar también la
+variante con dos pilas (una por dirección) como alternativa clásica al BFS
+con cola. Casos borde a mencionar: árbol vacío (\texttt{[]}), un solo nodo
+(\texttt{[[x]]}), y árboles muy desbalanceados donde un nivel tiene un solo
+nodo.
