@@ -1,0 +1,65 @@
+\problema{Number of Provinces}{547}{src/01-grafos/547-number-of-provinces.cpp}{M}
+
+Hay \texttt{n} ciudades y una matriz de adyacencia \texttt{isConnected} de
+tamaño \texttt{n x n}, donde \texttt{isConnected[i][j] == 1} si la ciudad
+\texttt{i} y la ciudad \texttt{j} están conectadas \textbf{directamente}
+(la matriz es simétrica y siempre \texttt{isConnected[i][i] == 1}). Una
+\emph{provincia} es un grupo de ciudades conectadas directa o
+indirectamente, sin conexión con ninguna ciudad fuera del grupo. Queremos
+contar cuántas provincias hay.
+
+\paragraph{Intuición.} Esta matriz no es más que otra forma de entregarnos
+el mismo grafo no dirigido de \textbf{323. Number of Connected
+Components}: en vez de recibir una lista de aristas $[a, b]$, nos dan,
+para cada par de ciudades $(i, j)$, si existe o no esa arista. El
+problema de fondo es idéntico: contar componentes conexos. Basta
+recorrer la matriz y, cada vez que \texttt{isConnected[i][j] == 1} con
+\texttt{i != j}, tratar a $i$ y $j$ como dos nodos unidos por una arista.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+1 & 1 & 0\\
+1 & 1 & 0\\
+0 & 0 & 1\\
+\end{tabular}
+\end{center}
+
+\noindent En esta matriz hay \textbf{2} provincias: $\{0, 1\}$ (conectadas
+directamente) y $\{2\}$ (aislada, solo conectada consigo misma en la
+diagonal).
+
+\paragraph{Solución (Union-Find / DSU).} Igual que en 323, usamos
+Union-Find: cada ciudad empieza siendo su propia raíz (\texttt{n}
+provincias). Recorremos únicamente la mitad superior de la matriz (es
+simétrica, así que revisar $i < j$ basta) y, cuando
+\texttt{isConnected[i][j] == 1}, unimos las raíces de $i$ y $j$ con
+compresión de caminos y unión por rango; si las raíces eran distintas,
+dos provincias acaban de fusionarse y decrementamos el contador.
+
+\lstinputlisting{src/01-grafos/547-number-of-provinces.cpp}
+
+\complejidad{$O(n^2\cdot\alpha(n))$}{$O(n)$}
+
+\noindent recorremos las $n^2$ celdas de la matriz (en la práctica, solo
+la mitad superior), y cada \texttt{find}/\texttt{unir} es casi $O(1)$
+amortizado gracias a $\alpha(n)$, la inversa de Ackermann.
+
+\paragraph{Notas de entrevista (Amazon).} Este problema es hermano
+directo de \textbf{323. Number of Connected Components}: la única
+diferencia real es el formato de entrada (matriz de adyacencia en vez de
+lista de aristas), la técnica de fondo es la misma Union-Find. También se
+puede resolver con DFS/BFS clásico: por cada ciudad no visitada, sumar
+una provincia y recorrer con DFS toda la fila de la matriz para marcar
+como visitadas a todas las ciudades conectadas (transitivamente), igual
+que se ``hunde'' la tierra en \textbf{200. Number of Islands}. Vale la
+pena mencionar ambos enfoques: DFS/BFS es más directo de explicar dado
+que la entrada ya es una matriz densa, pero Union-Find generaliza mejor
+si el entrevistador hace un seguimiento tipo ``¿y si las conexiones
+llegan una a una en vez de venir todas de entrada?''. Cuidado con el
+costo: si $n$ es grande, $O(n^2)$ ya es el costo de solo \emph{leer} la
+matriz de adyacencia, así que ninguna técnica baja de esa cota; con una
+lista de adyacencia dispersa convendría más recibir aristas explícitas
+en vez de la matriz completa. Casos borde: una sola ciudad ($1$
+provincia), ninguna ciudad conectada con otra (cada una su propia
+provincia), y todas las ciudades conectadas entre sí ($1$ provincia).
