@@ -1,0 +1,70 @@
+\problema{Word Ladder II}{126}{src/01-grafos/126-word-ladder-ii.cpp}{H}
+
+Dadas \texttt{beginWord}, \texttt{endWord} y una lista \texttt{wordList},
+cada palabra puede transformarse en otra cambiando exactamente una letra,
+siempre que el resultado exista en \texttt{wordList}. A diferencia del
+problema 127 (Word Ladder), donde sólo pedían la \emph{longitud} del camino
+más corto, aquí hay que devolver \textbf{todas} las secuencias de
+transformación más cortas de \texttt{beginWord} a \texttt{endWord}. Si
+\texttt{endWord} es inalcanzable, se devuelve el vector vacío.
+
+\paragraph{Intuición.} Primero resolvemos el 127 mentalmente: BFS por
+niveles nos da la distancia mínima. La diferencia aquí es que, mientras
+hacemos ese BFS, en vez de quedarnos sólo con la distancia, anotamos de
+\emph{qué palabra viene cada palabra nueva} (su ``padre''). Como puede haber
+varios padres válidos para una misma palabra en el mismo nivel, ese mapa de
+padres es en realidad un grafo dirigido acíclico (DAG) por capas. Una vez
+construido, basta con recorrerlo hacia atrás desde \texttt{endWord} hasta
+\texttt{beginWord} para obtener, por construcción, únicamente caminos de
+longitud mínima.
+
+\begin{center}
+\ttfamily
+nivel 0:\ hit\\
+nivel 1:\ hot\\
+nivel 2:\ dot\quad lot\\
+nivel 3:\ dog\quad log\\
+nivel 4:\ cog
+\end{center}
+
+\noindent Con \texttt{wordList = ["hot","dot","dog","lot","log","cog"]} hay
+dos caminos más cortos, ambos de longitud 5:
+\texttt{hit-hot-dot-dog-cog} y \texttt{hit-hot-lot-log-cog}, porque tanto
+\texttt{dog} como \texttt{log} tienen a \texttt{cog} como hija en el mismo
+nivel.
+
+\paragraph{Solución.} Dos fases:
+\begin{enumerate}
+  \item \textbf{BFS por niveles} desde \texttt{beginWord}. En cada nivel,
+    para cada palabra probamos las 26 letras en cada posición; si el
+    resultado está en el diccionario lo mandamos al siguiente nivel y
+    registramos la palabra actual como uno de sus padres. Al terminar de
+    procesar un nivel completo, borramos esas palabras del diccionario para
+    que un nivel futuro no pueda \emph{regresar} a ellas (eso violaría la
+    propiedad de camino más corto). Si \texttt{endWord} aparece en un nivel,
+    terminamos de procesar ese nivel (puede tener varios padres) y detenemos
+    el BFS.
+  \item \textbf{DFS con backtracking} desde \texttt{endWord}, siguiendo
+    todos los padres registrados hasta llegar a \texttt{beginWord},
+    acumulando cada camino completo. Cada camino se arma en reversa y se
+    invierte al final.
+\end{enumerate}
+
+\lstinputlisting{src/01-grafos/126-word-ladder-ii.cpp}
+
+\complejidad{$O(N \cdot L^2 \cdot 26)$ para el BFS más el costo de reconstruir
+todos los caminos (exponencial en el peor caso, inherente al problema)}
+{$O(N \cdot L)$ para el diccionario y el mapa de padres}
+
+\paragraph{Notas de entrevista (Amazon).} Este problema suele plantearse
+como ``ya resolviste el 127, ahora dame todos los caminos''; la clave que
+buscan es que reconozcas que un BFS normal con un solo padre por nodo pierde
+caminos igualmente cortos, y que hay que permitir múltiples padres por nivel
+antes de borrar las palabras visitadas. Errores típicos: borrar del
+diccionario palabra por palabra en vez de por nivel completo (rompe caminos
+válidos del mismo nivel), o mezclar BFS con DFS en una sola pasada (generar
+todos los caminos con DFS puro, sin la poda de BFS, es exponencial e
+inviable). Casos borde a mencionar: \texttt{endWord} no está en
+\texttt{wordList} (vacío), \texttt{beginWord} no pertenece a
+\texttt{wordList} (es válido, sólo debe empezar la cadena), y un único
+camino más corto sin bifurcaciones.
