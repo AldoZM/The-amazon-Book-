@@ -1,0 +1,45 @@
+\problema{01 Matrix}{542}{src/01-grafos/542-01-matrix.cpp}{M}
+
+Nos dan una matriz de \texttt{0} y \texttt{1}. Para cada celda debemos calcular
+su distancia (en pasos horizontales o verticales) al \texttt{0} más cercano.
+La distancia entre celdas adyacentes es 1.
+
+\paragraph{Intuición.} La tentación es, para cada \texttt{1}, buscar el cero
+más cercano con un BFS propio; eso es lentísimo ($O((mn)^2)$). El truco es
+invertir la mirada: en vez de partir de cada uno, arrancamos de \emph{todos}
+los ceros a la vez. Imagina que cada cero suelta una onda que crece un paso
+por minuto; la primera onda que toca a un \texttt{1} viene de su cero más
+cercano. Eso es un BFS multi-fuente.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+0 & 0 & 0\\
+0 & 1 & 0\\
+1 & 1 & 1\\
+\end{tabular}
+\qquad$\longrightarrow$\qquad
+\begin{tabular}{ccc}
+0 & 0 & 0\\
+0 & 1 & 0\\
+1 & 2 & 1\\
+\end{tabular}
+\end{center}
+
+\noindent Los ceros valen 0; el \texttt{1} del centro tiene un cero pegado
+(distancia 1); la celda de en medio de la última fila está a 2 pasos.
+
+\paragraph{Solución.} Metemos todos los ceros a la cola con distancia 0 y el
+resto en infinito. El BFS expande la onda: al visitar una vecina con una
+distancia mejor que la que tenía, la actualizamos y la encolamos. Como cada
+celda se fija una sola vez, el costo es lineal.
+
+\lstinputlisting{src/01-grafos/542-01-matrix.cpp}
+
+\complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
+
+\paragraph{Notas de entrevista (Amazon).} La palabra clave que buscan es
+\emph{BFS multi-fuente}: reconocer que sembrar todas las fuentes a la vez
+convierte un problema aparentemente cuadrático en lineal. Alternativa clásica:
+dos pasadas de programación dinámica (arriba-izquierda y luego abajo-derecha),
+también $O(mn)$ pero sin cola.
