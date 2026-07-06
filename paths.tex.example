@@ -1,0 +1,3 @@
+% Este archivo lo GENERA build.ps1 como paths.tex (no editar paths.tex a mano).
+% Ejemplo del contenido esperado:
+\def\repopath{D:/Codigo Abierto/AmazonEjercicios}

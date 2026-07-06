@@ -1,0 +1,40 @@
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{spanish}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=azulLC,urlcolor=azulLC,
+            allbordercolors={1 1 1}]{hyperref}
+\usepackage{listings}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+% Colores
+\definecolor{azulLC}{HTML}{1F6FEB}
+\definecolor{fondoCodigo}{HTML}{F6F8FA}
+\definecolor{comentario}{HTML}{6A737D}
+\definecolor{palabraClave}{HTML}{D73A49}
+\definecolor{cadena}{HTML}{032F62}
+
+% Estilo de listado C++
+\lstdefinestyle{cpp}{
+  language=C++,
+  backgroundcolor=\color{fondoCodigo},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{palabraClave}\bfseries,
+  commentstyle=\color{comentario}\itshape,
+  stringstyle=\color{cadena},
+  numbers=left,
+  numberstyle=\tiny\color{comentario},
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{comentario},
+  tabsize=2,
+  extendedchars=true,
+  literate=%
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1
+    {Ú}{{\'U}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1
+}
+\lstset{style=cpp}

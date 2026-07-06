@@ -1,0 +1,21 @@
+\documentclass[11pt,oneside]{book}
+\input{preambulo}
+\input{macros}
+% Ruta del repo (generada por build.ps1); fallback a ruta relativa
+\InputIfFileExists{paths.tex}{}{\def\repopath{.}}
+
+\title{The Amazon Book\\\large Ejercicios LeetCode para entrevistas}
+\author{Aldo Zetina}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\include{capitulos/00-intro}
+
+% ── Bloque 1: Grafos ──
+\chapter{Grafos}
+% (los problemas se agregan aquí con \include)
+
+\end{document}

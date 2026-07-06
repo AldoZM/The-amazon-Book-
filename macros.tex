@@ -1,0 +1,13 @@
+% \problema{titulo}{numLC}{rutaRelativaCpp}{dificultad}
+\newcommand{\problema}[4]{%
+  \clearpage
+  \phantomsection
+  \addcontentsline{toc}{section}{#2. #1 \textnormal{(#4)}}%
+  \section*{\href{vscode://file/\repopath/#3}{#2.\ #1}%
+    \hfill\normalsize\textnormal{(#4)}}%
+}
+
+% Etiqueta de complejidad
+\newcommand{\complejidad}[2]{%
+  \par\medskip\noindent\textbf{Complejidad:} tiempo #1, espacio #2.\par
+}

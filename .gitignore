@@ -1,0 +1,15 @@
+# LaTeX build
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf
+# Ruta específica de máquina (generada por build.ps1)
+paths.tex
+# C++ binarios
+src/**/out
+src/**/*.exe
+a.out
