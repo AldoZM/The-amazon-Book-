@@ -1,0 +1,10 @@
+\problema{Diameter of Binary Tree}{543}{src/02-arboles/543-diameter-of-binary-tree.cpp}{Fácil}
+\complejidad{O(N)}{O(H)}
+
+En este problema, se nos pide encontrar la longitud del camino más largo entre dos nodos de un árbol binario. Es un error común pensar que este camino debe pasar forzosamente por la raíz; podría darse el caso de que un subárbol muy profundo tenga su propio camino que no interactúe con la raíz.
+
+La observación fundamental es notar que cualquier camino entre dos nodos puede visualizarse subiendo de un nodo hasta un ancestro común y luego bajando hacia el otro. Visto desde la perspectiva de ese ancestro, la longitud total del camino será la altura de su rama izquierda más la altura de su rama derecha.
+
+Entonces, la solución consiste en hacer un recorrido \textit{post-order} (profundidad primero). Para cada nodo calculamos recursivamente la altura de sus dos ramas. En ese momento, calculamos la suma de ambas alturas; este es el diámetro si el camino ``doblara'' en este nodo. Llevamos una variable global que mantiene el registro del diámetro máximo encontrado en todo el árbol. Al mismo tiempo, hacia el padre de la recursión, le devolvemos $1 + \max(\text{alturaIzq}, \text{alturaDer})$, informando así el camino más largo posible desde la hoja hasta el padre en una sola dirección.
+
+\lstinputlisting{src/02-arboles/543-diameter-of-binary-tree.cpp}
