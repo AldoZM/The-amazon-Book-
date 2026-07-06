@@ -1,0 +1,68 @@
+\problema{Longest Consecutive Sequence}{128}{src/01-grafos/128-longest-consecutive.cpp}{M}
+
+Nos dan un arreglo de enteros sin ordenar. Queremos la longitud de la
+secuencia de enteros \emph{consecutivos} más larga (por ejemplo $3,4,5,6$),
+sin importar el orden en que aparezcan en el arreglo. El algoritmo debe
+correr en $O(n)$.
+
+\paragraph{Intuición.} Aunque no hay un grafo explícito, el patrón es el
+mismo que recorrer componentes: cada secuencia consecutiva es como una
+``isla'' de números, y sólo queremos visitar cada isla una vez, empezando
+desde su extremo más pequeño. Metemos todos los números en un
+\texttt{unordered\_set} para tener búsquedas en $O(1)$. Luego, para cada
+número, nos preguntamos: ¿soy el \emph{inicio} de mi secuencia? Un número
+\texttt{num} es inicio si \texttt{num - 1} no está en el conjunto. Sólo desde
+ahí contamos hacia arriba (\texttt{num+1}, \texttt{num+2}, \ldots) mientras
+existan en el conjunto.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{c}
+nums = \{100, 4, 200, 1, 3, 2\}\\[4pt]
+100 $\to$ ¿existe 99? no $\to$ inicio, longitud 1\\
+4\ \ $\to$ ¿existe 3?\ \ sí $\to$ no es inicio, se ignora\\
+200 $\to$ ¿existe 199? no $\to$ inicio, longitud 1\\
+1\ \ $\to$ ¿existe 0?\ \ no $\to$ inicio, cuenta 1,2,3,4 $\to$ longitud \textbf{4}\\
+3, 2 $\to$ no son inicio, se ignoran\\
+\end{tabular}
+\end{center}
+
+\noindent El máximo es \textbf{4}, por la secuencia $1,2,3,4$.
+
+\paragraph{¿Por qué es $O(n)$ y no $O(n^2)$?} Si contáramos hacia arriba
+desde \emph{cada} número sin filtrar, una secuencia larga dispararía un
+conteo redundante desde cada uno de sus elementos: el 1 recorrería
+$1,2,3,4$ (4 pasos), pero luego el 2 recorrería $2,3,4$ (3 pasos), el 3
+recorrería $3,4$ (2 pasos), etc. Para una secuencia de tamaño $k$ eso suma
+$O(k^2)$ pasos, y en el peor caso ($k = n$) el algoritmo completo sería
+$O(n^2)$.
+
+El truco de exigir que \texttt{num - 1} no esté en el conjunto garantiza que
+\emph{sólo el mínimo de cada secuencia} dispara un conteo, y ese conteo
+recorre la secuencia completa exactamente una vez. Como las secuencias no se
+traslapan (cada número pertenece a una sola secuencia consecutiva), la suma
+de todos los pasos de conteo, sobre \emph{todas} las secuencias, es a lo sumo
+$n$. En otras palabras: cada número se visita cuando mucho dos veces en todo
+el algoritmo: una vez para revisar si es inicio, y a lo sumo una vez más
+cuando se cuenta como parte de la secuencia de su verdadero inicio. Eso es
+exactamente lo que mantiene el algoritmo en $O(n)$.
+
+\paragraph{Solución.} Construimos el \texttt{unordered\_set}, y para cada
+número que sea inicio de secuencia (su antecesor no está en el conjunto)
+contamos hacia arriba mientras el siguiente exista. Nos quedamos con la
+longitud máxima encontrada. El código completo (abre el archivo con clic en
+el título):
+
+\lstinputlisting{src/01-grafos/128-longest-consecutive.cpp}
+
+\complejidad{$O(n)$}{$O(n)$}
+
+\paragraph{Notas de entrevista (Amazon).} El error típico es ordenar el
+arreglo primero, lo cual da $O(n \log n)$ y no cumple el requisito de $O(n)$
+que suele pedirse explícitamente en la entrevista. Enfatiza el filtro de
+``inicio de secuencia'' como la clave para evitar el trabajo repetido: sin
+él, el algoritmo degrada a $O(n^2)$ en arreglos con una sola secuencia larga.
+Casos borde a mencionar: arreglo vacío (respuesta $0$), duplicados (no
+alargan la secuencia, por eso usamos un \texttt{set} y no un \texttt{multiset}
+o un conteo de frecuencias), y números negativos (el algoritmo funciona
+igual, no depende del signo).
