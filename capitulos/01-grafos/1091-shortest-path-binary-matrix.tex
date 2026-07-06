@@ -1,0 +1,41 @@
+\problema{Shortest Path in Binary Matrix}{1091}{src/01-grafos/1091-shortest-path-binary-matrix.cpp}{M}
+
+En una cuadrícula $n\times n$ de \texttt{0} y \texttt{1}, un \emph{camino
+claro} va de la esquina $(0,0)$ a la esquina $(n{-}1,n{-}1)$ pisando solo
+celdas con \texttt{0} y moviéndose en las 8 direcciones (incluidas las
+diagonales). Su longitud es el número de celdas visitadas. Devolvemos la
+longitud del camino más corto, o $-1$ si no existe.
+
+\paragraph{Intuición.} En un grafo sin pesos, ``camino más corto'' es sinónimo
+de BFS: la onda que sale del origen alcanza cada celda por su ruta mínima. La
+única diferencia con los BFS de cuadrícula previos es que aquí un paso puede
+ser diagonal, así que cada celda tiene hasta 8 vecinas (movimiento de rey de
+ajedrez).
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+(r-1,c-1) & (r-1,c) & (r-1,c+1)\\
+(r,c-1) & (r,c) & (r,c+1)\\
+(r+1,c-1) & (r+1,c) & (r+1,c+1)\\
+\end{tabular}
+\end{center}
+
+\noindent Las 8 celdas que rodean a $(r,c)$. La primera vez que la onda toca
+$(n{-}1,n{-}1)$, esa es la distancia mínima en celdas.
+
+\paragraph{Solución.} BFS por niveles desde $(0,0)$ (que ya cuenta como celda
+1). En cada nivel avanzamos un paso; al sacar el destino de la cola devolvemos
+la longitud acumulada. Marcamos visitadas mutando la celda a \texttt{1} para
+no reencolarla. Si el origen o el destino están bloqueados, o nunca llegamos,
+devolvemos $-1$.
+
+\lstinputlisting{src/01-grafos/1091-shortest-path-binary-matrix.cpp}
+
+\complejidad{$O(n^2)$}{$O(n^2)$}
+
+\paragraph{Notas de entrevista (Amazon).} Recalca por qué BFS y no DFS: DFS
+encuentra \emph{un} camino, no el más corto. Cuida los casos borde de una
+línea: origen o destino en \texttt{1} (respuesta $-1$ inmediata) y la
+cuadrícula $1\times1$ con un solo \texttt{0} (longitud 1). Si pidieran pesos,
+el salto natural sería Dijkstra o 0-1 BFS.
