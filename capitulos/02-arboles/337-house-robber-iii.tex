@@ -1,0 +1,52 @@
+\problema{House Robber III}{337}{src/02-arboles/337-house-robber-iii.cpp}{M}
+
+El ladrón ha descubierto un nuevo vecindario para robar. Las casas en este
+vecindario forman un árbol binario. La regla de oro (y única forma de alertar a
+la policía) es que \textbf{no puedes robar dos casas que estén conectadas
+directamente}. Es decir, si robas un nodo, no puedes robar a sus hijos
+inmediatos.
+
+Debes determinar la cantidad máxima de dinero que el ladrón puede llevarse sin
+alertar a la policía.
+
+\paragraph{Intuición.} Si estás parado en cualquier casa (nodo) tomando una
+decisión, solo tienes dos opciones: o la robas, o no la robas.
+\begin{itemize}
+    \item \textbf{Opción 1: Robas la casa actual.} Si haces esto, la alarma de
+    la policía limita tus siguientes movimientos: tienes \emph{estrictamente
+    prohibido} robar las casas de los hijos directos. Así que la ganancia de
+    esta rama sería el valor de la casa actual, más el dinero máximo que
+    podrías obtener de los subárboles de los hijos \emph{asumiendo que no
+    robaste esos hijos}.
+    \item \textbf{Opción 2: No robas la casa actual.} Al mantenerte alejado de
+    esta casa, la policía no sospecha. Ahora eres completamente \emph{libre}
+    de hacer lo que quieras con las casas de los hijos: puedes decidir
+    robarlas o no robarlas. Obviamente, elegirás la opción que te dé más
+    dinero de cada hijo de forma independiente.
+\end{itemize}
+
+El problema de calcular estas dos opciones de forma independiente para cada nodo
+con recursión simple es que terminarías calculando los mismos subárboles una y
+otra vez, con una complejidad de $O(2^n)$.
+
+\paragraph{Solución.} Para evitar el recálculo (y sin necesidad de usar un mapa
+hash de memoización), podemos hacer que nuestra función recursiva (DFS)
+devuelva \textbf{ambas} respuestas a la vez para cada subárbol. En C++, podemos
+devolver un \texttt{std::pair<int, int>} con la estructura:
+\texttt{\{max\_SIN\_robar, max\_ROBANDO\}}.
+
+De esta forma, visitamos cada nodo del árbol exactamente una vez en post-orden
+(visitamos a los hijos primero para tener sus resultados, y luego tomamos la
+decisión para el padre).
+
+\lstinputlisting{src/02-arboles/337-house-robber-iii.cpp}
+
+\complejidad{$O(n)$}{$O(h)$}
+
+\paragraph{Notas de entrevista (Amazon).} Muchos candidatos se lanzan
+inmediatamente a escribir una recursión simple con memoización usando un
+\texttt{unordered\_map<TreeNode*, int>}. Aunque funciona, la solución óptima es
+devolver los dos estados en un par (o arreglo pequeño). Mencionar la evolución
+de una solución ingenua ($O(2^n)$) a una memoizada y, finalmente, a esta de
+estado compuesto ($O(n)$ de tiempo y sin la sobrecarga de un mapa hash) da una
+excelente impresión en la entrevista de Amazon.
