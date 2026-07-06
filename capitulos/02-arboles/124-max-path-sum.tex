@@ -1,0 +1,75 @@
+\problema{Binary Tree Maximum Path Sum}{124}{src/02-arboles/124-max-path-sum.cpp}{H}
+
+Nos dan un árbol binario cuyos valores pueden ser negativos. Un \emph{camino}
+es cualquier secuencia de nodos donde cada par consecutivo está conectado por
+una arista, sin repetir ningún nodo. El camino \textbf{no} necesita pasar por
+la raíz ni terminar en una hoja: puede empezar y terminar en cualquier nodo.
+Queremos la suma máxima de valores que puede lograr algún camino.
+
+\paragraph{Intuición.} Párate en cada nodo y pregúntate dos cosas distintas.
+Primero: "si quiero seguir subiendo este camino hacia mi padre, ¿cuánto es lo
+más que puedo aportar bajando por una sola de mis dos ramas?" (subir por las
+dos ramas a la vez no tiene sentido: el camino se bifurcaría). Segundo: "si mi
+camino ya no va a subir más y va a \emph{doblar} justo aquí, usando mis dos
+ramas a la vez, ¿cuánto sumaría?". La primera pregunta es lo que le reportas a
+tu padre; la segunda solo sirve para actualizar, en silencio, la mejor
+respuesta que hemos visto en todo el árbol.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccc}
+ & -10 & \\
+9 & & 20\\
+ & 15 & 7\\
+\end{tabular}
+\end{center}
+
+\noindent En este árbol el camino óptimo es $15 \to 20 \to 7 = 42$: conviene
+ignorar por completo la raíz $-10$ y la rama de $9$, porque sumarlas solo
+empeoraría el resultado.
+
+\paragraph{Solución.} Hacemos DFS recursivo tipo post-order con una función
+auxiliar \texttt{gananciaMaxima(nodo)} que devuelve, para el subárbol de ese
+nodo, la ganancia máxima que aporta a un camino que sigue subiendo hacia el
+padre (una sola rama):
+
+\begin{center}
+\ttfamily
+gananciaIzq = max(0, gananciaMaxima(nodo->left))\\
+gananciaDer = max(0, gananciaMaxima(nodo->right))\\
+devuelve = nodo->val + max(gananciaIzq, gananciaDer)
+\end{center}
+
+\noindent El \texttt{max(0, ...)} descarta una rama si su ganancia es
+negativa: es mejor no extender el camino por ahí, porque sumar un número
+negativo solo lo empeora.
+
+Es crucial no confundir lo que la recursión \emph{devuelve} (una sola rama,
+porque un camino que sube hacia el padre solo puede continuar por un lado)
+con lo que actualiza la \emph{respuesta global} (las dos ramas a la vez, para
+el camino que dobla justo en ese nodo y ya no puede crecer más hacia arriba):
+
+\begin{center}
+\ttfamily
+candidato = nodo->val + gananciaIzq + gananciaDer\\
+mejorGlobal = max(mejorGlobal, candidato)
+\end{center}
+
+\noindent Recorremos en post-order (primero los hijos, luego el nodo actual)
+para que cada nodo ya conozca la ganancia de sus dos subárboles antes de
+calcular su propio candidato. El código completo (abre el archivo con clic en
+el título):
+
+\lstinputlisting{src/02-arboles/124-max-path-sum.cpp}
+
+\complejidad{$O(n)$}{$O(h)$}
+
+\paragraph{Notas de entrevista (Amazon).} El error más común es devolver
+\texttt{val + gananciaIzq + gananciaDer} hacia el padre en vez de
+\texttt{val + max(gananciaIzq, gananciaDer)}: eso rompería la invariante de
+que un camino no se bifurca. Otro punto clave: la respuesta debe poder ser
+negativa (por ejemplo un árbol de un solo nodo con valor negativo), así que
+\texttt{mejorGlobal} debe inicializarse en \texttt{INT\_MIN} y nunca forzarse
+a 0. Casos borde: nodo único, todos los valores negativos, y una rama
+negativa que conviene podar con \texttt{max(0, ...)} en vez de arrastrarla al
+camino final.
