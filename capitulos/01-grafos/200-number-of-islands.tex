@@ -1,0 +1,36 @@
+\problema{Number of Islands}{200}{src/01-grafos/200-number-of-islands.cpp}{M}
+
+Nos dan una cuadrícula de caracteres donde \texttt{'1'} es tierra y
+\texttt{'0'} es agua. Una \emph{isla} es un grupo de tierras conectadas en
+horizontal o vertical. Queremos contar cuántas islas hay.
+
+\paragraph{Intuición.} Imagina que sobrevuelas el mapa. Cada vez que ves un
+pedazo de tierra que aún no has pisado, plantas una bandera (una isla nueva)
+y luego caminas por toda la tierra conectada hundiéndola en el mapa, para no
+volver a contarla. Repites hasta que no quede tierra nueva.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{ccccc}
+1 & 1 & 0 & 0 & 0\\
+1 & 1 & 0 & 0 & 0\\
+0 & 0 & 1 & 0 & 0\\
+0 & 0 & 0 & 1 & 1\\
+\end{tabular}
+\end{center}
+
+\noindent En esta cuadrícula hay \textbf{3} islas: el bloque $2\times2$ de
+arriba a la izquierda, la celda central, y el par de abajo a la derecha.
+
+\paragraph{Solución.} Recorremos la cuadrícula; al encontrar tierra nueva
+sumamos una isla y usamos DFS (\texttt{hundir}) para marcar como agua toda su
+tierra conectada. El código completo (abre el archivo con clic en el título):
+
+\lstinputlisting{src/01-grafos/200-number-of-islands.cpp}
+
+\complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
+
+\paragraph{Notas de entrevista (Amazon).} Es el clásico de Amazon. Menciona
+que modificar la cuadrícula in situ evita el arreglo \texttt{visited}; si no
+puedes mutar la entrada, usa un conjunto de visitados o BFS con cola. Casos
+borde: cuadrícula vacía, toda agua, toda tierra (una isla).

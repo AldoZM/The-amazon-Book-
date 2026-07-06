@@ -6,6 +6,7 @@
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.xdv
 *.pdf
 # Ruta específica de máquina (generada por build.ps1)
 paths.tex
