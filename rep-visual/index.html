@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Amazon Book · Visualizador de algoritmos</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand"><span class="amz">The Amazon Book</span> · <span data-i18n="brandSub">Visualizador</span></span>
+    <span class="spacer"></span>
+    <span id="lang-mount"></span>
+  </div>
+
+  <div class="hero">
+    <h1 data-i18n="heroTitle">Algoritmos, paso a paso</h1>
+    <p data-i18n="heroDesc"></p>
+  </div>
+
+  <div class="filters">
+    <input id="search" type="text" data-i18n-ph="search" placeholder="Buscar…">
+  </div>
+
+  <div id="blocks"></div>
+
+  <div class="footer" data-i18n="footer"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/manifest.js"></script>
+  <script>
+    (function () {
+      const M = window.MANIFEST;
+      const blocksEl = document.getElementById("blocks");
+
+      function card(p) {
+        const ready = p.ready;
+        const a = document.createElement("a");
+        a.className = "card" + (ready ? "" : " pending");
+        a.href = ready ? "problem.html?p=" + p.num : "#";
+        a.dataset.search = (p.num + " " + p.title + " " + p.tags.map(VIS.pick).join(" ") + " " + p.tags.map(VIS.tag).join(" ")).toLowerCase();
+        a.innerHTML =
+          '<div class="num">#' + p.num + (ready ? "" : " " + VIS.t("soon")) + '</div>' +
+          '<div class="name">' + p.title + '</div>' +
+          '<div class="tags"><span class="tag ' + p.dif + '">' +
+            (p.dif === "H" ? VIS.t("hard") : VIS.t("medium")) + '</span>' +
+            p.tags.map(function (t) { return '<span class="tag">' + VIS.tag(t) + '</span>'; }).join("") +
+          '</div>';
+        return a;
+      }
+
+      function renderAll() {
+        blocksEl.innerHTML = "";
+        M.blocks.forEach(function (b) {
+          const list = M.problems.filter(function (p) { return p.block === b.id; });
+          const section = document.createElement("div");
+          section.className = "block-section";
+          const doneN = list.filter(function (p) { return p.ready; }).length;
+          section.innerHTML = '<h2 class="block-title">' + VIS.pick(b.title) +
+            ' <span class="count">' + doneN + " / " + list.length + " " + VIS.t("ready") + "</span></h2>";
+          const cards = document.createElement("div");
+          cards.className = "cards";
+          list.forEach(function (p) { cards.appendChild(card(p)); });
+          section.appendChild(cards);
+          blocksEl.appendChild(section);
+        });
+        applySearch();
+      }
+
+      function applySearch() {
+        const q = document.getElementById("search").value.toLowerCase().trim();
+        document.querySelectorAll(".card").forEach(function (c) {
+          c.style.display = !q || c.dataset.search.indexOf(q) >= 0 ? "" : "none";
+        });
+      }
+
+      VIS.applyStatic(document);
+      VIS.mountLangSwitch(document.getElementById("lang-mount"));
+      VIS.onLangChange = renderAll;
+      renderAll();
+      document.getElementById("search").addEventListener("input", applySearch);
+    })();
+  </script>
+</body>
+</html>

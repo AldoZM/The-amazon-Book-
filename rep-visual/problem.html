@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizador</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <span class="brand"><span class="amz">The Amazon Book</span> · <span data-i18n="brandSub">Visualizador</span></span>
+    <span class="spacer"></span>
+    <span id="lang-mount"></span>
+    <a class="back" href="index.html" data-i18n="back">← Todos los problemas</a>
+  </div>
+
+  <div class="problem-head">
+    <h1 id="p-title"></h1>
+    <p class="summary" id="p-summary"></p>
+    <div class="tags" id="p-tags"></div>
+  </div>
+
+  <div class="workspace">
+    <!-- Izquierda: escenario + narración + controles -->
+    <div class="stage-wrap">
+      <div class="panel">
+        <div class="panel-title" data-i18n="stage">Escenario</div>
+        <div class="stage" id="stage"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title" data-i18n="explain">Explicación paso a paso</div>
+        <div class="narration" id="narration"></div>
+        <div class="progress"><div class="bar" id="bar"></div></div>
+        <div class="controls">
+          <button id="btn-reset" data-i18n="reset">⏮ Reiniciar</button>
+          <button id="btn-prev" data-i18n="prev">◀ Anterior</button>
+          <button id="btn-play" class="primary" data-i18n="play">▶ Reproducir</button>
+          <button id="btn-next" data-i18n="next">Siguiente ▶</button>
+          <span class="grow"></span>
+          <span class="speed"><span data-i18n="slow">Lento</span> <input id="speed" type="range" min="100" max="1800" value="1000"> <span data-i18n="fast">Rápido</span></span>
+        </div>
+        <div class="case-select">
+          <label for="case-select" data-i18n="caseLabel">Caso de entrada:</label>
+          <select id="case-select"></select>
+          <span style="color:var(--muted);font-size:.78rem" data-i18n="hint">· ← → cambian de paso · espacio reproduce</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Derecha: código -->
+    <div class="panel code-panel">
+      <div class="panel-title" data-i18n="pseudo">Pseudocódigo</div>
+      <div id="code"></div>
+    </div>
+  </div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/renderers.js"></script>
+  <script src="js/engine.js"></script>
+  <script>
+    VIS.applyStatic(document);
+    VIS.mountLangSwitch(document.getElementById("lang-mount"));
+    VIS.boot();
+  </script>
+</body>
+</html>
