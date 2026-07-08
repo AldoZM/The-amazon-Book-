@@ -1,6 +1,13 @@
+% Base pública del visualizador (GitHub Pages). Es la MISMA en toda computadora,
+% así el enlace WEB de la animación abre desde cualquier equipo aunque se compile
+% en otro. No depende de \repopath (que es la ruta local del repo).
+\providecommand{\pubbase}{https://aldozm.github.io/The-amazon-Book-}
+
 % \problema{titulo}{numLC}{rutaRelativaCpp}{dificultad}
-% El título enlaza al .cpp (vscode://). Debajo, un enlace abre la animación
-% interactiva del algoritmo en el navegador (rep-visual/problem.html?p=numLC).
+% El título enlaza al .cpp local (vscode://, abre tu editor). Debajo, la animación
+% del algoritmo con DOS accesos que cubren ambos escenarios:
+%   local -> file://\repopath/... : repo descargado, funciona offline y sin Pages.
+%   web   -> \pubbase/...         : hospedado en GitHub Pages, abre desde cualquier equipo online.
 \newcommand{\problema}[4]{%
   \clearpage
   \phantomsection
@@ -8,8 +15,9 @@
   \section*{\href{vscode://file/\repopath/#3}{#2.\ #1}%
     \hfill\normalsize\textnormal{(#4)}}%
   \nobreak\noindent
-  {\small\href{file:///\repopath/rep-visual/problem.html?p=#2}%
-    {\ensuremath{\triangleright}\ Ver animación paso a paso}}%
+  {\small\ensuremath{\triangleright}\ Ver animación\ \textperiodcentered\ %
+    \href{file:///\repopath/rep-visual/problem.html?p=#2}{local}\ \textbar\ %
+    \href{\pubbase/rep-visual/problem.html?p=#2}{web}}%
   \par\medskip
 }
 
