@@ -6,12 +6,21 @@ resueltos en C++ y explicados para todo público. Cada encabezado de problema
 es un enlace: al hacer clic se abre el archivo \texttt{.cpp} correspondiente
 en Visual Studio Code, donde el código es compilable y trae casos de prueba.
 
+\paragraph{Dónde está el código.} Todo el código fuente vive en la carpeta
+\texttt{src/} del repositorio, organizada por bloque (\texttt{src/01-grafos/},
+\texttt{src/02-arboles/}, \ldots). El libro lo importa directamente desde ahí
+(no se duplica). Bajo el título de cada problema se muestra la ruta exacta del
+archivo, por si quieres abrirlo o consultarlo directamente en \texttt{src/}.
+
 \paragraph{Animaciones interactivas.} Además del código, cada problema incluye
-el enlace \emph{\ensuremath{\triangleright}\ Ver animación paso a paso}, que
-abre en tu navegador una visualización del algoritmo: la cuadrícula se pinta, la
+el enlace \emph{\ensuremath{\triangleright}\ Ver animación} con dos accesos:
+\textbf{local} (abre el visualizador del repo descargado, funciona sin internet)
+y \textbf{web} (abre la versión publicada en GitHub Pages desde cualquier equipo).
+Muestra una visualización del algoritmo paso a paso: la cuadrícula se pinta, la
 cola del BFS avanza, el árbol se recorre. El visualizador vive en la carpeta
-\texttt{rep-visual/} del repositorio, funciona sin instalar nada (basta un
-navegador) y permite alternar el idioma entre español e inglés.
+\texttt{rep-visual/}, funciona sin instalar nada (basta un navegador) y permite
+alternar el idioma entre español e inglés. Los enlaces piden abrirse en una
+ventana nueva para no reemplazar la vista del PDF.
 
 \paragraph{Cómo compilar.} Ejecuta \texttt{build.ps1} en PowerShell. El script
 detecta la ruta del repositorio e inyecta las rutas de los enlaces, luego

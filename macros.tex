@@ -4,20 +4,25 @@
 \providecommand{\pubbase}{https://aldozm.github.io/The-amazon-Book-}
 
 % \problema{titulo}{numLC}{rutaRelativaCpp}{dificultad}
-% El título enlaza al .cpp local (vscode://, abre tu editor). Debajo, la animación
-% del algoritmo con DOS accesos que cubren ambos escenarios:
+% El título enlaza al .cpp local (vscode://, abre tu editor). Debajo se muestra
+% la ruta del código fuente (carpeta src/) y la animación del algoritmo con DOS
+% accesos que cubren ambos escenarios:
 %   local -> file://\repopath/... : repo descargado, funciona offline y sin Pages.
 %   web   -> \pubbase/...         : hospedado en GitHub Pages, abre desde cualquier equipo online.
+% Todos los enlaces usan pdfnewwindow=true para pedir al visor que abran en una
+% ventana nueva, y así no reemplazar la vista del PDF (soporte según el visor).
 \newcommand{\problema}[4]{%
   \clearpage
   \phantomsection
   \addcontentsline{toc}{section}{#2. #1 \textnormal{(#4)}}%
-  \section*{\href{vscode://file/\repopath/#3}{#2.\ #1}%
+  \section*{\href[pdfnewwindow=true]{vscode://file/\repopath/#3}{#2.\ #1}%
     \hfill\normalsize\textnormal{(#4)}}%
   \nobreak\noindent
+  {\small Código fuente: \href[pdfnewwindow=true]{vscode://file/\repopath/#3}{\texttt{#3}}}%
+  \par\nobreak\noindent
   {\small\ensuremath{\triangleright}\ Ver animación\ \textperiodcentered\ %
-    \href{file:///\repopath/rep-visual/problem.html?p=#2}{local}\ \textbar\ %
-    \href{\pubbase/rep-visual/problem.html?p=#2}{web}}%
+    \href[pdfnewwindow=true]{file:///\repopath/rep-visual/problem.html?p=#2}{local}\ \textbar\ %
+    \href[pdfnewwindow=true]{\pubbase/rep-visual/problem.html?p=#2}{web}}%
   \par\medskip
 }
 

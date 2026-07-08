@@ -10,28 +10,44 @@
 \usepackage{geometry}
 \geometry{margin=2.5cm}
 
-% Colores
-\definecolor{azulLC}{HTML}{1F6FEB}
-\definecolor{fondoCodigo}{HTML}{F6F8FA}
-\definecolor{comentario}{HTML}{6A737D}
-\definecolor{palabraClave}{HTML}{D73A49}
-\definecolor{cadena}{HTML}{032F62}
+% ── Tema oscuro estilo VS Code (Dark+) ──
+% Fondo de página, texto y sintaxis imitan el editor VS Code para lectura nocturna.
+\definecolor{fondoPagina}{HTML}{1E1E1E}   % editor background
+\definecolor{textoPrincipal}{HTML}{D4D4D4}% editor foreground
+\definecolor{azulLC}{HTML}{3794FF}        % enlaces (textLink de VS Code)
+\definecolor{fondoCodigo}{HTML}{252526}   % sidebar/panel background
+\definecolor{bordeCodigo}{HTML}{3C3C3C}   % borde sutil del bloque de código
+\definecolor{comentario}{HTML}{6A9955}    % comentarios (verde)
+\definecolor{palabraClave}{HTML}{569CD6}  % keywords (azul)
+\definecolor{cadena}{HTML}{CE9178}        % strings (salmón)
+\definecolor{numeroLinea}{HTML}{858585}   % números de línea (gris)
+
+% Fondo oscuro global + texto claro por defecto.
+% Redefinir \normalcolor es CLAVE: muchos internos de LaTeX (encabezados,
+% títulos, reglas de tabular/\hline, líneas guía del índice) llaman
+% \normalcolor y volverían a NEGRO. Al apuntarlo al color claro, nada queda
+% en negro sobre el fondo oscuro.
+\pagecolor{fondoPagina}
+\AtBeginDocument{%
+  \color{textoPrincipal}%
+  \renewcommand{\normalcolor}{\color{textoPrincipal}}%
+}
 
 % Estilo de listado C++
 \lstdefinestyle{cpp}{
   language=C++,
   backgroundcolor=\color{fondoCodigo},
-  basicstyle=\ttfamily\small,
+  basicstyle=\ttfamily\small\color{textoPrincipal},
   keywordstyle=\color{palabraClave}\bfseries,
   commentstyle=\color{comentario}\itshape,
   stringstyle=\color{cadena},
   numbers=left,
-  numberstyle=\tiny\color{comentario},
+  numberstyle=\tiny\color{numeroLinea},
   numbersep=8pt,
   showstringspaces=false,
   breaklines=true,
   frame=single,
-  rulecolor=\color{comentario},
+  rulecolor=\color{bordeCodigo},
   tabsize=2,
   extendedchars=true,
   literate=%
