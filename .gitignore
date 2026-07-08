@@ -8,6 +8,8 @@
 *.synctex.gz
 *.xdv
 *.pdf
+# El PDF del libro sí se versiona (los demás PDF quedan ignorados)
+!main.pdf
 # Ruta específica de máquina (generada por build.ps1)
 paths.tex
 # C++ binarios

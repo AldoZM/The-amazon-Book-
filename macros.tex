@@ -1,10 +1,16 @@
 % \problema{titulo}{numLC}{rutaRelativaCpp}{dificultad}
+% El título enlaza al .cpp (vscode://). Debajo, un enlace abre la animación
+% interactiva del algoritmo en el navegador (rep-visual/problem.html?p=numLC).
 \newcommand{\problema}[4]{%
   \clearpage
   \phantomsection
   \addcontentsline{toc}{section}{#2. #1 \textnormal{(#4)}}%
   \section*{\href{vscode://file/\repopath/#3}{#2.\ #1}%
     \hfill\normalsize\textnormal{(#4)}}%
+  \nobreak\noindent
+  {\small\href{file:///\repopath/rep-visual/problem.html?p=#2}%
+    {\ensuremath{\triangleright}\ Ver animación paso a paso}}%
+  \par\medskip
 }
 
 % Etiqueta de complejidad
