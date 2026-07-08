@@ -5,13 +5,20 @@ Nos dan una cuadrícula de letras (\texttt{board}) y una palabra
 celdas adyacentes en horizontal o vertical (nunca en diagonal), sin usar la
 misma celda dos veces dentro de un mismo camino.
 
-\paragraph{Intuición.} Piensa que vas letra por letra de la palabra, parado
-en una celda, y buscas a cuál vecina moverte para encontrar la siguiente
-letra. Si te atoras, retrocedes (\emph{backtracking}) y pruebas otro camino.
-Para no pisar dos veces la misma celda en el mismo intento, la marcamos
-temporalmente (por ejemplo con \texttt{'\#'}) mientras la estamos usando, y
-la restauramos a su letra original en cuanto retrocedemos, de modo que otros
-caminos sí puedan usarla.
+\paragraph{La idea, con un ejemplo de la vida real.} Es como esos juegos de
+sopa de letras donde tienes que trazar una palabra saltando de una letra a la
+de al lado. Empiezas parado en una casilla y vas letra por letra: buscas a cuál
+vecina moverte para encontrar la siguiente letra de la palabra. Solo puedes
+moverte a casillas pegadas en horizontal o vertical, y no puedes reutilizar una
+casilla dentro del mismo trazo.
+
+Si te metes por un camino y te atoras (la siguiente letra no aparece en ninguna
+vecina), regresas sobre tus pasos y pruebas otro camino. A eso de «probar,
+equivocarse y regresar para intentar otra opción» se le llama
+\emph{backtracking} (retroceder). Para no pisar dos veces la misma casilla en el
+mismo intento, la marcamos temporalmente (por ejemplo poniéndole un
+\texttt{'\#'}) mientras la usamos, y le devolvemos su letra original en cuanto
+retrocedemos, para que otros caminos sí puedan usarla.
 
 \begin{center}
 \ttfamily
@@ -28,20 +35,40 @@ columna central de la \texttt{C} y luego a la \texttt{E} y la \texttt{D}), y
 la primera \texttt{B}, la única forma de volver a una \texttt{B} obligaría a
 reutilizar una celda ya visitada en ese mismo camino.
 
-\paragraph{Solución.} Probamos cada celda de la cuadrícula como posible
-punto de partida (\texttt{word[0]}) y hacemos DFS con backtracking: si la
-celda actual coincide con la letra esperada, la marcamos como visitada y
-probamos las 4 vecinas buscando la siguiente letra; si ningún vecino
-completa el camino, restauramos la celda antes de volver.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Como no sabemos dónde
+empieza la palabra, probamos empezar desde cada casilla del tablero. Desde cada
+una lanzamos una ayudante que busca el resto de la palabra con \emph{DFS}
+(búsqueda en profundidad: seguir un camino hasta el fondo antes de probar
+otro). Que la ayudante se llame a sí misma para seguir con la siguiente letra
+se llama \emph{recursión}.
+\begin{enumerate}
+  \item Si la casilla se sale del tablero o su letra no es la que toca, este
+        camino falla: devolvemos «no».
+  \item Si la letra coincide y era la última de la palabra, ¡lo logramos!
+  \item Si coincide pero faltan letras, marcamos la casilla con \texttt{'\#'}
+        para no repetirla y probamos sus 4 vecinas buscando la siguiente letra.
+  \item Si ninguna vecina logra completar la palabra, le devolvemos su letra
+        original a la casilla (esto es el \emph{backtracking}) y regresamos a
+        probar otro camino.
+\end{enumerate}
+En cuanto algún punto de partida logra formar la palabra completa, devolvemos
+que sí existe.
 
 \lstinputlisting{src/01-grafos/79-word-search.cpp}
 
 \complejidad{$O(m\cdot n\cdot 4^{L})$, con $L$ la longitud de \texttt{word}}{$O(L)$ por la recursión}
 
-\paragraph{Notas de entrevista (Amazon).} El punto clave es el backtracking:
-marcar la celda al entrar y \textbf{siempre} restaurarla al salir, incluso
-si el camino tuvo éxito antes de regresar la llamada. Si no puedes mutar la
-cuadrícula de entrada, usa una matriz \texttt{visited} paralela en vez de
-\texttt{'\#'}. Casos borde: palabra de una sola letra (basta con que exista
-en la cuadrícula), cuadrícula de una sola celda, y palabras que reutilizarían
-una celda (deben fallar).
+\paragraph{¿Qué significa esa complejidad?} Aquí $m\cdot n$ es el total de
+casillas (todos los posibles puntos de partida) y $L$ es cuántas letras tiene
+la palabra. El $4^{L}$ aparece porque en cada letra podemos irnos hacia 4
+vecinas, y eso se multiplica letra tras letra, como un árbol que se ramifica.
+El $O(L)$ de memoria es porque la recursión se mete tan hondo como letras tenga
+la palabra, guardando el camino que lleva.
+
+\paragraph{Consejos para la entrevista (Amazon).} Lo más importante es el
+\emph{backtracking}: marcar la casilla al entrar y \textbf{siempre} devolverle
+su letra al salir, incluso cuando el camino tuvo éxito. Si el entrevistador te
+pide \emph{no} modificar el tablero, usa un tablero de marcas aparte en lugar
+del \texttt{'\#'}. No olvides los casos raros: una palabra de una sola letra
+(basta con que esa letra exista), un tablero de una sola casilla y palabras que
+obligarían a reutilizar una casilla (deben fallar).

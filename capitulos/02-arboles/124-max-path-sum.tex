@@ -6,14 +6,20 @@ una arista, sin repetir ningún nodo. El camino \textbf{no} necesita pasar por
 la raíz ni terminar en una hoja: puede empezar y terminar en cualquier nodo.
 Queremos la suma máxima de valores que puede lograr algún camino.
 
-\paragraph{Intuición.} Párate en cada nodo y pregúntate dos cosas distintas.
-Primero: "si quiero seguir subiendo este camino hacia mi padre, ¿cuánto es lo
-más que puedo aportar bajando por una sola de mis dos ramas?" (subir por las
-dos ramas a la vez no tiene sentido: el camino se bifurcaría). Segundo: "si mi
-camino ya no va a subir más y va a \emph{doblar} justo aquí, usando mis dos
-ramas a la vez, ¿cuánto sumaría?". La primera pregunta es lo que le reportas a
-tu padre; la segunda solo sirve para actualizar, en silencio, la mejor
-respuesta que hemos visto en todo el árbol.
+\paragraph{La idea, con un ejemplo de la vida real.} Un \emph{camino} es como
+recorrer un sendero entre nodos conectados sin repetir ninguno, y buscamos el
+sendero cuyos números sumen lo más grande posible (ojo: hay números negativos,
+que restan). Piensa en cada nodo como una parada de autobús con un valor.
+
+Párate en cada nodo y hazte dos preguntas distintas. La primera: «si quiero
+seguir mi camino hacia arriba, hacia mi padre, ¿cuánto es lo más que puedo
+aportar bajando por una sola de mis dos ramas?». Solo una rama, porque si un
+camino sube hacia el padre no puede a la vez irse por los dos lados: se partiría
+en dos. La segunda pregunta: «si mi camino \emph{dobla} justo aquí como una V,
+usando mis dos ramas a la vez y sin subir más, ¿cuánto sumaría?». La primera es
+lo que le cuentas a tu padre para que siga armando su camino; la segunda solo
+sirve para ir guardando, en secreto, la mejor suma que hemos visto en todo el
+árbol.
 
 \begin{center}
 \ttfamily
@@ -28,10 +34,12 @@ respuesta que hemos visto en todo el árbol.
 ignorar por completo la raíz $-10$ y la rama de $9$, porque sumarlas solo
 empeoraría el resultado.
 
-\paragraph{Solución.} Hacemos DFS recursivo tipo post-order con una función
-auxiliar \texttt{gananciaMaxima(nodo)} que devuelve, para el subárbol de ese
-nodo, la ganancia máxima que aporta a un camino que sigue subiendo hacia el
-padre (una sola rama):
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos una función que se
+llama a sí misma (\emph{recursión}) y que trabaja de abajo hacia arriba: primero
+resuelve a los hijos y luego al padre (a ese orden se le llama \emph{post-order}).
+La función \texttt{gananciaMaxima(nodo)} devuelve, para ese nodo y todo lo que
+cuelga de él, la mejor ganancia que puede aportar a un camino que sigue subiendo,
+usando una sola rama:
 
 \begin{center}
 \ttfamily
@@ -40,14 +48,16 @@ gananciaDer = max(0, gananciaMaxima(nodo->right))\\
 devuelve = nodo->val + max(gananciaIzq, gananciaDer)
 \end{center}
 
-\noindent El \texttt{max(0, ...)} descarta una rama si su ganancia es
-negativa: es mejor no extender el camino por ahí, porque sumar un número
-negativo solo lo empeora.
+\noindent El \texttt{max(0, ...)} sirve para tirar a la basura una rama si su
+ganancia es negativa: más vale no meter esa rama al camino, porque sumar algo
+negativo solo empeora el total. Es como decir «si esta rama me hace perder
+puntos, mejor la ignoro y cuento cero».
 
-Es crucial no confundir lo que la recursión \emph{devuelve} (una sola rama,
-porque un camino que sube hacia el padre solo puede continuar por un lado)
-con lo que actualiza la \emph{respuesta global} (las dos ramas a la vez, para
-el camino que dobla justo en ese nodo y ya no puede crecer más hacia arriba):
+Aquí está el truco más importante, no lo confundas: lo que la función
+\emph{devuelve} al padre usa una sola rama (porque un camino que sube solo puede
+continuar por un lado), pero lo que usamos para actualizar la \emph{mejor
+respuesta de todo el árbol} suma las dos ramas a la vez, imaginando el camino que
+dobla en V justo en ese nodo y ya no sube más:
 
 \begin{center}
 \ttfamily
@@ -55,21 +65,26 @@ candidato = nodo->val + gananciaIzq + gananciaDer\\
 mejorGlobal = max(mejorGlobal, candidato)
 \end{center}
 
-\noindent Recorremos en post-order (primero los hijos, luego el nodo actual)
-para que cada nodo ya conozca la ganancia de sus dos subárboles antes de
-calcular su propio candidato. El código completo (abre el archivo con clic en
-el título):
+\noindent Vamos de abajo hacia arriba (primero los hijos, luego el padre) para
+que cada nodo ya sepa la ganancia de sus dos ramas antes de calcular su propio
+candidato. El código completo (abre el archivo con clic en el título):
 
 \lstinputlisting{src/02-arboles/124-max-path-sum.cpp}
 
 \complejidad{$O(n)$}{$O(h)$}
 
-\paragraph{Notas de entrevista (Amazon).} El error más común es devolver
-\texttt{val + gananciaIzq + gananciaDer} hacia el padre en vez de
-\texttt{val + max(gananciaIzq, gananciaDer)}: eso rompería la invariante de
-que un camino no se bifurca. Otro punto clave: la respuesta debe poder ser
-negativa (por ejemplo un árbol de un solo nodo con valor negativo), así que
-\texttt{mejorGlobal} debe inicializarse en \texttt{INT\_MIN} y nunca forzarse
-a 0. Casos borde: nodo único, todos los valores negativos, y una rama
-negativa que conviene podar con \texttt{max(0, ...)} en vez de arrastrarla al
-camino final.
+\paragraph{¿Qué significa esa complejidad?} $n$ es el número de nodos y $h$ la
+\emph{altura} del árbol (cuántos pisos tiene). $O(n)$ en tiempo quiere decir que
+visitamos cada nodo una sola vez. La memoria $O(h)$ es lo que ocupa la torre de
+llamadas de la recursión mientras baja, que nunca es más alta que la
+profundidad del árbol.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error más común es devolver
+al padre \texttt{val + gananciaIzq + gananciaDer} (las dos ramas) en vez de
+\texttt{val + max(gananciaIzq, gananciaDer)} (una sola): eso rompería la regla
+de que un camino que sube no se parte en dos. Otro punto clave: la respuesta
+puede ser negativa (por ejemplo, un árbol con un único nodo de valor negativo),
+así que la mejor suma debe empezar en el número más pequeño posible
+(\texttt{INT\_MIN}) y nunca forzarla a $0$. Casos raros: un solo nodo, todos los
+valores negativos, y una rama negativa que conviene ignorar con
+\texttt{max(0, ...)} en lugar de arrastrarla al camino.

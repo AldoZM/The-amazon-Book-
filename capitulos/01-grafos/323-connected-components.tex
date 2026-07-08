@@ -4,14 +4,20 @@ Hay \texttt{n} nodos, numerados de \texttt{0} a \texttt{n - 1}, y una lista
 \texttt{edges} de pares $[a, b]$ que representan aristas \textbf{no
 dirigidas}. Queremos contar cuántos componentes conexos tiene el grafo.
 
-\paragraph{Intuición.} Empezamos suponiendo lo peor: que cada nodo vive
-solo, aislado, formando su propio componente. Eso nos da \texttt{n}
-componentes de entrada. Cada arista es una oportunidad de fusión: si conecta
-dos nodos que ya viven en el mismo componente, no cambia nada (la arista es
-``redundante'' para efectos de contar componentes); pero si conecta dos
-nodos de componentes distintos, esos dos componentes se convierten en uno
-solo y el contador baja en $1$. Al final de procesar todas las aristas, el
-contador tiene la respuesta.
+\paragraph{La idea, con un ejemplo de la vida real.} Un \emph{componente conexo}
+es un grupo de puntos que están unidos entre sí; contar componentes es contar
+cuántos grupos separados hay. Imagina un salón donde al principio cada niño está
+solo, sin amigos: hay \texttt{n} grupitos de una sola persona. Cada arista (cada
+línea que une dos puntos) es como presentar a dos niños para que se hagan
+amigos.
+\begin{itemize}
+  \item Si los dos niños ya eran del mismo grupo de amigos, presentarlos otra
+        vez no cambia nada; sigue habiendo los mismos grupos.
+  \item Si eran de grupos distintos, al hacerse amigos los dos grupos se juntan
+        en uno solo, así que hay un grupo menos: el contador baja en $1$.
+\end{itemize}
+Cuando terminamos de procesar todas las líneas, el contador nos dice cuántos
+grupos separados quedaron.
 
 \begin{center}
 \ttfamily
@@ -22,46 +28,49 @@ $n=5$, edges $=[[0,1],[1,2],[3,4]]$\\[4pt]
 \end{tabular}
 \end{center}
 
-\paragraph{Solución (Union-Find / DSU).} La estructura ideal para este
-``ir fusionando conjuntos'' es \textbf{Union-Find} (Disjoint Set Union):
-cada nodo apunta a un padre, y la \emph{raíz} de un nodo identifica a qué
-componente pertenece. Dos operaciones:
+\paragraph{Cómo lo resuelve el código, paso a paso.} La herramienta ideal para
+esto de ``ir juntando grupos'' se llama \emph{Union-Find} (o \emph{Disjoint Set
+Union}, DSU). Cada punto tiene un ``jefe'', y siguiendo la cadena de jefes hacia
+arriba llegas al \emph{capitán} del grupo; dos puntos son del mismo grupo si
+tienen el mismo capitán. Tiene dos operaciones:
 \begin{itemize}
-\item \texttt{find(x)}: sigue los punteros de padre hasta la raíz del
-  conjunto de \texttt{x}. Aplicamos \emph{compresión de caminos}: cada nodo
-  visitado en el camino se re-apunta directamente a la raíz, para que
-  futuras búsquedas sean casi instantáneas.
-\item \texttt{unir(a, b)}: si \texttt{find(a)} y \texttt{find(b)} son
-  distintas, cuelga una raíz de la otra usando \emph{unión por rango}
-  (la raíz de árbol más pequeño cuelga de la más grande, para mantener los
-  árboles bajos) y decrementa el contador de componentes.
+\item \texttt{find(x)}: averigua el capitán de \texttt{x} siguiendo la cadena de
+  jefes hacia arriba. Usamos un truco, la \emph{compresión de caminos}: cada
+  punto por el que pasamos se reengancha directo al capitán, para que la próxima
+  vez la respuesta sea casi inmediata.
+\item \texttt{unir(a, b)}: si \texttt{a} y \texttt{b} tienen capitanes distintos,
+  juntamos los dos grupos colgando el grupo pequeño del grande (eso se llama
+  \emph{unión por rango}, y sirve para que las cadenas de jefes se queden cortas)
+  y bajamos en $1$ el contador de grupos.
 \end{itemize}
-Inicializamos cada nodo como su propio padre (\texttt{n} componentes) y
-recorremos las aristas una vez, uniendo cuando sea necesario.
+Arrancamos con cada punto siendo su propio capitán (\texttt{n} grupos) y
+recorremos las líneas una sola vez, uniendo cuando hace falta. El contador final
+es la respuesta.
 
 \lstinputlisting{src/01-grafos/323-connected-components.cpp}
 
 \complejidad{$O(n + e\cdot\alpha(n))$}{$O(n)$}
 
-\noindent donde $\alpha(n)$ es la función inversa de Ackermann (crece tan
-lento que para cualquier $n$ práctico es prácticamente una constante), y
-$e$ es el número de aristas.
+\paragraph{¿Qué significa esa complejidad?} Aquí $n$ es el número de puntos y
+$e$ el de líneas. En pocas palabras, tocamos cada punto y cada línea una sola
+vez. Ese símbolo raro, $\alpha(n)$, es una función que crece tan pero tan
+despacio que para cualquier cantidad de puntos de la vida real vale casi lo
+mismo que $3$ o $4$; por eso cada operación de Union-Find se considera ``casi
+instantánea''.
 
-\paragraph{Notas de entrevista (Amazon).} Este problema es el ejemplo
-canónico de Union-Find y es hermano directo del \textbf{261. Graph Valid
-Tree}: ahí, en vez de contar componentes, se pregunta si el grafo termina
-siendo un único árbol (exactamente $n-1$ aristas y ninguna arista que una
-dos nodos ya en el mismo componente, es decir, ningún ciclo). También es
-primo del patrón de ``contar islas'' (200, 695): en lugar de recorrer una
-cuadrícula con DFS/BFS marcando visitados, aquí el grafo viene dado
-explícitamente como lista de aristas, pero la idea de fondo es la misma:
-contar cuántos grupos conectados existen. De hecho, este problema también
-se puede resolver con DFS o BFS clásico, construyendo una lista de
-adyacencia y contando cuántas veces arrancamos una exploración desde un
-nodo no visitado. Menciona ambos enfoques en la entrevista: DFS/BFS es más
-directo de explicar, pero Union-Find es más eficiente cuando las aristas
-llegan de forma incremental (por ejemplo, si el entrevistador pregunta un
-seguimiento tipo ``¿y si las aristas se agregan una a una y quieres saber
-el número de componentes después de cada una?''). Casos borde: sin
-aristas (cada nodo es su propio componente), un solo nodo, y aristas
-repetidas o que no cambian el número de componentes.
+\paragraph{Consejos para la entrevista (Amazon).} Este es el ejemplo más
+clásico de Union-Find y es hermano directo del \textbf{261. Graph Valid Tree}:
+allá, en vez de contar grupos, preguntan si el grafo termina siendo un solo
+árbol (justo $n-1$ líneas y ninguna que una dos puntos ya del mismo grupo, es
+decir, ningún aro). También es pariente de ``contar islas'' (200, 695): en vez
+de recorrer una cuadrícula pintando lo visitado, aquí el grafo te llega como
+lista de líneas, pero el fondo es el mismo, contar cuántos grupos conectados
+hay. De hecho, este problema también se puede resolver con \emph{DFS} o
+\emph{BFS} (recorrer los puntos vecinos) armando una lista de vecinos y contando
+cuántas veces arrancamos una exploración desde un punto no visitado. Menciona
+las dos formas en la entrevista: recorrer con DFS/BFS es más fácil de explicar,
+pero Union-Find gana cuando las líneas van llegando de a poco (por ejemplo, si
+el entrevistador pregunta ``¿y si las líneas se agregan una por una y quiero
+saber cuántos grupos hay después de cada una?''). No olvides los casos raros:
+sin líneas (cada punto es su propio grupo), un solo punto, y líneas repetidas o
+que no cambian el número de grupos.

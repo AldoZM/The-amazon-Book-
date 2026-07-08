@@ -4,15 +4,20 @@ Es la variante del problema 236 donde \textbf{p y/o q pueden NO existir} en
 el árbol. Si alguno de los dos falta, debemos devolver \texttt{nullptr} en
 vez de un ancestro cualquiera.
 
-\paragraph{Intuición.} En 236 podíamos cortar la búsqueda apenas
-encontrábamos p o q, porque el enunciado garantizaba que ambos vivían en el
-árbol: encontrar uno era suficiente para confiar en el resultado. Aquí esa
-garantía desaparece. Si cortáramos temprano y el otro nodo resultara no
-existir, devolveríamos un LCA falso. La solución: recorrer el árbol
-\emph{completo}, sin atajos, y llevar un contador de cuántos de los dos
-nodos objetivo se encontraron de verdad. Sólo si el contador llega a 2
-confiamos en el candidato a LCA; si es 0 o 1, alguno falta y respondemos
-\texttt{nullptr}.
+\paragraph{La idea, con un ejemplo de la vida real.} Recuerda que el
+\emph{ancestro común más bajo} de dos nodos es el pariente compartido más
+cercano a ambos en el árbol (piensa en un árbol genealógico). En el problema 236
+nos prometían que las dos personas buscadas sí estaban en la familia, así que en
+cuanto encontrábamos a una podíamos confiar y detenernos. Aquí ya no hay esa
+promesa: puede que una de las dos, o las dos, ni siquiera existan en el árbol.
+
+Imagina que buscas a dos alumnos en la lista de una escuela para saber quién es
+su tutor común. Si te detienes en cuanto encuentras al primero y resulta que el
+segundo no está inscrito, darías un tutor equivocado. Para no equivocarte,
+revisas la lista \emph{entera} y vas apuntando en un contador cuántos de los dos
+encontraste de verdad. Solo si el contador llega a $2$ (los dos existen) te
+crees la respuesta; si es $0$ o $1$, falta alguno y contestas «nada»
+(\texttt{nullptr}).
 
 \begin{center}
 \ttfamily
@@ -28,23 +33,38 @@ confiamos en el candidato a LCA; si es 0 o 1, alguno falta y respondemos
 pero \texttt{LCA(5, 99) = nullptr} porque 99 no está en el árbol, y
 \texttt{LCA(99, 88) = nullptr} porque ninguno de los dos existe.
 
-\paragraph{Solución.} Usamos el mismo DFS post-order de 236 (\texttt{dfs}
-devuelve, para cada subárbol, el candidato a LCA), pero SIEMPRE evaluamos
-ambos hijos antes de revisar el nodo actual (sin retorno anticipado), y cada
-vez que el nodo actual es p o q incrementamos un contador pasado por
-referencia. Al final, el resultado sólo es válido si el contador es
-exactamente 2:
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos la misma función que
+se llama a sí misma (\emph{recursión}) del problema 236, que sube la respuesta
+desde abajo, pero con dos cambios importantes:
+\begin{enumerate}
+  \item Nunca cortamos por lo sano: aunque encontremos a \texttt{p} o a
+        \texttt{q}, siempre revisamos primero las dos ramas de cada nodo antes
+        de decidir nada. Así visitamos el árbol completo.
+  \item Llevamos un contador compartido. Cada vez que el nodo actual resulta ser
+        \texttt{p} o \texttt{q}, le sumamos $1$ a ese contador.
+\end{enumerate}
+La función encuentra un candidato a respuesta igual que en 236 (cuando los dos
+buscados quedan uno en cada rama). Pero al final solo damos por buena esa
+respuesta si el contador terminó valiendo exactamente $2$, es decir, si de
+verdad encontramos a los dos:
 
 \lstinputlisting{src/02-arboles/1644-lca-ii.cpp}
 
 \complejidad{$O(n)$}{$O(h)$}
 
-\paragraph{Notas de entrevista (Amazon).} Deja claro en voz alta la
-diferencia con 236: aquí no hay garantía de existencia, así que el corte
-temprano (\texttt{if root == p or root == q: return root}) es incorrecto
-porque puede devolver un LCA falso cuando el otro nodo no está. La técnica
-del contador por referencia es la forma limpia de confirmar existencia sin
-un segundo recorrido; también es válida una alternativa de dos pasadas (una
-para verificar que p y q existen, otra para calcular el LCA como en 236),
-pero es menos elegante y hace doble trabajo. Casos borde: p o q ausentes,
-ambos ausentes, p es ancestro de q (o viceversa), y árbol de un solo nodo.
+\paragraph{¿Qué significa esa complejidad?} $n$ es el número de nodos y $h$ la
+\emph{altura} del árbol (cuántos pisos tiene). $O(n)$ significa que miramos cada
+nodo una vez, porque ahora sí recorremos el árbol completo. La memoria $O(h)$ es
+lo que ocupa la torre de llamadas de la recursión mientras baja, que nunca es
+más alta que la profundidad del árbol.
+
+\paragraph{Consejos para la entrevista (Amazon).} Di en voz alta la diferencia
+con el 236: aquí nadie te promete que \texttt{p} y \texttt{q} existan, así que
+detenerte apenas encuentras uno (el atajo \texttt{if root == p or root == q:
+return root}) está mal, porque puede darte una respuesta falsa cuando el otro no
+está. El truco del contador compartido es la forma limpia de confirmar que los
+dos existen sin recorrer el árbol dos veces. También vale hacerlo en dos vueltas
+(una para comprobar que ambos están, otra para calcular la respuesta como en
+236), pero eso hace doble trabajo. Casos raros: que falte \texttt{p} o
+\texttt{q}, que falten los dos, que uno sea ancestro del otro, y un árbol de un
+solo nodo.

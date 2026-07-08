@@ -6,13 +6,23 @@ común más bajo} (LCA, \emph{Lowest Common Ancestor}): el nodo más profundo
 que tiene tanto a \texttt{p} como a \texttt{q} entre sus descendientes (un
 nodo se considera descendiente de sí mismo).
 
-\paragraph{Intuición.} Piensa en el árbol como un árbol genealógico. Para
-encontrar al ancestro común de dos personas, bajas desde la raíz preguntando
-en cada nodo: "¿alguno de los dos que busco vive en mi rama izquierda?" y
-"¿en mi rama derecha?". Si uno vive a la izquierda y el otro a la derecha,
-tú (el nodo actual) eres el punto exacto donde sus caminos se separan: eres
-el LCA. Si ambos viven del mismo lado, la respuesta está más abajo, así que
-dejas que la rama que sí encontró algo te lo diga.
+\paragraph{La idea, con un ejemplo de la vida real.} Antes que nada, unas
+palabras nuevas. Un \emph{árbol binario} es como un árbol genealógico dibujado
+al revés: arriba está el jefe de la familia (lo llamamos \emph{raíz}) y de él
+cuelgan personas. Cada persona es un \emph{nodo}, y cada nodo puede tener como
+mucho dos hijos: uno a la izquierda y otro a la derecha. Un \emph{ancestro} de
+alguien es cualquiera que esté por encima de él en el árbol (su papá, su abuelo,
+su bisabuelo\ldots). El \emph{ancestro común más bajo} de dos personas es el
+pariente compartido más cercano a ellas, el primero donde se juntan sus dos
+líneas familiares.
+
+Imagina que buscas al pariente común de dos primos en ese árbol genealógico.
+Te paras en el jefe de la familia y preguntas: «¿alguno de los dos que busco
+está en mi lado izquierdo?» y «¿alguno está en mi lado derecho?». Si uno está a
+la izquierda y el otro a la derecha, entonces tú, justo donde estás parado, eres
+el punto donde se juntan sus caminos: eres la respuesta. Si los dos están del
+mismo lado, la respuesta está más abajo por ese lado, así que dejas que esa rama
+siga buscando y te avise.
 
 \begin{center}
 \ttfamily
@@ -29,29 +39,46 @@ distinta de la raíz. En cambio $LCA(5,4)=5$ porque 5 es ancestro directo de
 4 (4 vive dentro del propio subárbol de 5). Y $LCA(6,4)=5$ porque tanto 6
 como 4 cuelgan del subárbol de 5, aunque en ramas distintas dentro de él.
 
-\paragraph{Solución.} Hacemos DFS recursivo tipo post-order. Cada llamada
-devuelve, para el subárbol que analiza, "el nodo relevante encontrado":
-\texttt{p}, \texttt{q}, el LCA ya identificado, o \texttt{nullptr} si
-ninguno de los dos está ahí.
-
-Si el nodo actual es \texttt{nullptr}, \texttt{p} o \texttt{q}, lo
-devolvemos de inmediato: no hace falta seguir bajando por esa rama, ya
-encontramos uno de los dos objetivos (o llegamos al final del árbol).
-Si la recursión a la izquierda y la de la derecha devuelven ambas algo no
-nulo, \texttt{p} y \texttt{q} se repartieron uno a cada lado, así que el
-nodo actual es el LCA. Si solo un lado devuelve algo, ese resultado se
-propaga hacia arriba sin cambios. El código completo (abre el archivo con
-clic en el título):
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos una función que se
+llama a sí misma para revisar cada nodo. Que una función se llame a sí misma se
+llama \emph{recursión}: es como un mensajero que, para responder una pregunta,
+manda a dos mensajeros más pequeños (uno a la rama izquierda y otro a la derecha)
+y espera lo que ellos le contesten. Empezamos por abajo del todo y vamos subiendo
+con las respuestas; a ese orden (primero los hijos, luego el padre) se le llama
+\emph{post-order}. Cada llamada devuelve «el nodo interesante que encontró»:
+\texttt{p}, \texttt{q}, la respuesta ya hallada, o \emph{nada}
+(\texttt{nullptr}) si por ahí no había ninguno.
+\begin{enumerate}
+  \item Si el nodo actual está vacío, o es \texttt{p}, o es \texttt{q}, lo
+        devolvemos tal cual y dejamos de bajar por ahí: ya encontramos uno de
+        los buscados (o se acabó la rama).
+  \item Si no, preguntamos a la rama izquierda y a la derecha.
+  \item Si \emph{ambas} ramas devuelven algo, quiere decir que \texttt{p} y
+        \texttt{q} quedaron uno a cada lado: el nodo actual es el ancestro común
+        más bajo, así que se devuelve a sí mismo.
+  \item Si solo una rama devuelve algo, esa es la respuesta y la pasamos hacia
+        arriba sin cambiarla.
+\end{enumerate}
+El código completo (abre el archivo con clic en el título):
 
 \lstinputlisting{src/02-arboles/236-lowest-common-ancestor.cpp}
 
 \complejidad{$O(n)$}{$O(h)$}
 
-\paragraph{Notas de entrevista (Amazon).} Pregunta muy común. Puntos clave a
-mencionar: la solución no necesita comparar valores (funciona incluso con
-valores repetidos) porque compara punteros de nodo directamente. Si el
-árbol fuera un \emph{árbol de búsqueda binario} (BST), existe una solución
-más simple en $O(h)$ sin recursión doble, aprovechando el orden de los
-valores para decidir hacia qué lado bajar. Casos borde: \texttt{p} es
-ancestro de \texttt{q} (o viceversa), y \texttt{p}/\texttt{q} son hojas
-hermanas directas.
+\paragraph{¿Qué significa esa complejidad?} Aquí $n$ es la cantidad de nodos y
+$h$ es la \emph{altura} del árbol (cuántos pisos tiene desde la raíz hasta el
+nodo más hondo). El tiempo $O(n)$ quiere decir que, en el peor caso, miramos
+cada nodo una sola vez. La memoria $O(h)$ es porque la recursión va apilando
+llamadas mientras baja: nunca hay más llamadas amontonadas que la profundidad
+del árbol, como una torre de platos que solo llega tan alto como el árbol es
+hondo.
+
+\paragraph{Consejos para la entrevista (Amazon).} Es una pregunta muy común.
+Un detalle bonito que puedes mencionar: no comparamos los números de los nodos,
+sino su «dirección en memoria» (el puntero), así que funciona aunque haya
+valores repetidos. Otra cosa: si el árbol estuviera ordenado (un \emph{árbol de
+búsqueda binario}, donde los valores menores van a la izquierda y los mayores a
+la derecha), habría un truco aún más rápido que baja directo hacia el lado
+correcto sin revisar las dos ramas. No olvides los casos raros: que \texttt{p}
+sea ancestro de \texttt{q} (o al revés), o que los dos sean hermanos que
+cuelgan del mismo padre.

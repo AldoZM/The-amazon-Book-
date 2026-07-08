@@ -7,14 +7,20 @@ llegar a \texttt{v}. Enviamos una señal desde el nodo \texttt{k}. Queremos el
 tiempo mínimo que tarda en que la señal llegue a \emph{todos} los nodos, o
 \texttt{-1} si algún nodo nunca la recibe.
 
-\paragraph{Intuición.} Hasta ahora los problemas de grafos del libro usaban
-BFS/DFS sencillos porque todas las aristas "cuestan" lo mismo (un paso). Aquí
-las aristas tienen pesos distintos, así que ya no basta con procesar por
-capas: procesar los nodos en el orden en que el BFS los descubre no garantiza
-que se descubran en orden de menor a mayor distancia real. Necesitamos el
-algoritmo de \textbf{Dijkstra}: en vez de una cola normal usamos una cola de
-prioridad (min-heap) que siempre nos da el nodo con la menor distancia
-acumulada todavía no confirmada.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que quieres
+esparcir un chisme por un grupo de amigos. Le cuentas el chisme al amigo
+\texttt{k}, y cada amigo, en cuanto se entera, se lo pasa a otros; pero cada
+llamada tarda un rato distinto (unas personas contestan rápido, otras
+tardan). Queremos saber en qué momento se entera \emph{el último} amigo,
+porque hasta entonces todo el grupo ya lo sabe.
+
+En problemas anteriores todas las conexiones ``costaban'' lo mismo (un
+paso), así que bastaba avanzar por capas con BFS. Aquí cada conexión tarda
+distinto, y avanzar por capas ya no sirve: el amigo que descubres primero no
+siempre es al que el chisme le llega antes en tiempo real. Para eso usamos el
+algoritmo de \textbf{Dijkstra}: en vez de una fila normal, usamos una
+\emph{cola de prioridad} (o \emph{min-heap}), que es como una fila mágica que
+siempre deja pasar primero al amigo que se va a enterar más temprano.
 
 \begin{center}
 \ttfamily
@@ -30,42 +36,54 @@ acumulada todavía no confirmada.
 \texttt{3}) en tiempo \texttt{2}. El nodo más lento en enterarse es \texttt{4},
 así que la respuesta es \texttt{2}.
 
-\paragraph{Solución.} Construimos la lista de adyacencia con pares
-\texttt{(vecino, peso)} y un arreglo \texttt{dist} inicializado a infinito,
-salvo \texttt{dist[k] = 0}. Metemos \texttt{(0, k)} en un min-heap ordenado
-por distancia. En cada paso sacamos el par con menor distancia; si esa
-distancia ya quedó obsoleta (mejoramos ese nodo por otro camino mientras
-tanto), la ignoramos. Si no, \emph{relajamos} cada arista saliente: si llegar
-al vecino pasando por el nodo actual es más barato que lo que teníamos
-registrado, actualizamos \texttt{dist} del vecino y lo volvemos a meter al
-heap.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Guardamos, para cada
+amigo, en cuánto tiempo se entera del chisme en un arreglo \texttt{dist}. Al
+principio nadie sabe nada, así que todos empiezan en ``infinito'' (un número
+gigante que significa ``todavía no se entera''), salvo el amigo \texttt{k},
+que arranca en $0$ porque él ya lo sabe.
+\begin{enumerate}
+  \item Metemos a \texttt{k} en la fila mágica (el min-heap) con tiempo $0$.
+  \item Sacamos de la fila al amigo con el menor tiempo pendiente. Si el
+        tiempo con el que sale ya está viejo (porque mientras tanto
+        encontramos una forma más rápida de que se enterara), lo ignoramos.
+  \item Si no, miramos a cada vecino al que ese amigo le puede pasar el
+        chisme. Calculamos a qué hora se enteraría el vecino pasando por
+        este amigo. Si es más temprano que lo que teníamos apuntado,
+        actualizamos su \texttt{dist} y lo metemos a la fila. A esto se le
+        llama \emph{relajar} una conexión: encontrar un camino que llega
+        antes y quedarnos con él.
+  \item Repetimos hasta vaciar la fila.
+\end{enumerate}
+¿Por qué funciona? Como ningún tiempo es negativo, la primera vez que un
+amigo sale de la fila su hora ya es la definitiva: cualquier otro camino
+tendría que pasar por alguien que se entera igual o más tarde, y sumarle más
+tiempo solo lo empeora. (Si hubiera tiempos negativos esta garantía se
+rompería, y haría falta otro método llamado Bellman-Ford.)
 
-Esto funciona porque, con pesos \textbf{no negativos}, la primera vez que
-sacamos un nodo del heap su distancia ya es la definitiva: cualquier otro
-camino alternativo tendría que pasar por un nodo cuya distancia parcial ya es
-mayor o igual, y sumarle más peso solo lo empeora, nunca lo mejora. Si
-existieran pesos negativos esta garantía se rompe (un camino "más largo" en
-número de aristas podría terminar siendo más barato) y haría falta
-Bellman-Ford en su lugar.
-
-Al terminar, si algún nodo se quedó con distancia infinita es porque nunca lo
-alcanzamos: devolvemos \texttt{-1}. Si todos los nodos tienen distancia
-finita, la respuesta es la máxima de esas distancias: la red completa "se
-entera" hasta que se entera el nodo más lejano.
+Al final, si algún amigo se quedó en ``infinito'' es porque el chisme nunca
+le llegó: devolvemos \texttt{-1}. Si todos tienen una hora real, la respuesta
+es la \emph{más grande} de todas: el grupo entero se entera justo cuando se
+entera el más lento.
 
 \lstinputlisting{src/01-grafos/743-network-delay-time.cpp}
 
 \complejidad{$O(E \log V)$}{$O(V + E)$}
 
-\paragraph{Notas de entrevista (Amazon).} Este problema es el ejemplo
-canónico de Dijkstra con cola de prioridad, y suele usarse para verificar que
-el candidato entiende \emph{por qué} el algoritmo requiere pesos no
-negativos (vale la pena mencionarlo aunque no lo pregunten). Otro punto que
-se evalúa es el manejo de entradas obsoletas en el heap: como no existe una
-operación barata de "disminuir clave" en el \texttt{priority\_queue} de la
-STL, simplemente insertamos duplicados y los descartamos comparando contra
-\texttt{dist} al sacarlos, en vez de intentar borrarlos del heap. Casos
-borde a mencionar: un solo nodo (\texttt{k} tarda \texttt{0} en llegar a sí
-mismo), un nodo sin ninguna arista de entrada (inalcanzable, \texttt{-1}), y
-la trampa de asumir que la ruta con menos aristas es siempre la más rápida
-cuando en realidad hay que comparar el peso acumulado.
+\paragraph{¿Qué significa esa complejidad?} $V$ es el número de amigos
+(nodos) y $E$ el número de conexiones (aristas). $O(E \log V)$ significa que
+revisamos cada conexión y, cada vez que metemos algo en la fila mágica,
+mantenerla ordenada cuesta un poquito ($\log V$, que crece muy despacio). En
+pocas palabras: es casi tan rápido como mirar todas las conexiones una vez,
+con un pequeño costo extra por tener la fila siempre ordenada.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este es el ejemplo estrella
+de Dijkstra con cola de prioridad. Suelen usarlo para ver si entiendes
+\emph{por qué} el algoritmo necesita que los tiempos no sean negativos
+(conviene mencionarlo aunque no te lo pregunten). Otro punto que evalúan: cómo
+manejas las entradas ``viejas'' del heap. Como en la cola de prioridad de C++
+no hay una forma barata de bajarle el valor a algo que ya metiste, simplemente
+metemos duplicados y, al sacarlos, descartamos los que ya no coinciden con
+\texttt{dist}. Casos raros: un solo amigo (\texttt{k} se entera en tiempo
+\texttt{0}), un amigo al que nadie le puede llamar (nunca se entera,
+\texttt{-1}), y la trampa de creer que el camino con menos saltos es siempre
+el más rápido cuando en realidad hay que comparar el tiempo acumulado.

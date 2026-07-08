@@ -6,11 +6,20 @@ fresca adyacente (arriba, abajo, izquierda, derecha) a una podrida se pudre.
 Queremos el número de minutos hasta que no quede ninguna fresca, o
 \texttt{-1} si alguna nunca se pudre.
 
-\paragraph{Intuición.} La podredumbre se expande como una onda desde todas
-las naranjas podridas \emph{al mismo tiempo}. Eso es exactamente un BFS
-\emph{multi-fuente}: metemos todas las podridas en la cola y expandimos por
-capas; cada capa es un minuto. Contamos las frescas al inicio y las restamos
-conforme se pudren; si al final queda alguna, es imposible.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina un cajón de
+naranjas. Algunas ya están podridas y cada minuto contagian a las naranjas
+buenas que tienen pegadas (arriba, abajo, izquierda o derecha). No se contagia
+solo una: \emph{todas} las podridas contagian a la vez, como cuando echas
+varias gotas de tinta en agua y todas se van esparciendo al mismo tiempo. Cada
+minuto la mancha crece un poquito hacia afuera. Queremos saber cuántos minutos
+pasan hasta que ya no queda ninguna naranja buena.
+
+Para simularlo usamos una técnica llamada \emph{BFS} (búsqueda en anchura), que
+significa explorar por capas, como los círculos que se forman cuando tiras una
+piedra al agua: primero el círculo más cercano, luego el siguiente, y así. Como
+partimos de \emph{muchas} naranjas podridas a la vez, se le llama \emph{BFS
+multi-fuente} (varios puntos de partida). Cada capa nueva de contagio es un
+minuto que pasa.
 
 \begin{center}
 \ttfamily
@@ -21,16 +30,38 @@ minuto 4\quad
 \begin{tabular}{ccc}2&2&2\\2&2&0\\0&2&2\end{tabular}
 \end{center}
 
-\paragraph{Solución.} BFS por niveles desde todas las podridas. La clave del
-manejo de casos borde: si no hay frescas al inicio, la respuesta es
-\texttt{0}; si terminan las capas y aún quedan frescas, es \texttt{-1}.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos una \emph{cola}:
+una fila de espera como la del supermercado, donde el primero que entra es el
+primero que sale. Ahí guardamos las casillas que ya están podridas.
+\begin{enumerate}
+  \item Recorremos toda la cuadrícula. Metemos en la cola todas las naranjas
+        podridas del inicio y, de paso, contamos cuántas naranjas buenas hay.
+  \item Procesamos la cola por capas. Una capa es todo lo que había en la cola
+        en ese instante: son las naranjas que se pudrieron en el minuto
+        anterior. Para cada una miramos sus cuatro vecinas; si alguna es una
+        naranja buena, la pudrimos, restamos 1 al conteo de buenas y la
+        metemos a la cola para que contagie en el siguiente minuto.
+  \item Cada vez que terminamos una capa y todavía había naranjas que pudrir,
+        sumamos 1 al reloj de minutos.
+  \item Al final, si el conteo de naranjas buenas llegó a cero, devolvemos los
+        minutos. Si quedó alguna naranja buena que nunca se pudo contagiar
+        (estaba aislada), devolvemos \texttt{-1} porque es imposible.
+\end{enumerate}
 
 \lstinputlisting{src/01-grafos/994-rotting-oranges.cpp}
 
 \complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
 
-\paragraph{Notas de entrevista (Amazon).} El error típico es empezar
-\texttt{minutos} en $-1$ o contar un minuto de más cuando la última capa no
-pudre nada. Aquí sólo incrementamos \texttt{minutos} mientras haya frescas
-que pudrir. Casos borde a mencionar: sin frescas ($0$), fresca aislada
-($-1$), todo vacío ($0$).
+\paragraph{¿Qué significa esa complejidad?} Aquí $m$ es el número de filas y
+$n$ el de columnas, así que $m\cdot n$ es el total de casillas del cajón. Decir
+que el tiempo es $O(m\cdot n)$ solo significa que, en el peor caso, cada
+naranja entra y sale de la cola una sola vez: tocamos cada casilla una vez. Es
+lo más rápido posible, porque hay que revisar todo el cajón al menos una vez.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error típico es contar un
+minuto de más: pasa cuando sumas al reloj aunque la última capa no haya
+podrido ninguna naranja nueva. El truco es aumentar los minutos solo mientras
+todavía queden naranjas buenas por pudrir. No olvides los casos raros: un cajón
+sin ninguna naranja buena (respuesta $0$, no hay que esperar nada), una naranja
+buena solita sin vecinas podridas (respuesta $-1$, jamás se contagia) y un
+cajón todo vacío (respuesta $0$).

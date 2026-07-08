@@ -5,14 +5,22 @@ Hay \texttt{numCourses} cursos numerados de \texttt{0} a
 $[a, b]$ que significan ``para tomar el curso $a$ primero hay que tomar el
 curso $b$''. Queremos saber si es posible tomar todos los cursos.
 
-\paragraph{Intuición.} Cada par $[a, b]$ es una dependencia dirigida
-$b \rightarrow a$ (``$b$ habilita a $a$''). Si dibujamos todas las
-dependencias como un grafo dirigido, la pregunta ``¿puedo tomar todos los
-cursos?'' es exactamente ``¿este grafo tiene un ciclo?''. Si un grupo de
-cursos se necesita entre sí en círculo, ninguno de ellos puede ser el
-primero: es imposible. Si no hay ciclos, siempre existe un
-\textbf{orden topológico}: una forma de ordenar los cursos tal que cada uno
-aparece después de todos sus prerrequisitos.
+\paragraph{La idea, con un ejemplo de la vida real.} Piensa en los cursos como
+en armar una torre de bloques de juguete. Para poner un bloque arriba, primero
+tiene que estar puesto el bloque de abajo. Cada par $[a, b]$ quiere decir
+``antes del bloque $a$ hay que poner el bloque $b$''. Si dibujas una flecha de
+$b$ hacia $a$ (\emph{$b$ va antes que $a$}) para cada regla, terminas con un
+dibujo de puntos y flechas. En matemáticas ese dibujo se llama \emph{grafo
+dirigido}: los puntos son los cursos y las flechas dicen quién va antes que
+quién.
+
+Ahora, la pregunta ``¿puedo tomar todos los cursos?'' es lo mismo que
+preguntar ``¿este dibujo tiene un círculo vicioso?''. Un \emph{círculo vicioso}
+(en matemáticas, un \emph{ciclo}) es cuando el curso A pide al B, el B pide al
+C, y el C vuelve a pedir al A: nadie puede ser el primero, así que es imposible.
+Si no hay ningún círculo vicioso, siempre puedes acomodar los cursos en una
+fila donde cada uno queda después de todos los que necesita. A esa fila
+ordenada se le llama \emph{orden topológico}.
 
 \begin{center}
 \ttfamily
@@ -28,32 +36,52 @@ orden topológico: $0, 1, 2, 3$
 \end{tabular}
 \end{center}
 
-\paragraph{Grado de entrada (in-degree).} Es un concepto nuevo en este
-libro: el \emph{grado de entrada} de un curso es cuántos prerrequisitos le
-faltan por cumplir. Un curso con grado de entrada $0$ no depende de nada y
-se puede tomar de inmediato.
+\paragraph{Una palabra nueva: ``grado de entrada''.} El \emph{grado de entrada}
+de un curso es simplemente cuántos prerrequisitos le faltan todavía por
+cumplir, es decir, cuántas flechas le llegan apuntando. Un curso con grado de
+entrada $0$ no le debe nada a nadie, así que lo puedes tomar de inmediato.
+Piénsalo como una lista de tareas: las que no dependen de ninguna otra son las
+que puedes empezar hoy mismo.
 
-\paragraph{Solución (algoritmo de Kahn).} Construimos la lista de
-adyacencia (\texttt{adj[b]} = cursos que dependen de \texttt{b}) y el grado
-de entrada de cada curso. Metemos en una cola todos los cursos con grado de
-entrada $0$. Sacamos uno a la vez, lo contamos como ``tomado'' y
-disminuimos en $1$ el grado de entrada de todo lo que dependía de él;
-cuando un curso llega a grado $0$, entra a la cola. Este proceso es un
-\textbf{BFS sobre grados de entrada} y va generando un orden topológico
-capa por capa. Si al final procesamos todos los cursos, no había ciclo; si
-alguno se quedó sin procesar (su grado de entrada nunca bajó a $0$ porque
-estaba atrapado en un ciclo), la respuesta es falsa.
+\paragraph{Cómo lo resuelve el código, paso a paso.} La técnica se llama
+\emph{algoritmo de Kahn}, pero la idea es muy sencilla: ir haciendo primero los
+cursos que ya no necesitan nada. Usamos una \emph{cola}, que es como la fila
+del súper: el primero que entra es el primero que sale.
+\begin{enumerate}
+  \item Anotamos, para cada curso, la lista de cursos que dependen de él
+        (\texttt{adj[b]} guarda los cursos que necesitan a \texttt{b}) y su
+        grado de entrada (cuántos prerrequisitos le faltan).
+  \item Metemos en la cola todos los cursos que ya tienen grado de entrada $0$,
+        porque esos se pueden tomar sin esperar a nadie.
+  \item Sacamos un curso de la cola, lo contamos como ``ya tomado'' y a cada
+        curso que dependía de él le restamos $1$ prerrequisito. Si a alguno se
+        le acaban los prerrequisitos pendientes (llega a $0$), lo metemos a la
+        cola.
+  \item Repetimos hasta vaciar la cola.
+\end{enumerate}
+Al final contamos: si logramos tomar todos los cursos, no había ningún círculo
+vicioso, así que la respuesta es sí. Si sobró algún curso (nunca bajó su grado
+de entrada a $0$ porque estaba atrapado en un círculo), la respuesta es no.
 
 \lstinputlisting{src/01-grafos/207-course-schedule.cpp}
 
 \complejidad{$O(V+E)$}{$O(V+E)$}
 
-\paragraph{Notas de entrevista (Amazon).} Este problema es la puerta de
-entrada al patrón de \textbf{orden topológico}, muy común en preguntas de
-planeación de tareas y resolución de dependencias (build systems,
-compiladores, gestores de paquetes). Menciona ambas variantes: BFS con
-grados de entrada (algoritmo de Kahn, el que usamos aquí, útil también si
-se pide devolver el orden explícito) o DFS con detección de ciclo por
-colores (blanco/gris/negro). Casos borde: sin prerrequisitos (siempre
-posible), un ciclo que involucra solo a algunos cursos y no a todos, y
-cursos con múltiples prerrequisitos o múltiples dependientes.
+\paragraph{¿Qué significa esa complejidad?} Aquí $V$ es el número de cursos (los
+puntos del dibujo) y $E$ el número de reglas de prerrequisito (las flechas).
+Decir que el tiempo es $O(V+E)$ solo quiere decir que miramos cada curso una
+vez y cada flecha una vez, y ya. No repetimos trabajo, así que es lo más rápido
+que se puede: para saber si el plan cabe, hay que leer al menos todas las reglas
+una vez.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema es la puerta de
+entrada al patrón de \emph{orden topológico}, que aparece mucho cuando hay que
+planear tareas que dependen unas de otras (por ejemplo, en qué orden compilar
+las partes de un programa o instalar programas que necesitan otros programas).
+Menciona que se puede resolver de dos maneras: contando prerrequisitos con una
+cola (el algoritmo de Kahn, el que usamos aquí, que además te sirve si te piden
+el orden concreto), o con \emph{DFS} (recorrer hacia el fondo por las flechas)
+pintando los cursos de colores para cachar el círculo vicioso. No olvides los
+casos raros: sin prerrequisitos (siempre se puede), un círculo vicioso que
+atrapa solo a algunos cursos y no a todos, y cursos que tienen muchos
+prerrequisitos o de los que dependen muchos otros.

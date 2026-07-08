@@ -8,11 +8,14 @@ grafo se parte en dos o más componentes; es decir, es la única forma en que
 un grupo de servidores se comunica con el resto. Debemos devolver
 \textbf{todas} las conexiones críticas.
 
-\paragraph{Intuición.} Piensa en cada conexión como un cable físico. Si un
-cable forma parte de un ciclo (hay otra ruta alterna entre sus dos extremos),
-quitarlo no aísla a nadie: la información puede rodear por el ciclo. Pero si
-un cable es la \emph{única} ruta hacia cierta parte de la red —como una rama
-que cuelga de un ciclo— quitarlo sí la desconecta. Ese cable es un puente.
+\paragraph{La idea, con un ejemplo de la vida real.} Piensa en cada conexión
+como un cable físico entre dos servidores. Si un cable forma parte de un
+\emph{ciclo} (o sea, hay otro camino alterno para ir de un extremo al otro
+dando la vuelta), quitarlo no deja a nadie incomunicado: la información se va
+por el otro lado. Pero si un cable es la \emph{única} manera de llegar a
+cierta parte de la red —como una rama que cuelga y solo se sostiene de ahí—
+quitarlo sí la desconecta. Ese cable tan importante es lo que llamamos un
+\textbf{puente}, y son justo los que queremos encontrar.
 
 \begin{center}
 \ttfamily
@@ -32,60 +35,67 @@ aristas es puente. Pero $1$-$3$ es la \emph{única} forma de llegar al
 servidor $3$: quitarla lo aísla. La única conexión crítica es
 $\{1,3\}$.
 
-\paragraph{Solución: puentes de Tarjan.} Este es un patrón nuevo en el libro,
-así que vale la pena explicarlo con calma. Hacemos un DFS desde cualquier
-nodo (el grafo es conexo) y llevamos dos arreglos:
+\paragraph{Cómo lo resuelve el código, paso a paso: puentes de Tarjan.} Este
+es un patrón nuevo en el libro, así que vamos con calma. Hacemos un \emph{DFS}
+(recorrer la red metiéndonos hasta el fondo por un camino antes de regresar)
+empezando desde cualquier servidor, y a cada nodo le anotamos dos números:
 
 \begin{itemize}
-  \item \texttt{disc[u]}: el ``número de orden'' en que el DFS
-        \emph{descubrió} al nodo \texttt{u} por primera vez. Es un contador
-        global que aumenta cada vez que visitamos un nodo nuevo (el primero
-        visitado tiene \texttt{disc = 0}, el segundo \texttt{disc = 1}, \dots).
-        Una vez asignado, \texttt{disc[u]} ya no cambia.
-  \item \texttt{low[u]}: el \texttt{disc} \emph{más pequeño} al que se puede
-        ``regresar'' desde el subárbol de \texttt{u}, usando aristas del
-        árbol de DFS hacia descendientes y, como máximo, \textbf{una}
-        arista de retroceso (\emph{back-edge}) que salte hacia un ancestro
-        ya visitado. Este valor sí se actualiza (sólo puede bajar) conforme
-        el DFS regresa de sus hijos.
+  \item \texttt{disc[u]}: el \emph{orden de llegada}, es decir, en qué turno
+        el DFS visitó a \texttt{u} por primera vez. El primero que visitamos
+        tiene \texttt{disc = 0}, el segundo \texttt{disc = 1}, y así. Una vez
+        puesto, este número ya no cambia. Piénsalo como el número que te dan
+        al llegar a una fila.
+  \item \texttt{low[u]}: el \emph{turno más antiguo} (el \texttt{disc} más
+        pequeño) al que se puede ``trepar de regreso'' saliendo desde
+        \texttt{u} o desde cualquier nodo que cuelgue debajo de él, usando
+        los cables del recorrido y, como mucho, \textbf{un} cable ``de
+        atajo'' que salte hacia un nodo visitado antes (a esos atajos se les
+        llama \emph{aristas de retroceso}). Este número sí se va ajustando
+        (solo puede bajar) conforme el DFS regresa de sus hijos.
 \end{itemize}
 
-Si al procesar la arista de árbol $(u, v)$ —con $v$ hijo de $u$— encontramos
-una arista de retroceso desde el subárbol de $v$ hacia $u$ o algún ancestro
-de $u$, entonces $v$ y su subárbol tienen una ``cuerda'' que los mantiene
-conectados al resto del grafo aunque quitemos $(u,v)$: no es puente. Eso se
-traduce en la condición clave:
+La idea es esta: si desde la parte que cuelga debajo de un hijo \texttt{v}
+existe un atajo que trepa hasta \texttt{u} o más arriba, entonces esa parte
+tiene otra ``cuerda'' que la sostiene y el cable $(u,v)$ no es imprescindible:
+no es puente. En cambio, si no hay ningún atajo así, ese cable es la única
+entrada y salida, y sí es puente. En fórmula:
 $$(u,v) \text{ es puente} \iff \texttt{low[v]} > \texttt{disc[u]}$$
-\texttt{low[v]} > \texttt{disc[u]} significa que, desde el subárbol de $v$,
-es \emph{imposible} alcanzar a $u$ o a cualquier ancestro de $u$ salvo pasando
-otra vez por la arista $(u,v)$: esa arista es la única puerta de entrada y
-salida del subárbol, y por lo tanto es un puente.
+que se lee: ``si desde todo lo que cuelga de \texttt{v} es imposible trepar
+hasta \texttt{u} o algún ancestro suyo sin volver a usar el cable $(u,v)$,
+entonces ese cable es un puente''.
 
-En el ejemplo: al visitar $2$ (hijo de $1$) encontramos una arista de
-retroceso hacia $0$ (ya visitado y no es su padre), así que
-\texttt{low[2] = disc[0] = 0}; ese valor se propaga hacia arriba:
-\texttt{low[1] = 0} y \texttt{low[0] = 0}. Ni $(0,1)$ ni $(1,2)$ son puente
-porque $0 \not> \texttt{disc[0]}=0$ ni $0 \not> \texttt{disc[1]}=1$. En
-cambio $3$ no tiene ninguna arista de retroceso (su único vecino es su
-padre, $1$), así que \texttt{low[3]} se queda en su propio \texttt{disc = 3},
-y $3 > \texttt{disc[1]} = 1$: la arista $(1,3)$ sí es puente.
+En el ejemplo de arriba: al visitar $2$ (hijo de $1$) encontramos un atajo
+hacia $0$, que ya estaba visitado y no es su padre, así que \texttt{low[2]}
+baja hasta \texttt{disc[0] = 0}; ese $0$ se contagia hacia arriba y deja
+\texttt{low[1] = 0} y \texttt{low[0] = 0}. Ni $(0,1)$ ni $(1,2)$ son puente,
+porque desde ellos sí se puede trepar hasta el turno $0$. En cambio, $3$ no
+tiene ningún atajo (su único vecino es su padre, $1$), así que \texttt{low[3]}
+se queda en su propio turno \texttt{disc = 3}; como $3 > \texttt{disc[1]} = 1$,
+el cable $(1,3)$ sí es un puente.
 
 \lstinputlisting{src/01-grafos/1192-critical-connections.cpp}
 
 \complejidad{$O(V+E)$}{$O(V+E)$}
 
-\paragraph{Notas de entrevista (Amazon).} Este problema evalúa si conoces
-algoritmos de grafos más allá de BFS/DFS básico, así que vale la pena
-explicar el porqué de \texttt{low[]}, no sólo memorizar la fórmula. Puntos
-clave para mencionar: (1) al visitar una arista de retroceso, actualiza
-\texttt{low[u]} con \texttt{disc[v]} (el momento de descubrimiento), \emph{no}
-con \texttt{low[v]} — esa distinción es la que evita "atravesar" ciclos que
-no existen. (2) Cuidado con las aristas paralelas hacia el padre: aquí se
-evita re-visitar al padre comparando el nodo, pero si el grafo permitiera
-múltiples conexiones idénticas entre los mismos dos servidores habría que
-excluir sólo \emph{una} arista hacia el padre (por ejemplo, usando el índice
-de la arista en vez del nodo padre); el enunciado de LeetCode garantiza que
-no hay conexiones repetidas. (3) El orden en que se devuelven los puentes no
-importa, pero normalizar cada arista como $(\min, \max)$ facilita comparar
-resultados. Casos borde: $n=1$ sin conexiones (ningún puente posible), y un
-árbol puro (sin ciclos), donde absolutamente todas las aristas son puentes.
+\paragraph{¿Qué significa esa complejidad?} $V$ es el número de servidores y
+$E$ el de cables. $O(V+E)$ significa que un solo recorrido DFS toca cada
+servidor una vez y pasa por cada cable una vez; encontrar \emph{todos} los
+puentes cuesta lo mismo que recorrer la red entera una sola vez, que es lo más
+rápido posible.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema mide si
+conoces algoritmos de grafos más allá del BFS/DFS básico, así que conviene
+explicar \emph{para qué} sirve \texttt{low[]} y no solo recitar la fórmula.
+Puntos clave: (1) al usar un atajo (arista de retroceso), actualiza
+\texttt{low[u]} con el \texttt{disc} del nodo al que llegas, \emph{no} con su
+\texttt{low}; esa distinción evita ``inventar'' caminos que no existen. (2)
+Cuidado con el cable que va hacia el padre: aquí evitamos regresar al padre
+comparando quién es, pero si la red permitiera dos cables idénticos entre los
+mismos dos servidores habría que ignorar solo \emph{uno} de ellos (por
+ejemplo, usando el número del cable en lugar del nodo padre); el enunciado de
+LeetCode promete que no hay cables repetidos. (3) El orden en que devuelves
+los puentes no importa, pero escribir cada cable como $(\min, \max)$ ayuda a
+comparar respuestas. Casos raros: $n=1$ sin conexiones (no hay puentes
+posibles) y un árbol puro (sin ningún ciclo), donde \emph{todos} los cables
+son puentes.

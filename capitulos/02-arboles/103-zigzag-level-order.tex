@@ -5,14 +5,22 @@ alternando la dirección: el nivel 0 se lee de izquierda a derecha, el nivel 1
 de derecha a izquierda, el nivel 2 otra vez de izquierda a derecha, y así
 sucesivamente.
 
-\paragraph{Intuición.} Es el mismo BFS por niveles que usamos en
-994 (Rotting Oranges): procesamos la cola capa por capa, y el tamaño de la
-cola al inicio de cada vuelta nos dice cuántos nodos hay en ese nivel. La
-única novedad es la dirección: en los niveles pares guardamos los valores en
-orden normal, y en los impares los guardamos en orden inverso. Para no pagar
-el costo de invertir un vector completo, colocamos cada valor directamente en
-su posición final dentro del nivel (índice \texttt{i} o \texttt{capa-1-i}
-según la dirección).
+\paragraph{La idea, con un ejemplo de la vida real.} Primero, unas palabras.
+Un \emph{nivel} del árbol es todo lo que está a la misma altura: la raíz es el
+nivel $0$, sus hijos el nivel $1$, los nietos el nivel $2$, y así. Recorrer «por
+niveles» es como leer un edificio piso por piso: primero toda la planta baja,
+luego todo el primer piso, etc. A esa forma de recorrer se le llama \emph{BFS}
+(búsqueda por anchura), y para hacerla usamos una \emph{cola}: una fila de espera
+donde el primero que entra es el primero que atendemos, igual que en la fila del
+supermercado.
+
+Lo único distinto aquí es que leemos cada piso en zigzag, como una serpiente:
+el primer piso de izquierda a derecha, el siguiente de derecha a izquierda, el
+siguiente otra vez de izquierda a derecha\ldots Truco para no perder tiempo: en
+lugar de leer normal y luego voltear la lista, colocamos cada valor directamente
+en el lugar que le toca dentro del piso. Si el piso tiene \texttt{capa} nodos, el
+que sería el número \texttt{i} contando desde la izquierda lo guardamos en la
+posición \texttt{capa-1-i} cuando toca ir al revés.
 
 \begin{center}
 \ttfamily
@@ -34,23 +42,36 @@ según la dirección).
 \texttt{[20, 9]}, y el nivel 2 vuelve a izquierda a derecha con
 \texttt{[15, 7]}. Resultado: \texttt{[[3], [20, 9], [15, 7]]}.
 
-\paragraph{Solución.} BFS estándar por niveles con una cola. Mantenemos una
-bandera booleana que alterna en cada vuelta del \texttt{while}; cuando está
-activa, insertamos cada valor en la posición espejo del nivel en vez de
-simplemente hacer \texttt{push\_back}. Casos borde: árbol vacío devuelve
-\texttt{[]} de inmediato; un solo nodo devuelve \texttt{[[valor]]} sin
-alternar nada, porque sólo hay un nivel.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Recorremos el árbol por
+niveles con una cola:
+\begin{enumerate}
+  \item Metemos la raíz en la cola.
+  \item Mientras la cola no esté vacía, miramos cuántos nodos hay ahora mismo en
+        ella: ese número es cuántos nodos tiene el piso actual.
+  \item Sacamos justo esos nodos uno por uno, guardamos su valor en la lista del
+        piso y metemos a la cola a sus hijos (que formarán el piso siguiente).
+  \item Llevamos un interruptor de encendido/apagado (una \emph{bandera}) que
+        cambia en cada piso. Cuando está encendido, guardamos los valores en la
+        posición espejo para que ese piso quede al revés.
+\end{enumerate}
+Casos raros: si el árbol está vacío devolvemos una lista vacía de inmediato; si
+solo hay un nodo, devolvemos ese único valor sin voltear nada, porque hay un
+solo piso.
 
 \lstinputlisting{src/02-arboles/103-zigzag-level-order.cpp}
 
 \complejidad{$O(n)$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} El error típico es invertir el
-vector del nivel con una llamada aparte (\texttt{reverse}) en lugar de
-calcular la posición correcta al insertar; ambas son válidas en complejidad,
-pero calcular el índice directamente evita una pasada extra y demuestra que
-entiendes bien el layout de la capa. Vale la pena mencionar también la
-variante con dos pilas (una por dirección) como alternativa clásica al BFS
-con cola. Casos borde a mencionar: árbol vacío (\texttt{[]}), un solo nodo
-(\texttt{[[x]]}), y árboles muy desbalanceados donde un nivel tiene un solo
-nodo.
+\paragraph{¿Qué significa esa complejidad?} $n$ es el número total de nodos.
+$O(n)$ en tiempo quiere decir que tocamos cada nodo una sola vez. $O(n)$ en
+memoria es porque, en el peor caso, la cola y las listas del resultado llegan a
+guardar todos los nodos a la vez. Es lo más rápido posible: no puedes escribir
+todos los valores sin visitarlos al menos una vez.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error típico es leer el
+piso normal y luego voltear la lista con una llamada aparte (\texttt{reverse});
+funciona, pero colocar cada valor directo en su lugar ahorra esa vuelta extra y
+demuestra que entiendes cómo está armado el piso. También puedes mencionar la
+variante con dos pilas (una para cada dirección) como alternativa clásica.
+Casos raros: árbol vacío, un solo nodo, y árboles muy torcidos donde algún piso
+tiene un único nodo.

@@ -4,10 +4,18 @@ Nos dan una cuadrícula de caracteres donde \texttt{'1'} es tierra y
 \texttt{'0'} es agua. Una \emph{isla} es un grupo de tierras conectadas en
 horizontal o vertical. Queremos contar cuántas islas hay.
 
-\paragraph{Intuición.} Imagina que sobrevuelas el mapa. Cada vez que ves un
-pedazo de tierra que aún no has pisado, plantas una bandera (una isla nueva)
-y luego caminas por toda la tierra conectada hundiéndola en el mapa, para no
-volver a contarla. Repites hasta que no quede tierra nueva.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que ese tablero es
+un mapa y que tú lo miras desde un avión. Vas leyendo casilla por casilla, como
+cuando lees un libro: de izquierda a derecha y de arriba abajo. Cuando ves un
+pedazo de tierra por primera vez, gritas «¡isla nueva!» y sumas 1 a tu conteo.
+
+Pero ojo: esa isla puede ser grande y tener muchas casillas pegadas. Si las
+cuentas otra vez, te dará un número equivocado. ¿El truco? En cuanto pisas una
+casilla de tierra, la «inundas»: la pintas de agua (la cambias a \texttt{'0'}).
+Así ya no la vuelves a ver como tierra y no la cuentas dos veces. Y desde esa
+casilla te vas caminando a sus vecinas de tierra e inundas todas también, hasta
+que toda la isla quede bajo el agua. Cuando terminas, sigues leyendo el tablero
+buscando la siguiente tierra sin pisar.
 
 \begin{center}
 \ttfamily
@@ -22,15 +30,40 @@ volver a contarla. Repites hasta que no quede tierra nueva.
 \noindent En esta cuadrícula hay \textbf{3} islas: el bloque $2\times2$ de
 arriba a la izquierda, la celda central, y el par de abajo a la derecha.
 
-\paragraph{Solución.} Recorremos la cuadrícula; al encontrar tierra nueva
-sumamos una isla y usamos DFS (\texttt{hundir}) para marcar como agua toda su
-tierra conectada. El código completo (abre el archivo con clic en el título):
+\paragraph{Cómo lo resuelve el código, paso a paso.} Recorremos todas las
+casillas con dos ciclos (uno para las filas, otro para las columnas). Cuando
+encontramos un \texttt{'1'}:
+\begin{enumerate}
+  \item Sumamos 1 al contador de islas.
+  \item Llamamos a una pequeña ayudante llamada \texttt{hundir}, que se encarga
+        de inundar toda la isla.
+\end{enumerate}
+La ayudante \texttt{hundir} hace algo muy natural: se para en una casilla de
+tierra, la convierte en agua y luego se llama a sí misma sobre sus cuatro
+vecinas (arriba, abajo, izquierda, derecha). Que una función se llame a sí
+misma se llama \emph{recursión}; piénsalo como una ficha de dominó que tira a
+las de al lado, y esas a las suyas, hasta que ya no queda tierra que tocar.
+Antes de inundar, \texttt{hundir} revisa dos cosas para no equivocarse: que no
+se salga del tablero y que la casilla sea de verdad tierra. Este recorrido que
+avanza «hacia el fondo» por los vecinos se conoce como \emph{DFS}
+(búsqueda en profundidad). El código completo (haz clic en el título para
+abrirlo en tu editor):
 
 \lstinputlisting{src/01-grafos/200-number-of-islands.cpp}
 
 \complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
 
-\paragraph{Notas de entrevista (Amazon).} Es el clásico de Amazon. Menciona
-que modificar la cuadrícula in situ evita el arreglo \texttt{visited}; si no
-puedes mutar la entrada, usa un conjunto de visitados o BFS con cola. Casos
-borde: cuadrícula vacía, toda agua, toda tierra (una isla).
+\paragraph{¿Qué significa esa complejidad?} Aquí $m$ es el número de filas y
+$n$ el de columnas, así que $m\cdot n$ es el total de casillas. Decir que el
+tiempo es $O(m\cdot n)$ solo quiere decir que, en el peor caso, tocamos cada
+casilla una vez (y ni una casilla se cuenta dos veces gracias al truco de
+inundarla). Es lo más rápido posible: no puedes contar islas sin mirar el mapa
+completo al menos una vez.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este es un problema clásico
+de Amazon. Un buen detalle que puedes mencionar: como vamos pintando de agua la
+tierra ya visitada, no necesitamos una lista aparte para recordar «por dónde ya
+pasé». Si el entrevistador te pide \emph{no} modificar el mapa original,
+entonces sí necesitas esa lista de visitados (o resolverlo con una cola, técnica
+llamada BFS). No olvides los casos raros: un mapa vacío, un mapa todo de agua
+(0 islas) o un mapa todo de tierra (1 sola isla).

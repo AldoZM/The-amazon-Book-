@@ -1,10 +1,20 @@
 \problema{All Nodes Distance K in Binary Tree}{863}{src/02-arboles/863-all-nodes-distance-k-in-binary-tree.cpp}{Media}
 \complejidad{O(N)}{O(N)}
 
-En los árboles binarios estándar, los nodos solo tienen referencias a sus hijos. Esto significa que podemos viajar hacia abajo fácilmente, pero no podemos ``subir'' hacia los ancestros. Sin embargo, cuando se nos pide encontrar todos los nodos a una distancia $K$ de un nodo objetivo, la respuesta podría estar tanto en los subárboles de ese nodo como en otras partes del árbol a las que solo se puede llegar pasando por sus ancestros.
+Se nos da un árbol binario, un nodo objetivo y un número $K$, y hay que devolver todos los nodos que están exactamente a $K$ pasos de distancia del objetivo.
 
-Para resolver esto, podemos dividir el problema en dos fases. Primero, transformamos el árbol en un grafo no dirigido. Hacemos un recorrido inicial (por ejemplo, DFS) para construir un diccionario (mapa hash) que asocie cada nodo con su padre. Con esto, cada nodo ahora conoce a sus tres vecinos potenciales: hijo izquierdo, hijo derecho y padre.
+\paragraph{La idea, con un ejemplo de la vida real.} En un \emph{árbol binario} cada \emph{nodo} (cada ``persona'') solo sabe quiénes cuelgan de él (sus hijos izquierdo y derecho), pero no sabe quién está arriba (su \emph{padre}). Es como un juego de las escondidas donde solo puedes ver hacia abajo. El problema es que los nodos que buscan pueden estar hacia abajo del objetivo, pero también hacia arriba y luego bajando por otra rama, y para llegar a esos hay que poder subir.
 
-En la segunda fase, el problema se reduce a encontrar los nodos a distancia $K$ en un grafo. Para ello, utilizamos una Búsqueda en Anchura (BFS). Comenzamos desde el nodo objetivo, insertándolo en una cola y marcándolo como visitado (usando un conjunto o \textit{set}). Expandimos nuestra búsqueda nivel por nivel: en cada paso, desencolamos un nodo y encolamos a sus hijos y a su padre, siempre que no hayan sido visitados antes. Cuando alcanzamos el nivel $K$ de nuestra BFS, todos los nodos que se encuentren actualmente en la cola son exactamente los que están a distancia $K$ del objetivo.
+La solución es como tratar el árbol igual que un mapa de amistades: si en vez de ``padre e hijos'' pensamos que cada nodo simplemente tiene \emph{vecinos}, entonces cada nodo tiene hasta tres vecinos: su hijo izquierdo, su hijo derecho y su padre. Ese mapa de vecinos (donde las conexiones se pueden recorrer en los dos sentidos) se llama \emph{grafo}, y ahí sí podemos caminar libremente en todas direcciones.
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Lo hacemos en dos etapas.
+\begin{enumerate}
+  \item \textbf{Averiguar quién es el padre de cada quien.} Recorremos el árbol una vez bajando por las ramas y guardamos en un diccionario (un \emph{mapa hash}, que es como una agenda que empareja cada nodo con un dato) quién es el padre de cada nodo. Así cada nodo ya conoce a sus tres vecinos.
+  \item \textbf{Expandirnos como una gota de tinta en agua.} Partimos del objetivo y avanzamos por niveles, tocando primero a los vecinos que están a 1 paso, luego a los que están a 2 pasos, y así. Esta forma de explorar ``en círculos que crecen'' se llama \emph{BFS} (búsqueda en anchura). Usamos una \emph{cola} (una fila, como la del supermercado: el primero que entra es el primero que sale) y un \emph{conjunto} de visitados para no regresar por donde ya pasamos. Cuando hemos avanzado exactamente $K$ niveles, todos los nodos que quedaron en la fila son justo los que están a distancia $K$.
+\end{enumerate}
 
 \lstinputlisting{src/02-arboles/863-all-nodes-distance-k-in-binary-tree.cpp}
+
+\paragraph{¿Qué significa esa complejidad?} $N$ es la cantidad de nodos. Tanto el tiempo como la memoria son $O(N)$: en el peor caso visitamos cada nodo una sola vez, y el mapa de padres más la cola guardan a lo mucho un dato por nodo. No se puede hacer más rápido, porque para estar seguros hay que poder mirar todo el árbol.
+
+\paragraph{Consejos para la entrevista (Amazon).} La idea clave que el entrevistador quiere oír es ``convertir el árbol en un grafo para poder subir a los padres''. Marcar los nodos como visitados es imprescindible: si se te olvida, la búsqueda rebota entre un nodo y su padre para siempre. Menciona también los casos raros: si $K$ es 0 la respuesta es solo el propio objetivo, y si $K$ es más grande que el árbol, la respuesta queda vacía.

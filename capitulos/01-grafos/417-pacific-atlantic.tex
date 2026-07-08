@@ -8,16 +8,22 @@ altura de la vecina es \textbf{menor o igual} a la de la celda actual (el
 agua desciende o se mantiene, nunca sube). Queremos las coordenadas de las
 celdas desde las que el agua puede llegar a \textbf{ambos} océanos.
 
-\paragraph{Intuición.} Hacer un BFS/DFS de escurrimiento desde cada una de las
-$m\cdot n$ celdas para ver a qué océano llega sería $O((m\cdot n)^2)$: muy
-lento. La clave es invertir el problema: en lugar de preguntar ``¿a dónde
-llega el agua desde aquí?'', partimos de los bordes de cada océano y
-exploramos hacia adentro \emph{subiendo} de altura. Una celda vecina es
-alcanzable en este recorrido inverso si su altura es mayor o igual a la de la
-celda actual, porque en el sentido original el agua fluiría de esa vecina
-hacia la celda que estamos visitando. Así obtenemos, en una sola pasada por
-océano, el conjunto de celdas que logran drenar hasta él. La respuesta final
-es la intersección de ambos conjuntos.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que cada casilla es
+una montañita con cierta altura, y que el agua de lluvia solo puede escurrir
+hacia una casilla vecina si esa vecina está igual de alta o más baja (el agua
+baja o se queda, nunca sube). Un océano toca el borde de arriba y el de la
+izquierda; el otro océano toca el borde de abajo y el de la derecha. Queremos
+las casillas desde las que el agua puede llegar a \emph{los dos} océanos.
+
+Lo lento sería, para cada casilla, dejar caer una gota y seguirla a ver a qué
+océano llega. El truco es pensarlo al revés, como si rebobináramos un video:
+en lugar de salir de cada casilla, nos paramos en la orilla del océano y
+subimos «río arriba». Desde el borde del mar, avanzamos hacia adentro pero solo
+hacia vecinas que estén \emph{igual de altas o más altas}, porque si en la vida
+real el agua bajaba de esa vecina hacia aquí, entonces desde aquí, al revés,
+podemos subir hasta ella. Así, con un solo recorrido por océano, marcamos todas
+las casillas cuya agua logra llegar a ese mar. La respuesta son las casillas
+que quedaron marcadas por \emph{ambos} océanos a la vez.
 
 \begin{center}
 \ttfamily
@@ -35,8 +41,8 @@ $(0,4), (1,3), (1,4), (2,2), (3,0), (3,1), (4,0)$: desde cada una de estas
 celdas el agua puede descender hasta tocar tanto el borde superior/izquierdo
 como el inferior/derecho.
 
-\paragraph{Diagrama.} DFS inverso desde cada océano, subiendo de altura hacia
-adentro de la matriz:
+\paragraph{Diagrama.} Recorrido al revés desde cada océano, subiendo de altura
+hacia el centro de la matriz:
 
 \begin{center}
 \ttfamily
@@ -50,23 +56,40 @@ P \phantom{P P P} & A A A A A A A A\\
 \end{tabular}
 \end{center}
 
-\paragraph{Solución.} Dos matrices booleanas \texttt{pacifico} y
-\texttt{atlantico} marcan qué celdas alcanzan cada océano. Lanzamos un DFS
-desde cada celda del borde correspondiente; el DFS sólo avanza hacia una
-vecina cuya altura sea mayor o igual (nunca hacia una más baja, porque el
-agua no podría subir en el sentido inverso). Al final, las celdas marcadas en
-ambas matrices forman la respuesta:
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos dos tableros de
+marcas del mismo tamaño que el mapa: uno para el océano Pacífico y otro para el
+Atlántico. Una marca dice «desde aquí el agua sí puede llegar a este mar».
+\begin{enumerate}
+  \item Para el Pacífico, empezamos desde todas las casillas de su orilla (la
+        fila de arriba y la columna de la izquierda) y las marcamos.
+  \item Desde cada una avanzamos hacia adentro con un \emph{DFS} (búsqueda en
+        profundidad: seguir un camino hasta el fondo y luego regresar). El DFS
+        se llama a sí mismo sobre las vecinas; que una función se llame a sí
+        misma se llama \emph{recursión}, como una ficha de dominó que tira a las
+        de al lado. Solo avanzamos hacia una vecina si su altura es igual o
+        mayor (porque vamos «río arriba»), y solo si no la habíamos marcado ya.
+  \item Hacemos exactamente lo mismo para el Atlántico, empezando desde su
+        orilla (la fila de abajo y la columna de la derecha).
+  \item Al final, las casillas que quedaron marcadas en \emph{los dos} tableros
+        son la respuesta: desde ellas el agua llega a ambos océanos.
+\end{enumerate}
 
 \lstinputlisting{src/01-grafos/417-pacific-atlantic.cpp}
 
 \complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
 
-\paragraph{Notas de entrevista (Amazon).} El truco central es reconocer que
-invertir el sentido del recorrido (partir de los océanos en vez de partir de
-cada celda) baja la complejidad de $O((m\cdot n)^2)$ a $O(m\cdot n)$; es un
-patrón que vale la pena mencionar en voz alta al entrevistador. Casos borde
-importantes: matriz $1\times1$ (la única celda toca los cuatro bordes a la
-vez), una sola fila o columna (la misma fila/columna es simultáneamente
-borde de ambos océanos), y mesetas de altura uniforme (el agua fluye
-libremente entre vecinas de igual altura porque la condición es ``menor o
-igual'').
+\paragraph{¿Qué significa esa complejidad?} Aquí $m$ es el número de filas y
+$n$ el de columnas, así que $m\cdot n$ es el total de casillas. Que el tiempo
+sea $O(m\cdot n)$ significa que cada casilla se visita a lo mucho un par de
+veces (una por cada océano). Comparado con la idea lenta de seguir una gota
+desde cada casilla, esto es muchísimo más rápido.
+
+\paragraph{Consejos para la entrevista (Amazon).} El corazón del truco es darte
+cuenta de que conviene recorrer al revés: partir de los océanos en vez de
+partir de cada casilla. Eso baja el costo de algo lentísimo a algo rápido, y es
+buena idea decirlo en voz alta al entrevistador. No olvides los casos raros: un
+mapa de una sola casilla (esa casilla toca los cuatro bordes, así que llega a
+ambos mares), un mapa de una sola fila o columna (esa misma fila o columna es
+orilla de los dos océanos) y las zonas planas de igual altura (el agua pasa
+libremente entre casillas de la misma altura, porque la regla es «igual o más
+bajo»).

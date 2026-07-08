@@ -5,15 +5,21 @@ secuencia de enteros \emph{consecutivos} más larga (por ejemplo $3,4,5,6$),
 sin importar el orden en que aparezcan en el arreglo. El algoritmo debe
 correr en $O(n)$.
 
-\paragraph{Intuición.} Aunque no hay un grafo explícito, el patrón es el
-mismo que recorrer componentes: cada secuencia consecutiva es como una
-``isla'' de números, y sólo queremos visitar cada isla una vez, empezando
-desde su extremo más pequeño. Metemos todos los números en un
-\texttt{unordered\_set} para tener búsquedas en $O(1)$. Luego, para cada
-número, nos preguntamos: ¿soy el \emph{inicio} de mi secuencia? Un número
-\texttt{num} es inicio si \texttt{num - 1} no está en el conjunto. Sólo desde
-ahí contamos hacia arriba (\texttt{num+1}, \texttt{num+2}, \ldots) mientras
-existan en el conjunto.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina un montón de
+niños en el patio, cada uno con un número escrito en la playera, pero
+revueltos y sin formarse. Los niños con números seguidos (por ejemplo
+$3,4,5,6$) quieren tomarse de la mano y formar una fila. Nuestra tarea es
+encontrar la fila más larga que se pueda armar.
+
+El truco para no marearnos: en lugar de empezar a contar desde cualquier
+niño, solo empezamos desde el que va \emph{al frente} de su fila, es decir,
+el que no tiene a nadie con el número justo anterior. Si un niño tiene el
+$4$ y existe alguien con el $3$, ese niño no es el frente: dejamos que el
+que esté más adelante empiece a contar. Así cada fila se cuenta una sola
+vez. Para preguntar rápido ``¿existe un niño con tal número?'' guardamos
+todos los números en un \emph{conjunto} (\texttt{unordered\_set}): es como
+una caja mágica en la que preguntar si algo está adentro es instantáneo, sin
+tener que revisar uno por uno.
 
 \begin{center}
 \ttfamily
@@ -29,40 +35,45 @@ nums = \{100, 4, 200, 1, 3, 2\}\\[4pt]
 
 \noindent El máximo es \textbf{4}, por la secuencia $1,2,3,4$.
 
-\paragraph{¿Por qué es $O(n)$ y no $O(n^2)$?} Si contáramos hacia arriba
-desde \emph{cada} número sin filtrar, una secuencia larga dispararía un
-conteo redundante desde cada uno de sus elementos: el 1 recorrería
-$1,2,3,4$ (4 pasos), pero luego el 2 recorrería $2,3,4$ (3 pasos), el 3
-recorrería $3,4$ (2 pasos), etc. Para una secuencia de tamaño $k$ eso suma
-$O(k^2)$ pasos, y en el peor caso ($k = n$) el algoritmo completo sería
-$O(n^2)$.
-
-El truco de exigir que \texttt{num - 1} no esté en el conjunto garantiza que
-\emph{sólo el mínimo de cada secuencia} dispara un conteo, y ese conteo
-recorre la secuencia completa exactamente una vez. Como las secuencias no se
-traslapan (cada número pertenece a una sola secuencia consecutiva), la suma
-de todos los pasos de conteo, sobre \emph{todas} las secuencias, es a lo sumo
-$n$. En otras palabras: cada número se visita cuando mucho dos veces en todo
-el algoritmo: una vez para revisar si es inicio, y a lo sumo una vez más
-cuando se cuenta como parte de la secuencia de su verdadero inicio. Eso es
-exactamente lo que mantiene el algoritmo en $O(n)$.
-
-\paragraph{Solución.} Construimos el \texttt{unordered\_set}, y para cada
-número que sea inicio de secuencia (su antecesor no está en el conjunto)
-contamos hacia arriba mientras el siguiente exista. Nos quedamos con la
-longitud máxima encontrada. El código completo (abre el archivo con clic en
-el título):
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Metemos todos los números en la caja mágica
+        (\texttt{unordered\_set}). Los repetidos se funden en uno solo, y
+        eso está bien: un número repetido no alarga la fila.
+  \item Recorremos los números uno por uno. Para cada número \texttt{num}
+        preguntamos: ¿existe \texttt{num - 1} en la caja? Si \emph{sí}
+        existe, este número no es el frente de su fila, así que lo
+        saltamos.
+  \item Si \texttt{num - 1} \emph{no} existe, entonces \texttt{num} es el
+        frente. Empezamos a contar hacia arriba: ¿está \texttt{num + 1}?,
+        ¿y \texttt{num + 2}? Seguimos mientras el siguiente exista,
+        contando cuántos niños se unen a la fila.
+  \item Guardamos la longitud de la fila más larga que hayamos visto. Esa
+        es la respuesta.
+\end{enumerate}
+El código completo (abre el archivo con clic en el título):
 
 \lstinputlisting{src/01-grafos/128-longest-consecutive.cpp}
 
 \complejidad{$O(n)$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} El error típico es ordenar el
-arreglo primero, lo cual da $O(n \log n)$ y no cumple el requisito de $O(n)$
-que suele pedirse explícitamente en la entrevista. Enfatiza el filtro de
-``inicio de secuencia'' como la clave para evitar el trabajo repetido: sin
-él, el algoritmo degrada a $O(n^2)$ en arreglos con una sola secuencia larga.
-Casos borde a mencionar: arreglo vacío (respuesta $0$), duplicados (no
-alargan la secuencia, por eso usamos un \texttt{set} y no un \texttt{multiset}
-o un conteo de frecuencias), y números negativos (el algoritmo funciona
-igual, no depende del signo).
+\paragraph{¿Qué significa esa complejidad?} $O(n)$ quiere decir que el
+trabajo total crece igual que la cantidad de números: si hay el doble de
+números, tardamos más o menos el doble, nada peor. Quizá te preocupe que la
+fila se cuente muchas veces, pero no pasa: como solo el niño del frente
+empieza a contar, cada fila se recorre \emph{una sola vez} completa. Sumando
+todo, cada número se toca a lo mucho dos veces (una al revisar si es frente y
+otra al contarlo dentro de su fila). Si en cambio dejáramos que
+\emph{cualquier} niño empezara a contar, una fila larga se recontaría desde
+cada uno de sus miembros y el trabajo se dispararía a $O(n^2)$, mucho más
+lento.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error más común es
+ordenar el arreglo primero; eso funciona, pero tarda $O(n \log n)$ y no
+cumple el $O(n)$ que suelen pedirte de forma explícita. Explica que el filtro
+de ``solo el frente cuenta'' es justo lo que evita el trabajo repetido: sin
+él, el algoritmo se vuelve $O(n^2)$ cuando hay una sola fila muy larga.
+Menciona los casos raros: arreglo vacío (la respuesta es $0$), números
+repetidos (no alargan la fila, por eso usamos un conjunto que los funde, no
+un \texttt{multiset} ni un conteo de frecuencias) y números negativos
+(funcionan igual, al algoritmo no le importa el signo).

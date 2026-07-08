@@ -5,13 +5,19 @@ Dado un árbol binario, imagina que te paras del lado \emph{derecho} del
 ver, de arriba hacia abajo (uno por cada nivel: el nodo más a la derecha de
 ese nivel).
 
-\paragraph{Intuición.} Si recorremos el árbol nivel por nivel (como en el
-BFS de 994-Rotting-Oranges) y en cada nivel leemos los nodos de izquierda a
-derecha, el nodo que se ve desde afuera es simplemente el \emph{último} que
-leemos en ese nivel. No importa si ese nodo cuelga de la rama izquierda o
-derecha de su padre; lo único que importa es su posición dentro del nivel:
-el último en orden izquierda-a-derecha es, por definición, el más a la
-derecha, y por lo tanto el visible.
+\paragraph{La idea, con un ejemplo de la vida real.} Un \emph{nivel} del árbol
+es todo lo que está a la misma altura: la raíz es el nivel $0$, sus hijos el
+nivel $1$, y así hacia abajo. Recorrer «por niveles» es leer el árbol piso por
+piso, de arriba abajo; a esa forma de recorrer se le llama \emph{BFS} (búsqueda
+por anchura).
+
+Imagina que te asomas al árbol desde la derecha, como quien mira una fila de
+personas desde un costado: de cada fila solo alcanzas a ver a la persona que está
+más a la orilla, la de más a la derecha. Entonces, si en cada piso leemos los
+nodos de izquierda a derecha, el que se ve desde fuera es simplemente el
+\emph{último} que leemos en ese piso. No importa si ese nodo cuelga de la rama
+izquierda o derecha de su padre; lo único que importa es que sea el último de su
+piso, porque el último de izquierda a derecha es el que queda más a la derecha.
 
 \begin{center}
 \ttfamily
@@ -50,22 +56,37 @@ ningún nodo del lado derecho: 4 es el único nodo de ese nivel y, por lo
 tanto, el último leído de izquierda a derecha. Sí es visible desde la
 derecha aunque provenga de una rama izquierda.
 
-\paragraph{Solución.} BFS por niveles: en cada nivel guardamos el valor del
-último nodo procesado (el de más a la derecha). También es posible resolverlo
-con DFS visitando primero la rama derecha y luego la izquierda, registrando
-el primer nodo encontrado en cada profundidad (el primero en ese orden de
-visita es el más a la derecha; si ya hay un valor registrado para esa
-profundidad, el nodo actual queda oculto detrás de uno visitado antes).
+\paragraph{Cómo lo resuelve el código, paso a paso.} Recorremos el árbol por
+pisos usando una \emph{cola} (una fila de espera donde el primero que entra es
+el primero que sale):
+\begin{enumerate}
+  \item Metemos la raíz en la cola.
+  \item Mientras la cola no esté vacía, vemos cuántos nodos hay ahora: ese es el
+        tamaño del piso actual.
+  \item Sacamos esos nodos uno por uno de izquierda a derecha y vamos metiendo a
+        sus hijos para el piso siguiente.
+  \item El último nodo que sacamos de ese piso es el visible desde la derecha:
+        guardamos su valor.
+\end{enumerate}
+También se puede resolver con \emph{recursión} (una función que se llama a sí
+misma) visitando primero la rama derecha y luego la izquierda, y anotando el
+primer nodo que encontramos en cada altura: como bajamos primero por la derecha,
+ese primero es justo el más a la derecha, y cualquier otro de esa misma altura
+queda tapado detrás de él.
 
 \lstinputlisting{src/02-arboles/199-right-side-view.cpp}
 
 \complejidad{$O(n)$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} El error típico es asumir que el
-nodo visible de cada nivel siempre cuelga de una rama derecha; como muestra
-el segundo diagrama, puede colgar de una izquierda si esa rama derecha
-terminó antes. Aclarar esto en la entrevista demuestra que entendiste el
-problema y no memorizaste una solución superficial. Casos borde a mencionar:
-árbol vacío (vista vacía), árbol de un solo nodo (la vista es ese único
-valor), y árboles muy desbalanceados donde toda una rama es más profunda que
-la otra.
+\paragraph{¿Qué significa esa complejidad?} $n$ es el número de nodos. $O(n)$ en
+tiempo quiere decir que visitamos cada nodo una vez. $O(n)$ en memoria es porque
+la cola puede llegar a guardar todo un piso, que en el peor caso tiene casi la
+mitad de los nodos del árbol.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error típico es creer que
+el nodo visible de cada piso siempre cuelga de una rama derecha; como muestra el
+segundo dibujo, puede colgar de una izquierda si la rama derecha se acabó antes.
+Aclarar esto demuestra que entendiste el problema de verdad y no memorizaste una
+solución superficial. Casos raros: árbol vacío (vista vacía), un solo nodo (la
+vista es ese único valor), y árboles muy torcidos donde una rama es mucho más
+profunda que la otra.

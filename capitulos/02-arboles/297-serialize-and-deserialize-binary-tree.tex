@@ -6,14 +6,18 @@ enviado por la red o guardado en disco. El proceso inverso,
 \emph{deserializar}, toma esa cadena y reconstruye la estructura original en
 memoria de forma exacta. Diseña el algoritmo para lograr esto con un árbol binario.
 
-\paragraph{Intuición.} Existen varias formas válidas de recorrer un árbol y
-plasmarlo en texto (BFS por niveles como lo hace LeetCode internamente, o DFS).
-El enfoque más elegante y rápido de programar es el recorrido DFS en
-\textbf{preorden} (Raíz, Izquierda, Derecha).
+\paragraph{La idea, con un ejemplo de la vida real.} \emph{Serializar} es
+convertir el árbol en una sola tira de texto, como desarmar un mueble y anotar
+todas sus piezas en una lista para poder mandarlo por correo. \emph{Deserializar}
+es lo contrario: leer esa lista y volver a armar el mueble idéntico. La clave es
+que la lista tenga suficiente información para que no haya dudas al rearmar.
 
-Si recorremos el árbol así, y guardamos un carácter especial (digamos \texttt{"N"})
-cada vez que nos topemos con un puntero nulo, la cadena resultante tendrá toda
-la información necesaria para reconstruirse a sí misma sin ambigüedades.
+Hay varias formas de recorrer el árbol y anotarlo, pero la más cómoda de
+programar es el recorrido \emph{DFS en preorden} (primero la raíz, luego la
+rama izquierda, luego la derecha). El detalle mágico es que cada vez que nos
+topemos con un hueco (un \emph{puntero nulo}, o sea ``aquí no hay ningún nodo'')
+anotamos un símbolo especial, digamos \texttt{"N"}. Con esos huecos marcados, la
+tira de texto describe el árbol sin ninguna ambigüedad.
 
 \begin{center}
 \ttfamily
@@ -26,26 +30,31 @@ la información necesaria para reconstruirse a sí misma sin ambigüedades.
 \noindent Usando preorden y comas como separadores, el árbol de arriba genera
 la cadena: \texttt{"1,2,N,N,3,N,N,"}.
 
-\paragraph{Solución.} Para la serialización, usamos una recursión simple en
-preorden, concatenando el valor del nodo y las llamadas recursivas.
-
-Para la deserialización, el truco está en \emph{consumir} la cadena en el mismo
-orden (preorden). El primer valor que leamos será obligatoriamente la raíz.
-Después de crear la raíz, llamamos a la recursión para que consuma de la cadena
-todo lo que pertenezca al subárbol izquierdo, y luego lo que pertenezca al
-subárbol derecho. Usar un \texttt{stringstream} de C++ (pasado por referencia)
-hace que "consumir tokens separados por comas" sea extremadamente sencillo y
-elegante.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Las dos mitades usan
+\emph{recursión} (una función que se llama a sí misma para bajar por las ramas):
+\begin{enumerate}
+    \item \textbf{Al desarmar (serializar):} vamos en preorden escribiendo el valor del nodo seguido de una coma; si el nodo es un hueco, escribimos \texttt{"N"}. Después hacemos lo mismo con su rama izquierda y luego con la derecha.
+    \item \textbf{Al armar (deserializar):} leemos la tira \emph{en el mismo orden} en que la escribimos. El primer valor es siempre la raíz. Si leemos \texttt{"N"}, ahí no va nada (hueco). Tras crear un nodo, la recursión sigue leyendo: lo siguiente que aparezca es su rama izquierda, y cuando esa termine, su rama derecha.
+\end{enumerate}
+Como los valores están separados por comas, en C++ un \texttt{stringstream}
+pasado por referencia deja ir ``comiendo'' un pedazo a la vez de forma muy
+sencilla, y todas las llamadas recursivas avanzan sobre la misma tira sin
+perderse.
 
 \lstinputlisting{src/02-arboles/297-serialize-and-deserialize-binary-tree.cpp}
 
 \complejidad{$O(n)$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} Al ser un problema "Hard", los
-entrevistadores buscan ver tu dominio de las herramientas del lenguaje. Usar
-\texttt{std::stringstream} con \texttt{getline} en C++ demuestra madurez. Otro
-punto a favor: menciona por qué el recorrido BFS (por niveles) también es
-válido pero suele requerir más código (colas y manejo de nulos por nivel),
-mientras que DFS preorden brilla por la brevedad de su implementación recursiva.
-Evita usar variables globales enteras para el índice del string; en su lugar,
-pasa el estado (el stream o un iterador) por referencia.
+\paragraph{¿Qué significa esa complejidad?} $n$ es la cantidad de nodos. Tanto el
+tiempo como la memoria son $O(n)$: al desarmar y al armar tocamos cada nodo una
+sola vez, y la tira de texto (más la pila de la recursión) guarda un pedacito por
+cada nodo. No se puede pedir menos, porque hay que escribir y leer todo el árbol.
+
+\paragraph{Consejos para la entrevista (Amazon).} Es un problema ``Hard'' y los
+entrevistadores quieren ver que dominas las herramientas del lenguaje: usar
+\texttt{std::stringstream} con \texttt{getline} en C++ se ve muy maduro. Suma
+puntos si mencionas que el recorrido BFS (por niveles) también funciona, pero
+suele pedir más código (colas y manejar los huecos nivel por nivel), mientras
+que el DFS en preorden gana por lo cortito de su recursión. Evita usar variables
+globales para llevar la posición en la tira; en su lugar pasa el estado (el
+stream) por referencia.

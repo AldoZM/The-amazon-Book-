@@ -9,44 +9,49 @@ inmediatos.
 Debes determinar la cantidad máxima de dinero que el ladrón puede llevarse sin
 alertar a la policía.
 
-\paragraph{Intuición.} Si estás parado en cualquier casa (nodo) tomando una
-decisión, solo tienes dos opciones: o la robas, o no la robas.
+\paragraph{La idea, con un ejemplo de la vida real.} Las casas están acomodadas
+formando un \emph{árbol binario}: cada casa (cada \emph{nodo}) tiene otras casas
+colgando debajo (sus hijos), y no puedes robar dos casas que estén conectadas
+directamente. Parado frente a cualquier casa solo tienes dos opciones:
 \begin{itemize}
-    \item \textbf{Opción 1: Robas la casa actual.} Si haces esto, la alarma de
-    la policía limita tus siguientes movimientos: tienes \emph{estrictamente
-    prohibido} robar las casas de los hijos directos. Así que la ganancia de
-    esta rama sería el valor de la casa actual, más el dinero máximo que
-    podrías obtener de los subárboles de los hijos \emph{asumiendo que no
-    robaste esos hijos}.
-    \item \textbf{Opción 2: No robas la casa actual.} Al mantenerte alejado de
-    esta casa, la policía no sospecha. Ahora eres completamente \emph{libre}
-    de hacer lo que quieras con las casas de los hijos: puedes decidir
-    robarlas o no robarlas. Obviamente, elegirás la opción que te dé más
-    dinero de cada hijo de forma independiente.
+    \item \textbf{Opción 1: robas esta casa.} Como la alarma se dispararía,
+    tienes \emph{prohibido} robar las casas hijas que cuelgan justo debajo. Tu
+    botín sería el dinero de esta casa más lo mejor que puedas sacar de los
+    nietos hacia abajo, pero \emph{sin} tocar a los hijos directos.
+    \item \textbf{Opción 2: no robas esta casa.} Al dejarla en paz, quedas
+    \emph{libre} para hacer lo que quieras con las casas hijas: robarlas o no.
+    De cada hijo eliges lo que te dé más dinero.
 \end{itemize}
 
-El problema de calcular estas dos opciones de forma independiente para cada nodo
-con recursión simple es que terminarías calculando los mismos subárboles una y
-otra vez, con una complejidad de $O(2^n)$.
+Si calculas estas dos opciones con una recursión ingenua, acabas recalculando
+los mismos pedazos del árbol una y otra vez, y el trabajo explota a $O(2^n)$
+(una cantidad monstruosa).
 
-\paragraph{Solución.} Para evitar el recálculo (y sin necesidad de usar un mapa
-hash de memoización), podemos hacer que nuestra función recursiva (DFS)
-devuelva \textbf{ambas} respuestas a la vez para cada subárbol. En C++, podemos
-devolver un \texttt{std::pair<int, int>} con la estructura:
-\texttt{\{max\_SIN\_robar, max\_ROBANDO\}}.
-
-De esta forma, visitamos cada nodo del árbol exactamente una vez en post-orden
-(visitamos a los hijos primero para tener sus resultados, y luego tomamos la
-decisión para el padre).
+\paragraph{Cómo lo resuelve el código, paso a paso.} El truco para no repetir
+trabajo es que cada casa devuelva \textbf{las dos respuestas a la vez}, en lugar
+de una sola. En C++ usamos un \texttt{std::pair<int, int>} (una parejita de dos
+números) con la forma \texttt{\{max\_SIN\_robar, max\_ROBANDO\}}.
+\begin{enumerate}
+    \item Recorremos el árbol de abajo hacia arriba (recorrido en \emph{postorden}: primero los hijos, al final el padre), lo que garantiza que cuando decidimos en una casa ya tenemos las dos respuestas de sus hijos.
+    \item Para calcular \texttt{max\_ROBANDO} de una casa: su dinero más el \texttt{max\_SIN\_robar} de cada hijo (porque si robas, los hijos quedan prohibidos).
+    \item Para calcular \texttt{max\_SIN\_robar}: de cada hijo tomamos lo mejor entre sus dos opciones y lo sumamos.
+    \item La respuesta final es la mejor de las dos opciones de la raíz.
+\end{enumerate}
+Así visitamos cada casa una sola vez y ni siquiera necesitamos una libreta
+extra para recordar cálculos (\emph{memoización}).
 
 \lstinputlisting{src/02-arboles/337-house-robber-iii.cpp}
 
 \complejidad{$O(n)$}{$O(h)$}
 
-\paragraph{Notas de entrevista (Amazon).} Muchos candidatos se lanzan
-inmediatamente a escribir una recursión simple con memoización usando un
-\texttt{unordered\_map<TreeNode*, int>}. Aunque funciona, la solución óptima es
-devolver los dos estados en un par (o arreglo pequeño). Mencionar la evolución
-de una solución ingenua ($O(2^n)$) a una memoizada y, finalmente, a esta de
-estado compuesto ($O(n)$ de tiempo y sin la sobrecarga de un mapa hash) da una
-excelente impresión en la entrevista de Amazon.
+\paragraph{¿Qué significa esa complejidad?} $n$ es la cantidad de casas y $h$ la
+altura del árbol. El tiempo $O(n)$ quiere decir que pasamos por cada casa una
+sola vez. La memoria $O(h)$ es el espacio de la recursión: la pila de llamadas
+abiertas es tan alta como el árbol.
+
+\paragraph{Consejos para la entrevista (Amazon).} Muchos se lanzan de inmediato a
+una recursión con memoización usando un \texttt{unordered\_map<TreeNode*, int>}.
+Funciona, pero la solución más elegante es devolver los dos estados en una
+parejita. Contar la evolución de la idea (de la ingenua $O(2^n)$, a la memoizada,
+y por fin a esta de estado doble que corre en $O(n)$ y sin la carga de un mapa
+hash) deja muy buena impresión.

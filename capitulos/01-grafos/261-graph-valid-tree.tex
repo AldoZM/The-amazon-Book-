@@ -3,14 +3,21 @@
 Nos dan $n$ nodos etiquetados de $0$ a $n-1$ y una lista de aristas no
 dirigidas. Queremos saber si ese grafo forma un \emph{árbol} válido.
 
-\paragraph{Intuición.} Un árbol es, por definición, un grafo conectado y sin
-ciclos. Por lo tanto hay que revisar ambas condiciones. La observación clave
-es aritmética: un árbol con $n$ nodos tiene \textbf{exactamente} $n-1$
-aristas. Si hay menos, es imposible que todo esté conectado; si hay más,
-forzosamente sobra alguna arista que cierra un ciclo. Así que primero
-descartamos por conteo, y luego sólo falta comprobar que, con exactamente
-$n-1$ aristas, ninguna de ellas cierre un ciclo (si no hay ciclos y el
-conteo de aristas es $n-1$, la conectividad total queda garantizada).
+\paragraph{La idea, con un ejemplo de la vida real.} Un \emph{árbol}, en
+matemáticas, es una red de puntos unidos por líneas que cumple dos cosas: todo
+está conectado en una sola pieza (puedes llegar de cualquier punto a cualquier
+otro) y no tiene ningún círculo cerrado. Piensa en el árbol genealógico de una
+familia, o en las ramas de un árbol de verdad: todo cuelga de un mismo tronco y
+las ramas nunca se vuelven a juntar para formar un aro.
+
+Hay un truco de conteo muy útil: un árbol con $n$ puntos tiene
+\textbf{exactamente} $n-1$ líneas. Si tiene menos, es imposible que todo quede
+conectado (faltan líneas para unir todo); si tiene más, forzosamente sobra
+alguna línea que cierra un aro. Así que primero descartamos por el número de
+líneas, y si son justo $n-1$, solo nos falta comprobar que ninguna de ellas
+cierre un aro. Un \emph{aro} o círculo cerrado se llama en matemáticas un
+\emph{ciclo}. Si no hay ciclos y hay $n-1$ líneas, entonces todo queda
+conectado automáticamente.
 
 \begin{center}
 \ttfamily
@@ -25,43 +32,61 @@ aristas: [0,1] [0,2] [0,3] [1,4] \quad$\to$\quad 4 = n-1 \quad$\to$\quad \textbf
 \end{tabular}
 \end{center}
 
-\paragraph{Union-Find (patrón nuevo).} Para detectar ciclos de forma
-eficiente usamos \emph{Union-Find} (o \emph{Disjoint Set Union}, DSU), una
-estructura que no habíamos usado antes en este libro:
+\paragraph{Una herramienta nueva: ``Union-Find''.} Para cachar los aros de
+forma rápida usamos una herramienta llamada \emph{Union-Find} (también conocida
+como \emph{Disjoint Set Union} o DSU). Sirve para llevar la cuenta de qué puntos
+están en el mismo grupo, como cuando en el recreo se van formando equipos y
+quieres saber al instante si dos niños ya son del mismo equipo. Cada grupo tiene
+un ``capitán'' (su representante), y para saber si dos puntos son del mismo
+grupo basta con ver si tienen el mismo capitán.
 
 \begin{itemize}
-  \item Cada nodo arranca siendo su propio representante (su propio
-    conjunto), guardado en un arreglo \texttt{padre}.
-  \item \texttt{find(x)} sigue los punteros \texttt{padre} hasta llegar a la
-    raíz del conjunto de \texttt{x}. Con \textbf{compresión de caminos}, cada
-    nodo visitado en el trayecto se re-liga directamente a la raíz, así que
-    consultas futuras son casi instantáneas.
-  \item \texttt{unite(x, y)} busca las raíces de \texttt{x} y \texttt{y}.
-    Si ya comparten raíz, \texttt{x} y \texttt{y} ya estaban conectados por
-    otro camino distinto de esta arista, y añadirla formaría un
-    \textbf{ciclo}: devolvemos \texttt{false}. Si las raíces son distintas,
-    fusionamos los conjuntos usando \textbf{unión por rango}: la raíz del
-    árbol de menor altura cuelga de la raíz del árbol más alto, para que los
-    árboles del DSU se mantengan planos y las operaciones sigan siendo
-    rápidas.
+  \item Al principio, cada punto es su propio capitán (cada quien es su propio
+    equipo de una persona). Eso se guarda en un arreglo \texttt{padre}.
+  \item \texttt{find(x)} averigua quién es el capitán de \texttt{x}: va
+    siguiendo la cadena de jefes hacia arriba hasta llegar al de más arriba.
+    Con un truco llamado \emph{compresión de caminos}, cada punto por el que
+    pasamos se reengancha directo al capitán, para que la próxima vez la
+    respuesta sea casi inmediata.
+  \item \texttt{unite(x, y)} junta los equipos de \texttt{x} y \texttt{y}.
+    Primero mira quién es el capitán de cada uno. Si resulta que ya tienen el
+    mismo capitán, quiere decir que \texttt{x} y \texttt{y} ya estaban
+    conectados por otro camino, y esta línea nueva cerraría un aro (un
+    \emph{ciclo}): devolvemos \texttt{false}. Si tienen capitanes distintos,
+    unimos los dos equipos colgando el equipo pequeño del grande (eso se llama
+    \emph{unión por rango}), para que las cadenas de jefes se queden cortas y
+    todo siga siendo rápido.
 \end{itemize}
 
-\paragraph{Solución.} Primero descartamos si el número de aristas no es
-$n-1$. Después recorremos cada arista llamando a \texttt{unite}; si alguna
-llamada detecta que ambos extremos ya comparten raíz, hay un ciclo y
-regresamos \texttt{false} de inmediato. Si procesamos todas las aristas sin
-encontrar ciclos, el grafo es un árbol válido.
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Primero contamos las líneas: si no son exactamente $n-1$, ya sabemos
+        que no es un árbol y respondemos \texttt{false}.
+  \item Si sí son $n-1$, recorremos las líneas una por una llamando a
+        \texttt{unite} para juntar los equipos de sus dos extremos.
+  \item Si en alguna línea los dos extremos ya eran del mismo equipo, es que se
+        forma un aro: respondemos \texttt{false} de inmediato.
+  \item Si recorremos todas las líneas sin encontrar ningún aro, entonces sí es
+        un árbol válido.
+\end{enumerate}
 
 \lstinputlisting{src/01-grafos/261-graph-valid-tree.cpp}
 
 \complejidad{casi $O(n + e\cdot\alpha(n))$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} Menciona primero el atajo de
-conteo ($n-1$ aristas) porque descarta la mayoría de los casos triviales sin
-tocar el DSU. Explica por qué la unión por rango y la compresión de caminos
-son necesarias: sin ellas, \texttt{find} podría degenerar a $O(n)$ por
-llamada en el peor caso (una cadena larga), mientras que con ambas
-optimizaciones la complejidad amortizada es prácticamente constante ($\alpha$
-es la inversa de Ackermann). Casos borde a mencionar: $n=1$ sin aristas (es
-un árbol trivial válido), grafo con ciclo, grafo desconectado en varios
-componentes, y aristas de más o de menos respecto a $n-1$.
+\paragraph{¿Qué significa esa complejidad?} Aquí $n$ es el número de puntos y
+$e$ el de líneas. En pocas palabras, tocamos cada punto y cada línea una sola
+vez. Ese símbolo raro, $\alpha(n)$, es una función que crece tan pero tan
+despacio que para cualquier cantidad de puntos que veas en la vida real vale
+prácticamente lo mismo que $3$ o $4$: por eso decimos que cada operación de
+Union-Find es ``casi instantánea''.
+
+\paragraph{Consejos para la entrevista (Amazon).} Menciona primero el atajo de
+contar líneas ($n-1$), porque descarta la mayoría de los casos fáciles sin ni
+siquiera usar Union-Find. Explica por qué los dos trucos (colgar el equipo
+pequeño del grande y reenganchar los puntos al capitán) son importantes: sin
+ellos, buscar al capitán podría volverse lento en el peor caso (una cadena
+larguísima de jefes), mientras que con los dos trucos cada consulta es casi
+instantánea. No olvides los casos raros: $n=1$ sin líneas (es un árbol trivial
+válido), un grafo con un aro, un grafo partido en varios pedazos sueltos, y
+tener más o menos líneas de las $n-1$ que debe tener un árbol.

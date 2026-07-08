@@ -5,38 +5,54 @@ es el recorrido en preorden de un árbol binario y el segundo es su recorrido en
 inorden, reconstruye y devuelve el árbol binario original. (Se garantiza que no
 hay valores duplicados en el árbol).
 
-\paragraph{Intuición.} Analicemos la naturaleza de los dos recorridos:
+\paragraph{La idea, con un ejemplo de la vida real.} Un ``recorrido'' es el
+orden en que anotamos los nodos cuando paseamos por el árbol. Aquí nos dan dos
+listas de ese paseo, y con las dos juntas tenemos que volver a dibujar el árbol,
+como armar un mueble con dos hojas de instrucciones distintas. Fíjate en la
+forma de cada lista:
 \begin{itemize}
-    \item \textbf{Preorden (Preorder):} El formato es \texttt{[RAÍZ, [Elementos del Subárbol Izquierdo], [Elementos del Subárbol Derecho]]}.
-    \item \textbf{Inorden (Inorder):} El formato es \texttt{[[Elementos del Subárbol Izquierdo], RAÍZ, [Elementos del Subárbol Derecho]]}.
+    \item \textbf{Preorden:} anota primero la raíz y luego lo demás: \texttt{[RAÍZ, [Subárbol Izquierdo], [Subárbol Derecho]]}. Su primer elemento siempre es el jefe del árbol.
+    \item \textbf{Inorden:} anota primero todo lo de la izquierda, luego la raíz y al final lo de la derecha: \texttt{[[Subárbol Izquierdo], RAÍZ, [Subárbol Derecho]]}.
 \end{itemize}
 
-El arreglo \texttt{preorder} siempre nos da un regalo inestimable: su primer
-elemento es \textbf{garantizadamente} la raíz del árbol actual. Una vez que
-sabemos quién es la raíz, podemos buscar ese valor en el arreglo
-\texttt{inorder}. Todo lo que quede a la izquierda de ese valor en \texttt{inorder}
-pertenecerá al subárbol izquierdo, y todo lo que quede a la derecha será del
-subárbol derecho.
+Junta las dos pistas y sale magia: \texttt{preorder} te regala quién es la raíz
+(su primer elemento). Buscas ese valor en \texttt{inorder} y, como ahí la raíz
+está justo en medio, todo lo que quede a su izquierda es el subárbol izquierdo y
+todo lo de su derecha es el subárbol derecho. Ya separaste el árbol en dos
+mitades más chiquitas.
 
-Por ejemplo, si la raíz es 3 y la encontramos en el índice $i$ de
-\texttt{inorder}, sabemos que hay exactamente $i$ elementos en el subárbol izquierdo.
-Esto nos indica que los siguientes $i$ elementos en \texttt{preorder} forman el
-subárbol izquierdo, y el resto forman el derecho.
+Por ejemplo, si la raíz es 3 y en \texttt{inorder} aparece en la posición $i$,
+entonces hay exactamente $i$ nodos en el subárbol izquierdo. Eso también te dice
+que los siguientes $i$ valores de \texttt{preorder} forman esa mitad izquierda, y
+el resto la derecha.
 
-\paragraph{Solución.} Podemos aplicar recursión, "consumiendo" elementos de
-\texttt{preorder} uno por uno como las raíces de los subárboles que vamos
-construyendo. Para que la búsqueda de la raíz en \texttt{inorder} no tome
-$O(n)$ en cada paso (lo que haría la solución $O(n^2)$), creamos un mapa hash al
-inicio que nos dice el índice de cualquier valor en $O(1)$.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Repetimos ese mismo truco
+una y otra vez sobre pedazos cada vez más pequeños (eso es \emph{recursión}, y
+esta estrategia de partir el problema en mitades se llama \emph{dividir y
+vencer}):
+\begin{enumerate}
+    \item Tomamos el siguiente valor de \texttt{preorder}: ese es la raíz del pedazo que estamos armando.
+    \item Buscamos dónde está esa raíz en \texttt{inorder} para saber cuántos nodos van a la izquierda y cuántos a la derecha.
+    \item Construimos primero el subárbol izquierdo y luego el derecho, cada uno con el mismo procedimiento.
+\end{enumerate}
+Para que buscar la raíz dentro de \texttt{inorder} sea instantáneo (y no lento,
+lo que volvería todo $O(n^2)$), al principio armamos un \emph{mapa hash} (una
+agenda que empareja cada valor con su posición) y así encontramos cualquier
+índice al instante.
 
 \lstinputlisting{src/02-arboles/105-construct-binary-tree-from-preorder-and-inorder-traversal.cpp}
 
 \complejidad{$O(n)$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} Este es un problema clásico de
-"divide y vencerás". El detalle técnico más importante es pasar el índice de
-\texttt{preorder} por \textbf{referencia} (\texttt{int\& preIndex}) para que
-el avance secuencial de la raíz se mantenga sincronizado a través de todas las
-llamadas recursivas. Si lo pasas por valor, los subárboles derechos procesarán
-las raíces equivocadas. La memoria extra $O(n)$ viene del mapa hash y de la pila
-recursiva.
+\paragraph{¿Qué significa esa complejidad?} $n$ es la cantidad de nodos. El
+tiempo $O(n)$ significa que creamos cada nodo una sola vez, y gracias al mapa
+hash ya no perdemos tiempo buscando. La memoria $O(n)$ viene de dos cosas: el
+propio mapa hash guarda un dato por nodo, y la recursión abre una pila de
+llamadas.
+
+\paragraph{Consejos para la entrevista (Amazon).} Es un ejemplo clásico de
+``dividir y vencer''. El detalle técnico que más cuenta es pasar el índice de
+\texttt{preorder} por \textbf{referencia} (\texttt{int\& preIndex}), para que el
+avance de la raíz se mantenga sincronizado entre todas las llamadas recursivas.
+Si lo pasas por valor (una copia), los subárboles de la derecha tomarían la raíz
+equivocada y el árbol saldría mal.

@@ -1,10 +1,22 @@
 \problema{Diameter of Binary Tree}{543}{src/02-arboles/543-diameter-of-binary-tree.cpp}{Fácil}
 \complejidad{O(N)}{O(H)}
 
-En este problema, se nos pide encontrar la longitud del camino más largo entre dos nodos de un árbol binario. Es un error común pensar que este camino debe pasar forzosamente por la raíz; podría darse el caso de que un subárbol muy profundo tenga su propio camino que no interactúe con la raíz.
+En este problema se nos pide encontrar la longitud del camino más largo entre dos nodos de un árbol binario (esa longitud se mide contando cuántos ``palitos'' o aristas hay que caminar de un nodo a otro).
 
-La observación fundamental es notar que cualquier camino entre dos nodos puede visualizarse subiendo de un nodo hasta un ancestro común y luego bajando hacia el otro. Visto desde la perspectiva de ese ancestro, la longitud total del camino será la altura de su rama izquierda más la altura de su rama derecha.
+\paragraph{La idea, con un ejemplo de la vida real.} Un \emph{árbol binario} es como el organigrama de una familia dibujado de cabeza: hasta arriba está el jefe (la \emph{raíz}) y de cada persona pueden colgar como mucho dos personas por debajo, una a la izquierda y otra a la derecha. A cada persona la llamamos \emph{nodo}, y a las que ya no tienen a nadie colgando les decimos \emph{hojas}. Imagina que este árbol es el mapa de un parque de diversiones y que los palitos que unen a los nodos son caminitos. El problema nos pregunta: ¿cuál es el paseo más largo que se puede hacer caminando de una atracción a otra?
 
-Entonces, la solución consiste en hacer un recorrido \textit{post-order} (profundidad primero). Para cada nodo calculamos recursivamente la altura de sus dos ramas. En ese momento, calculamos la suma de ambas alturas; este es el diámetro si el camino ``doblara'' en este nodo. Llevamos una variable global que mantiene el registro del diámetro máximo encontrado en todo el árbol. Al mismo tiempo, hacia el padre de la recursión, le devolvemos $1 + \max(\text{alturaIzq}, \text{alturaDer})$, informando así el camino más largo posible desde la hoja hasta el padre en una sola dirección.
+Mucha gente cree que ese paseo tan largo siempre pasa por el jefe de hasta arriba, pero no es cierto: podría estar escondido en una rama muy profunda y ni siquiera tocar la raíz. El truco para verlo bien es este: todo paseo entre dos nodos sube desde uno hasta cierto ``punto de encuentro'' (un antepasado común) y desde ahí baja hacia el otro. Parados en ese punto de encuentro, el paseo más largo mide \emph{lo que baja por la rama izquierda} más \emph{lo que baja por la rama derecha}.
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Recorremos el árbol de abajo hacia arriba (a esto se le llama recorrido en \emph{postorden}: primero visitamos a los hijos y solo al final al padre). Que una función se llame a sí misma para bajar por las ramas se llama \emph{recursión}; piénsalo como preguntarle a tus subordinados y que ellos le pregunten a los suyos, hasta llegar a los de más abajo, y que las respuestas vayan subiendo.
+
+\begin{enumerate}
+  \item Para cada nodo le preguntamos a su rama izquierda y a su rama derecha: ``¿qué tan hondo llegas?'' (esa profundidad es la \emph{altura} de la rama).
+  \item Sumamos las dos alturas. Ese número es el paseo más largo que ``dobla'' justo en este nodo. Lo comparamos con el mejor paseo que llevamos guardado en una variable y, si es más grande, lo actualizamos.
+  \item A su propio padre, el nodo le devuelve $1 + \max(\text{alturaIzq}, \text{alturaDer})$, es decir, qué tan hondo se puede bajar desde él por una sola dirección (la más larga de sus dos ramas).
+\end{enumerate}
 
 \lstinputlisting{src/02-arboles/543-diameter-of-binary-tree.cpp}
+
+\paragraph{¿Qué significa esa complejidad?} $N$ es la cantidad de nodos del árbol y $H$ su altura (qué tan alto es). Decir que el tiempo es $O(N)$ significa que solo pasamos una vez por cada nodo, ni uno se visita dos veces. La memoria $O(H)$ es el espacio que ocupa la recursión: es la ``pila'' de preguntas pendientes, y como mucho tenemos tantas preguntas abiertas como niveles tiene el árbol.
+
+\paragraph{Consejos para la entrevista (Amazon).} El punto que más impresiona es explicar por qué el camino más largo no siempre pasa por la raíz, y por qué necesitamos una variable aparte para el máximo (porque lo que devolvemos al padre es solo una rama, no la suma de las dos). No olvides los casos raros: un árbol vacío (diámetro 0) o un árbol de un solo nodo (también 0, porque no hay ningún palito que caminar).

@@ -8,13 +8,18 @@ tamaño \texttt{n x n}, donde \texttt{isConnected[i][j] == 1} si la ciudad
 indirectamente, sin conexión con ninguna ciudad fuera del grupo. Queremos
 contar cuántas provincias hay.
 
-\paragraph{Intuición.} Esta matriz no es más que otra forma de entregarnos
-el mismo grafo no dirigido de \textbf{323. Number of Connected
-Components}: en vez de recibir una lista de aristas $[a, b]$, nos dan,
-para cada par de ciudades $(i, j)$, si existe o no esa arista. El
-problema de fondo es idéntico: contar componentes conexos. Basta
-recorrer la matriz y, cada vez que \texttt{isConnected[i][j] == 1} con
-\texttt{i != j}, tratar a $i$ y $j$ como dos nodos unidos por una arista.
+\paragraph{La idea, con un ejemplo de la vida real.} Piensa en las ciudades
+como niños y en una provincia como un grupo de amigos. Dos niños son amigos
+directos si la casilla \texttt{isConnected[i][j]} vale \texttt{1}. Pero la
+amistad se contagia: si Ana es amiga de Beto y Beto es amigo de Carla, los
+tres pertenecen al mismo grupo aunque Ana y Carla no se conozcan
+directamente. Contar provincias es contar cuántos grupos de amigos separados
+hay.
+
+La matriz solo es otra manera de darnos el mismo mapa de amistades: en lugar
+de una lista de parejas de amigos, nos entregan un tablero que, para cada
+par de ciudades $(i,j)$, dice con un \texttt{1} o un \texttt{0} si son amigas
+directas.
 
 \begin{center}
 \ttfamily
@@ -29,37 +34,55 @@ recorrer la matriz y, cada vez que \texttt{isConnected[i][j] == 1} con
 directamente) y $\{2\}$ (aislada, solo conectada consigo misma en la
 diagonal).
 
-\paragraph{Solución (Union-Find / DSU).} Igual que en 323, usamos
-Union-Find: cada ciudad empieza siendo su propia raíz (\texttt{n}
-provincias). Recorremos únicamente la mitad superior de la matriz (es
-simétrica, así que revisar $i < j$ basta) y, cuando
-\texttt{isConnected[i][j] == 1}, unimos las raíces de $i$ y $j$ con
-compresión de caminos y unión por rango; si las raíces eran distintas,
-dos provincias acaban de fusionarse y decrementamos el contador.
+\paragraph{Cómo lo resuelve el código, paso a paso (Union-Find).}
+\emph{Union-Find} (también llamado DSU) es una técnica para agrupar cosas
+rápidamente. Imagina que cada grupo de amigos elige un \emph{capitán}, y
+todos en el grupo saben quién es su capitán. Dos ciudades están en la misma
+provincia exactamente cuando comparten capitán.
+\begin{enumerate}
+  \item Al principio nadie se conoce, así que cada ciudad es su propio
+        capitán: hay \texttt{n} grupos (\texttt{n} provincias).
+  \item Recorremos el tablero. Como es simétrico (si $i$ es amiga de $j$,
+        entonces $j$ es amiga de $i$), basta mirar la mitad de arriba
+        ($i < j$) para no repetir trabajo.
+  \item Cada vez que encontramos un \texttt{1} (ciudades $i$ y $j$
+        conectadas), \emph{unimos} sus grupos: buscamos el capitán de cada
+        una y, si eran distintos, los juntamos bajo un solo capitán y
+        restamos $1$ al conteo de provincias (dos grupos se volvieron uno).
+  \item Al terminar, el contador tiene el número de grupos que quedaron.
+\end{enumerate}
+Dos detalles hacen que buscar al capitán sea casi instantáneo: la
+\emph{compresión de caminos} (cada vez que buscamos, dejamos a la ciudad
+apuntando directo a su capitán, para la próxima vez) y la \emph{unión por
+rango} (al juntar, colgamos el grupo pequeño del grande, para que las
+cadenas no se hagan largas).
 
 \lstinputlisting{src/01-grafos/547-number-of-provinces.cpp}
 
 \complejidad{$O(n^2\cdot\alpha(n))$}{$O(n)$}
 
-\noindent recorremos las $n^2$ celdas de la matriz (en la práctica, solo
-la mitad superior), y cada \texttt{find}/\texttt{unir} es casi $O(1)$
-amortizado gracias a $\alpha(n)$, la inversa de Ackermann.
+\paragraph{¿Qué significa esa complejidad?} Recorremos las $n^2$ casillas
+del tablero (en la práctica solo la mitad de arriba), y por eso el tiempo
+depende de $n^2$. Buscar o unir capitanes cuesta casi nada, prácticamente
+un paso, gracias a los dos trucos de arriba; ese ``casi nada'' se escribe
+$\alpha(n)$ (la inversa de Ackermann), una función que crece tan
+increíblemente lento que para cualquier cantidad de ciudades del mundo real
+vale $4$ o menos. En resumen: no puedes bajar de $n^2$ porque solo
+\emph{leer} el tablero completo ya cuesta eso.
 
-\paragraph{Notas de entrevista (Amazon).} Este problema es hermano
-directo de \textbf{323. Number of Connected Components}: la única
-diferencia real es el formato de entrada (matriz de adyacencia en vez de
-lista de aristas), la técnica de fondo es la misma Union-Find. También se
-puede resolver con DFS/BFS clásico: por cada ciudad no visitada, sumar
-una provincia y recorrer con DFS toda la fila de la matriz para marcar
-como visitadas a todas las ciudades conectadas (transitivamente), igual
-que se ``hunde'' la tierra en \textbf{200. Number of Islands}. Vale la
-pena mencionar ambos enfoques: DFS/BFS es más directo de explicar dado
-que la entrada ya es una matriz densa, pero Union-Find generaliza mejor
-si el entrevistador hace un seguimiento tipo ``¿y si las conexiones
-llegan una a una en vez de venir todas de entrada?''. Cuidado con el
-costo: si $n$ es grande, $O(n^2)$ ya es el costo de solo \emph{leer} la
-matriz de adyacencia, así que ninguna técnica baja de esa cota; con una
-lista de adyacencia dispersa convendría más recibir aristas explícitas
-en vez de la matriz completa. Casos borde: una sola ciudad ($1$
-provincia), ninguna ciudad conectada con otra (cada una su propia
-provincia), y todas las ciudades conectadas entre sí ($1$ provincia).
+\paragraph{Consejos para la entrevista (Amazon).} Este problema es hermano
+de \textbf{323. Number of Connected Components}: lo único que cambia es cómo
+te entregan las conexiones (un tablero en vez de una lista de parejas); por
+dentro es el mismo Union-Find. También se puede resolver con DFS/BFS: por
+cada ciudad que no hayas visitado, sumas una provincia y ``te contagias''
+visitando a todos sus amigos, y a los amigos de sus amigos, marcándolos como
+vistos (igual que se ``hunde'' la tierra en \textbf{200. Number of
+Islands}). Vale la pena mencionar ambos: DFS/BFS es más fácil de explicar
+cuando la entrada ya es un tablero, pero Union-Find gana si el entrevistador
+pregunta ``¿y si las conexiones llegan una por una en vez de todas de
+golpe?''. Ojo con el costo: si $n$ es grande, $O(n^2)$ es simplemente lo que
+cuesta leer el tablero, así que ninguna técnica baja de ahí; con pocas
+conexiones convendría recibir una lista de parejas en lugar del tablero
+completo. Casos raros: una sola ciudad ($1$ provincia), ninguna ciudad
+conectada con otra (cada una es su propia provincia) y todas conectadas
+entre sí ($1$ provincia).

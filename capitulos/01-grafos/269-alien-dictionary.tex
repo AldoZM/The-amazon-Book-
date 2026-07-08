@@ -5,11 +5,20 @@ alfabeto alienígena que no conocemos. A partir de esas palabras hay que
 deducir un orden válido de las letras del alfabeto. Si la lista es
 inconsistente (no existe ningún orden posible), devolvemos \texttt{""}.
 
-\paragraph{Intuición.} Cada par de palabras \emph{adyacentes} en la lista nos
-regala como mucho una pista: el primer carácter en el que difieren nos dice
-``esta letra va antes que esa otra''. El resto de los caracteres no aporta
-nada sobre el alfabeto. Con todas esas pistas armamos un grafo dirigido
-letra $\to$ letra, y basta un orden topológico de ese grafo para responder.
+\paragraph{La idea, con un ejemplo de la vida real.} Es como jugar a adivinar
+el orden del abecedario de otro planeta usando su diccionario. Sabemos que las
+palabras del diccionario ya están ordenadas alfabéticamente, aunque no sabemos
+en qué orden van sus letras. ¿Cómo se compara dos palabras en un diccionario?
+Se leen letra por letra hasta encontrar la primera que sea distinta; esa
+primera diferencia decide cuál palabra va antes.
+
+Entonces, cada par de palabras \emph{vecinas} (una y la que le sigue) nos regala
+como mucho una pista: la primera letra en la que se diferencian nos dice ``esta
+letra va antes que esa otra''. Las demás letras no dicen nada sobre el orden.
+Con todas esas pistas dibujamos flechas letra $\to$ letra (un \emph{grafo
+dirigido}: puntos que son letras y flechas que dicen quién va antes). Después
+solo hay que acomodar las letras en una fila que respete todas las flechas; a
+esa fila se le llama \emph{orden topológico}, y esa es la respuesta.
 
 \begin{center}
 \ttfamily
@@ -27,34 +36,50 @@ Grafo resultante:\quad w $\to$ e $\to$ r $\to$ t $\to$ f
 \noindent En este ejemplo las aristas forman una sola cadena, así que el
 orden topológico es único: \texttt{"wertf"}.
 
-\paragraph{Solución.} Construimos el grafo comparando cada par de palabras
-consecutivas y tomando el primer par de caracteres distintos (esa es la
-única arista que aporta ese par). Luego aplicamos el algoritmo de Kahn:
-metemos en una cola las letras con grado de entrada 0, y las vamos sacando
-mientras liberamos a sus sucesoras. Si al final no procesamos todas las
-letras, había un ciclo y devolvemos \texttt{""}.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Primero juntamos las
+pistas, y luego ordenamos las letras. El \emph{grado de entrada} de una letra es
+cuántas flechas le llegan, es decir, cuántas letras deben ir antes que ella; una
+letra con grado de entrada $0$ no tiene ninguna letra obligada delante.
+\begin{enumerate}
+  \item Comparamos cada palabra con la que le sigue y buscamos la primera letra
+        en la que se diferencian: esa es la única pista (la única flecha) que
+        aporta ese par.
+  \item Con todas las flechas juntas aplicamos el \emph{algoritmo de Kahn}:
+        metemos en una \emph{cola} (la fila del súper: primero en entrar,
+        primero en salir) las letras con grado de entrada $0$.
+  \item Sacamos una letra, la ponemos en la respuesta y a las letras que iban
+        después de ella les quitamos esa flecha; la que se quede con grado de
+        entrada $0$ entra a la cola.
+  \item Repetimos hasta vaciar la cola.
+\end{enumerate}
+Si al final acomodamos todas las letras, esa fila es el orden del alfabeto. Si
+sobró alguna letra (quedó atrapada en un círculo vicioso, un \emph{ciclo}, del
+tipo ``a antes que b, b antes que a''), no existe orden posible y devolvemos
+\texttt{""}.
 
-Hay un caso borde que es fácil pasar por alto: si dos palabras adyacentes
-comparten todo su prefijo común pero la primera es \emph{más larga} que la
-segunda (por ejemplo \texttt{["abc", "ab"]}), eso viola el orden alfabético
---- un prefijo siempre debe ir antes que la palabra que lo extiende --- así
-que devolvemos \texttt{""} de inmediato, sin llegar siquiera a construir el
-topológico.
+Ojo con una trampa fácil de olvidar: si dos palabras vecinas empiezan igual pero
+la primera es \emph{más larga} que la segunda (por ejemplo
+\texttt{["abc", "ab"]}), eso rompe el orden del diccionario, porque una palabra
+corta siempre debe ir antes que la palabra larga que empieza igual. En ese caso
+devolvemos \texttt{""} de inmediato, sin siquiera ponernos a ordenar letras.
 
 \lstinputlisting{src/01-grafos/269-alien-dictionary.cpp}
 
 \complejidad{$O(C)$}{$O(1)$}
 
-\noindent donde $C$ es la suma de las longitudes de todas las palabras (el
-recorrido para comparar palabras adyacentes domina sobre el topológico, que
-corre sobre a lo más 26 letras).
+\paragraph{¿Qué significa esa complejidad?} Aquí $C$ es la suma de las
+longitudes de todas las palabras, es decir, cuántas letras hay que leer en total
+para comparar todas las palabras vecinas. Ese conteo es lo que manda en el
+tiempo, porque acomodar las letras es rapidísimo: el alfabeto tiene a lo más
+$26$ letras. Es lo más rápido que se puede, ya que hay que leer las palabras al
+menos una vez para sacar las pistas.
 
-\paragraph{Notas de entrevista (Amazon).} Es primo cercano de Course Schedule
-(207/210): mismo algoritmo de Kahn, pero aquí el reto está en construir
-correctamente el grafo a partir de las palabras. Los dos errores más comunes:
-(1) olvidar el caso de prefijo inválido y (2) tomar más de un carácter
-distinto por par de palabras (solo el \emph{primero} importa; el resto no
-dice nada). Recuerda también que el orden topológico casi nunca es único
---- cualquier letra sin restricciones puede ir en varias posiciones --- así
-que en una entrevista conviene aclarar que basta con devolver \emph{un}
-orden válido, no ``el'' orden.
+\paragraph{Consejos para la entrevista (Amazon).} Es pariente cercano de Course
+Schedule (207/210): usa el mismo algoritmo de Kahn, pero aquí lo difícil es
+armar bien el dibujo de flechas a partir de las palabras. Los dos errores más
+comunes: (1) olvidar la trampa de la palabra corta que va después de la larga
+que empieza igual, y (2) tomar más de una letra distinta por cada par de
+palabras (solo importa la \emph{primera} diferencia; lo demás no dice nada).
+Recuerda también que casi siempre hay varios órdenes válidos (una letra que
+nadie obliga a nada puede ir en varios lugares), así que conviene aclarar que
+basta con devolver \emph{un} orden que funcione, no ``el'' orden.

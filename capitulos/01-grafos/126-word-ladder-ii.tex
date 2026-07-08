@@ -8,15 +8,22 @@ más corto, aquí hay que devolver \textbf{todas} las secuencias de
 transformación más cortas de \texttt{beginWord} a \texttt{endWord}. Si
 \texttt{endWord} es inalcanzable, se devuelve el vector vacío.
 
-\paragraph{Intuición.} Primero resolvemos el 127 mentalmente: BFS por
-niveles nos da la distancia mínima. La diferencia aquí es que, mientras
-hacemos ese BFS, en vez de quedarnos sólo con la distancia, anotamos de
-\emph{qué palabra viene cada palabra nueva} (su ``padre''). Como puede haber
-varios padres válidos para una misma palabra en el mismo nivel, ese mapa de
-padres es en realidad un grafo dirigido acíclico (DAG) por capas. Una vez
-construido, basta con recorrerlo hacia atrás desde \texttt{endWord} hasta
-\texttt{beginWord} para obtener, por construcción, únicamente caminos de
-longitud mínima.
+\paragraph{La idea, con un ejemplo de la vida real.} Este problema es como el
+127 (Word Ladder), pero más exigente: allá bastaba con saber \emph{cuántos}
+saltos tenía el camino más corto entre dos palabras; aquí hay que entregar
+\textbf{todos} los caminos más cortos, no solo uno.
+
+Piénsalo como un rally donde varios corredores salen de la palabra inicial y
+avanzan por anillos, cambiando una letra a la vez, igual que en el 127. Ese
+avance por anillos, de menos a más saltos, se llama \emph{BFS} (búsqueda en
+anchura). La diferencia es que ahora, cuando un corredor llega a una palabra
+nueva, anotamos de \emph{qué palabra venía} (le llamamos su ``papá''). Como una
+misma palabra puede alcanzarse desde varias palabras distintas en el mismo
+anillo, cada palabra puede tener varios papás. Al terminar, tenemos una especie
+de árbol genealógico de las palabras. Para sacar todos los caminos más cortos,
+solo hay que caminar hacia atrás desde \texttt{endWord} siguiendo a los papás
+hasta llegar a \texttt{beginWord}; como solo guardamos papás del anillo
+anterior, todos los caminos que salgan tienen la longitud mínima.
 
 \begin{center}
 \ttfamily
@@ -33,21 +40,25 @@ dos caminos más cortos, ambos de longitud 5:
 \texttt{dog} como \texttt{log} tienen a \texttt{cog} como hija en el mismo
 nivel.
 
-\paragraph{Solución.} Dos fases:
+\paragraph{Cómo lo resuelve el código, paso a paso.} Son dos fases: primero
+avanzar por anillos anotando papás, y luego reconstruir los caminos hacia atrás.
 \begin{enumerate}
-  \item \textbf{BFS por niveles} desde \texttt{beginWord}. En cada nivel,
-    para cada palabra probamos las 26 letras en cada posición; si el
-    resultado está en el diccionario lo mandamos al siguiente nivel y
-    registramos la palabra actual como uno de sus padres. Al terminar de
-    procesar un nivel completo, borramos esas palabras del diccionario para
-    que un nivel futuro no pueda \emph{regresar} a ellas (eso violaría la
-    propiedad de camino más corto). Si \texttt{endWord} aparece en un nivel,
-    terminamos de procesar ese nivel (puede tener varios padres) y detenemos
-    el BFS.
-  \item \textbf{DFS con backtracking} desde \texttt{endWord}, siguiendo
-    todos los padres registrados hasta llegar a \texttt{beginWord},
-    acumulando cada camino completo. Cada camino se arma en reversa y se
-    invierte al final.
+  \item \textbf{Avanzar por anillos (BFS)} desde \texttt{beginWord}. En cada
+    anillo, para cada palabra probamos cambiar cada letra por las $26$ del
+    abecedario; si la palabra que sale está en el diccionario, la mandamos al
+    siguiente anillo y anotamos la palabra actual como uno de sus papás. Cuando
+    terminamos de procesar un anillo completo, borramos del diccionario las
+    palabras que ya usamos, para que un anillo más lejano no pueda
+    \emph{regresar} a ellas (si regresara, el camino ya no sería el más corto).
+    Si \texttt{endWord} aparece en un anillo, terminamos de revisar ese anillo
+    completo (por si tiene varios papás) y ahí paramos.
+  \item \textbf{Reconstruir los caminos hacia atrás (DFS con vuelta atrás)}
+    desde \texttt{endWord}, siguiendo todos los papás anotados hasta llegar a
+    \texttt{beginWord}, y guardando cada camino completo. \emph{DFS} (búsqueda
+    en profundidad) significa seguir un camino hasta el fondo antes de probar
+    otro; \emph{vuelta atrás} quiere decir que, al llegar al final, deshacemos
+    el último paso para probar otra rama. Como armamos cada camino de atrás
+    hacia adelante, al final lo volteamos.
 \end{enumerate}
 
 \lstinputlisting{src/01-grafos/126-word-ladder-ii.cpp}
@@ -56,15 +67,22 @@ nivel.
 todos los caminos (exponencial en el peor caso, inherente al problema)}
 {$O(N \cdot L)$ para el diccionario y el mapa de padres}
 
-\paragraph{Notas de entrevista (Amazon).} Este problema suele plantearse
-como ``ya resolviste el 127, ahora dame todos los caminos''; la clave que
-buscan es que reconozcas que un BFS normal con un solo padre por nodo pierde
-caminos igualmente cortos, y que hay que permitir múltiples padres por nivel
-antes de borrar las palabras visitadas. Errores típicos: borrar del
-diccionario palabra por palabra en vez de por nivel completo (rompe caminos
-válidos del mismo nivel), o mezclar BFS con DFS en una sola pasada (generar
-todos los caminos con DFS puro, sin la poda de BFS, es exponencial e
-inviable). Casos borde a mencionar: \texttt{endWord} no está en
-\texttt{wordList} (vacío), \texttt{beginWord} no pertenece a
-\texttt{wordList} (es válido, sólo debe empezar la cadena), y un único
-camino más corto sin bifurcaciones.
+\paragraph{¿Qué significa esa complejidad?} Aquí $N$ es cuántas palabras hay y
+$L$ cuántas letras tiene cada una. La parte de avanzar por anillos cuesta lo
+mismo que en el 127: probar todos los cambios de una letra en todas las
+palabras. A eso se le suma el costo de armar todos los caminos, que puede
+crecer muchísimo cuando hay muchas bifurcaciones; pero eso no es culpa de
+nuestro método, sino de que el problema en sí puede tener muchísimos caminos
+válidos que hay que entregar.
+
+\paragraph{Consejos para la entrevista (Amazon).} Suelen plantearlo como ``ya
+resolviste el 127, ahora dame todos los caminos''. Lo que buscan es que te des
+cuenta de que anotar un solo papá por palabra pierde caminos igual de cortos, y
+que hay que permitir varios papás por anillo antes de borrar las palabras ya
+usadas. Errores típicos: borrar las palabras del diccionario una por una en vez
+de por anillo completo (eso rompe caminos válidos del mismo anillo), o intentar
+generar todos los caminos con pura búsqueda en profundidad sin la exploración
+por anillos (eso se vuelve lentísimo). No olvides los casos raros:
+\texttt{endWord} no está en \texttt{wordList} (respuesta vacía),
+\texttt{beginWord} no está en \texttt{wordList} (es válido, solo debe iniciar la
+cadena) y un único camino más corto sin ramificaciones.

@@ -6,12 +6,19 @@ debe contener solo nodos con claves \textbf{menores} que la clave del nodo, el
 subárbol derecho debe contener solo nodos con claves \textbf{mayores}, y ambos
 subárboles deben ser también BST válidos.
 
-\paragraph{Intuición.} El error más común al resolver este problema es verificar
-solamente que el hijo izquierdo sea menor y el hijo derecho sea mayor que el
-nodo actual. Esto \emph{no} es suficiente. Un nodo que esté muy abajo en el
-subárbol derecho de la raíz podría tener un valor menor que la raíz, violando
-así la propiedad fundamental del BST (donde \textbf{todo} el subárbol derecho
-debe ser mayor que la raíz).
+\paragraph{La idea, con un ejemplo de la vida real.} Un \emph{BST} (árbol de
+búsqueda binaria) es un árbol ordenado con una regla estricta: para \textbf{cada}
+nodo, todo lo que cuelga a su izquierda debe ser menor que él y todo lo que
+cuelga a su derecha debe ser mayor. Piénsalo como acomodar libros por número:
+si estás en el estante ``5'', absolutamente todos los libros del ala izquierda
+tienen que ser menores que 5, no solo el que está justo a un lado.
+
+Ahí está la trampa más común: mucha gente revisa únicamente que el hijo de la
+izquierda sea menor y el de la derecha mayor que el nodo actual, y eso
+\emph{no} basta. Un nodo escondido muy abajo, a la derecha de la raíz, podría
+tener un valor menor que la raíz y ``colarse'' aunque localmente parezca
+correcto. La regla vale para todo el subárbol, no solo para los hijos
+inmediatos.
 
 \begin{center}
 \ttfamily
@@ -26,29 +33,39 @@ debe ser mayor que la raíz).
 parecen correctos localmente. Sin embargo, el nodo $3$ está en el subárbol
 derecho de la raíz $5$, pero no es mayor que $5$. ¡El árbol es inválido!
 
-\paragraph{Solución.} En lugar de verificar solo relaciones padre-hijo, debemos
-mantener un \emph{rango válido} \texttt{(minimo, maximo)} a medida que bajamos
-por el árbol en nuestra recursión. Todo nodo que visitemos debe caer
-estrictamente dentro de ese rango.
+\paragraph{Cómo lo resuelve el código, paso a paso.} En vez de comparar solo
+padre con hijo, cada nodo lleva una ``ventana'' de valores permitidos, un
+\emph{rango} \texttt{(minimo, maximo)}, y el nodo tiene que caer dentro de esa
+ventana. Que la función se llame a sí misma para bajar por el árbol se llama
+\emph{recursión}; es como ir dando instrucciones que se van pasando hacia
+abajo. La ventana se va apretando conforme bajamos:
 \begin{itemize}
-    \item Al principio, la raíz puede tener cualquier valor: \texttt{(LONG\_MIN, LONG\_MAX)}.
-    \item Cuando bajamos al hijo izquierdo, el límite \textbf{superior} del rango se actualiza al valor del nodo actual.
-    \item Cuando bajamos al hijo derecho, el límite \textbf{inferior} del rango se actualiza al valor del nodo actual.
+    \item Al principio la raíz puede valer lo que sea: su ventana es de menos infinito a más infinito, o sea \texttt{(LONG\_MIN, LONG\_MAX)}.
+    \item Cuando bajamos hacia la izquierda, todo debe ser menor que el nodo actual, así que el \textbf{techo} de la ventana baja hasta el valor de ese nodo.
+    \item Cuando bajamos hacia la derecha, todo debe ser mayor, así que el \textbf{piso} de la ventana sube hasta el valor de ese nodo.
 \end{itemize}
+Si en algún momento un nodo se sale de su ventana, el árbol no es un BST válido.
 
-Usamos el tipo \texttt{long} de C++ para los límites \texttt{minimo} y
-\texttt{maximo} porque los valores de los nodos pueden ser \texttt{INT\_MIN} o
-\texttt{INT\_MAX}, y si usáramos \texttt{int}, fallarían las comparaciones en
-esos casos extremos (overflow/underflow). El código:
+Un detalle técnico: usamos el tipo \texttt{long} de C++ para el piso y el techo
+porque un nodo puede valer justo \texttt{INT\_MIN} o \texttt{INT\_MAX} (los
+enteros más pequeño y más grande que caben en un \texttt{int}); si usáramos
+\texttt{int} para la ventana, las comparaciones se romperían en esos casos
+extremos. El código:
 
 \lstinputlisting{src/02-arboles/98-validate-binary-search-tree.cpp}
 
 \complejidad{$O(n)$}{$O(h)$}
 
-\paragraph{Notas de entrevista (Amazon).} Cuidado especial con los casos borde
-como los límites de los enteros de 32 bits (\texttt{INT\_MAX} y \texttt{INT\_MIN}).
-Es preferible usar \texttt{long} o parámetros de puntero nulo para representar el
-infinito. Además, asegúrate de mencionar que el espacio auxiliar de la recursión es
-$O(h)$ donde $h$ es la altura del árbol, lo cual se convierte en $O(n)$ en el
-peor caso (árbol degenerado como una lista ligada) y $O(\log n)$ en el mejor caso
-(árbol balanceado).
+\paragraph{¿Qué significa esa complejidad?} Aquí $n$ es la cantidad de nodos y
+$h$ la altura del árbol. El tiempo $O(n)$ quiere decir que tocamos cada nodo una
+sola vez. La memoria $O(h)$ es el espacio de la recursión: la ``pila'' de
+llamadas abiertas es tan alta como el árbol. Si el árbol está bien equilibrado,
+$h$ es pequeño ($O(\log n)$); si es un árbol chueco que parece una cadena, $h$
+llega a ser $n$.
+
+\paragraph{Consejos para la entrevista (Amazon).} Ten mucho cuidado con los
+casos límite de los enteros de 32 bits (\texttt{INT\_MAX} y \texttt{INT\_MIN}):
+conviene usar \texttt{long} para la ventana, o usar punteros nulos para
+representar ``sin límite''. Explica también que el espacio $O(h)$ se vuelve
+$O(n)$ en el peor caso (un árbol degenerado que parece una lista ligada) y
+$O(\log n)$ en el mejor caso (un árbol balanceado).

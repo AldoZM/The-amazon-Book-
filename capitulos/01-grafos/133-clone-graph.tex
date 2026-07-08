@@ -6,13 +6,22 @@ Cada nodo tiene un valor entero (\texttt{val}) y una lista de vecinos
 el grafo: cada nodo de la copia debe ser un objeto nuevo, con el mismo valor
 y las mismas conexiones que el original.
 
-\paragraph{Intuición.} Es un DFS normal, con un truco: en vez de un simple
-arreglo de \texttt{visitados}, usamos un mapa \texttt{original -> copia}. La
-primera vez que vemos un nodo original creamos su copia y la registramos en
-el mapa \emph{antes} de recorrer sus vecinos. Así, si el grafo tiene un ciclo
-(muy común, ya que es no dirigido), al volver a toparnos con un nodo ya
-visitado simplemente devolvemos la copia guardada en el mapa, en lugar de
-clonarlo de nuevo o caer en una recursión infinita.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que tienes un
+grupo de amigos dibujado con líneas que unen a quienes se conocen, y quieres
+hacer una \emph{copia nueva} del grupo entero: personas nuevas, de carne y
+hueso, pero con los mismos nombres y las mismas amistades. A eso se le llama
+\textbf{copia profunda}: no vale con señalar a los amigos originales, hay que
+crear a cada uno de nuevo.
+
+Recorremos el grupo con un \emph{DFS} (ir metiéndonos por un amigo, luego por
+un amigo de ese amigo, y así hasta el fondo antes de regresar). El único
+problema es que las amistades forman \emph{ciclos}: A conoce a B, y B conoce a
+A. Si no tenemos cuidado, clonaríamos a A, luego a B, luego a A otra vez,
+luego a B otra vez\ldots para siempre. La solución es llevar una
+\emph{libreta} que anota, para cada persona original, cuál es su copia ya
+hecha. Antes de recorrer los amigos de alguien, apuntamos su copia en la
+libreta; así, si volvemos a toparnos con él, simplemente usamos la copia que
+ya está anotada en vez de crearla de nuevo.
 
 \begin{center}
 \ttfamily
@@ -28,22 +37,38 @@ $3:[2,4]$, $4:[1,3]$. Al clonar desde el nodo $1$, el DFS visita $2$, que a
 su vez intenta visitar $1$ otra vez: como $1$ ya está en el mapa, se
 reutiliza su copia en lugar de recrearla.
 
-\paragraph{Solución.} DFS recursivo con
-\texttt{unordered\_map<Node*, Node*>} como memoria de clones. Al entrar a un
-nodo: si ya tiene copia registrada, la devolvemos; si no, creamos la copia,
-la registramos de inmediato (esto rompe los ciclos) y luego clonamos
-recursivamente cada vecino para llenar \texttt{neighbors} de la copia.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos un mapa
+\texttt{unordered\_map<Node*, Node*>} como esa libreta: dado un nodo
+original, te dice cuál es su copia. La función recursiva, al llegar a un
+nodo, hace:
+\begin{enumerate}
+  \item Si el nodo ya está en la libreta, devolvemos directamente su copia
+        (ya lo clonamos antes). Esto es lo que rompe los ciclos y evita la
+        recursión infinita.
+  \item Si no está, creamos su copia (mismo valor) y la anotamos en la
+        libreta \emph{de inmediato}, antes de tocar a sus vecinos.
+  \item Recorremos cada vecino del original, lo clonamos con la misma
+        función y vamos agregando esas copias a la lista de vecinos de
+        nuestra copia.
+  \item Devolvemos la copia ya con todos sus vecinos conectados.
+\end{enumerate}
 
 \lstinputlisting{src/01-grafos/133-clone-graph.cpp}
 
 \complejidad{$O(V+E)$}{$O(V)$}
 
-\paragraph{Notas de entrevista (Amazon).} El error típico es registrar la
-copia en el mapa \emph{después} de recorrer los vecinos: eso provoca
-recursión infinita en cuanto el grafo tiene un ciclo. Menciona también la
-alternativa con BFS y una cola (misma idea del mapa, pero iterativa, útil si
-te preocupa el límite de la pila de recursión en grafos muy grandes). Casos
-borde a cubrir: nodo nulo (grafo vacío) devuelve \texttt{nullptr}, un solo
-nodo sin vecinos, y verificar que los nodos de la copia sean direcciones de
-memoria distintas a las del original (una copia profunda real, no un
-alias).
+\paragraph{¿Qué significa esa complejidad?} $V$ es el número de nodos
+(personas) y $E$ el de aristas (amistades). $O(V+E)$ significa que tocamos
+cada persona una vez y recorremos cada amistad una vez: no se puede copiar el
+grupo sin mirarlo entero al menos una vez. El espacio $O(V)$ es por la
+libreta (una entrada por persona) más la pila de la recursión.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error típico es anotar
+la copia en la libreta \emph{después} de recorrer a los vecinos: eso provoca
+recursión infinita en cuanto hay un ciclo (y casi siempre lo hay, porque el
+grafo es no dirigido). Menciona también la versión con BFS y una cola (la
+misma idea de la libreta, pero sin recursión, útil si te preocupa que la pila
+se llene en grafos enormes). Casos raros: nodo nulo (grafo vacío) devuelve
+\texttt{nullptr}, un solo nodo sin vecinos, y comprueba que las copias sean
+objetos de verdad nuevos (direcciones de memoria distintas a las del
+original), no un simple ``apodo'' que apunta al mismo lugar.

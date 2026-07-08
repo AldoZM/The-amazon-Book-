@@ -4,12 +4,20 @@ Nos dan una matriz de \texttt{0} y \texttt{1}. Para cada celda debemos calcular
 su distancia (en pasos horizontales o verticales) al \texttt{0} más cercano.
 La distancia entre celdas adyacentes es 1.
 
-\paragraph{Intuición.} La tentación es, para cada \texttt{1}, buscar el cero
-más cercano con un BFS propio; eso es lentísimo ($O((mn)^2)$). El truco es
-invertir la mirada: en vez de partir de cada uno, arrancamos de \emph{todos}
-los ceros a la vez. Imagina que cada cero suelta una onda que crece un paso
-por minuto; la primera onda que toca a un \texttt{1} viene de su cero más
-cercano. Eso es un BFS multi-fuente.
+\paragraph{La idea, con un ejemplo de la vida real.} Para cada casilla queremos
+saber a cuántos pasos está del \texttt{0} más cercano, moviéndonos solo en
+horizontal o vertical (un paso entre casillas pegadas vale 1).
+
+Lo primero que se te ocurre es: «para cada \texttt{1}, salgo a buscar el cero
+más cercano». Pero eso es muy lento, porque repites la búsqueda una y otra vez.
+El truco es mirarlo al revés: en lugar de que cada \texttt{1} salga a buscar,
+hacemos que \emph{todos} los ceros suelten una onda al mismo tiempo, como
+cuando tiras muchas piedritas a un charco a la vez. Cada minuto la onda avanza
+un paso. La \emph{primera} onda que toca a un \texttt{1} viene, por fuerza, de
+su cero más cercano, y el minuto en que lo toca es justo su distancia. Esta
+técnica de soltar ondas por capas desde muchos puntos de partida se llama
+\emph{BFS multi-fuente} (\emph{BFS} es explorar por capas; \emph{multi-fuente}
+es que arrancamos desde varios lugares a la vez).
 
 \begin{center}
 \ttfamily
@@ -29,17 +37,35 @@ cercano. Eso es un BFS multi-fuente.
 \noindent Los ceros valen 0; el \texttt{1} del centro tiene un cero pegado
 (distancia 1); la celda de en medio de la última fila está a 2 pasos.
 
-\paragraph{Solución.} Metemos todos los ceros a la cola con distancia 0 y el
-resto en infinito. El BFS expande la onda: al visitar una vecina con una
-distancia mejor que la que tenía, la actualizamos y la encolamos. Como cada
-celda se fija una sola vez, el costo es lineal.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos una \emph{cola}:
+una fila de espera donde el primero que entra es el primero que sale.
+\begin{enumerate}
+  \item Recorremos la matriz. A cada casilla con \texttt{0} le ponemos
+        distancia 0 y la metemos a la cola (son los puntos de donde salen las
+        ondas). A cada \texttt{1} le ponemos distancia «infinito», que
+        significa «todavía no sé, muy lejos».
+  \item Procesamos la cola. Sacamos una casilla y miramos sus cuatro vecinas.
+        Si a una vecina le podemos dar una distancia mejor (la distancia de la
+        casilla actual más 1), se la ponemos y la metemos a la cola para que
+        siga propagando la onda.
+  \item Como cada casilla mejora su distancia una sola vez y luego ya no se
+        vuelve a tocar, el recorrido es rápido y ordenado.
+\end{enumerate}
 
 \lstinputlisting{src/01-grafos/542-01-matrix.cpp}
 
 \complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
 
-\paragraph{Notas de entrevista (Amazon).} La palabra clave que buscan es
-\emph{BFS multi-fuente}: reconocer que sembrar todas las fuentes a la vez
-convierte un problema aparentemente cuadrático en lineal. Alternativa clásica:
-dos pasadas de programación dinámica (arriba-izquierda y luego abajo-derecha),
-también $O(mn)$ pero sin cola.
+\paragraph{¿Qué significa esa complejidad?} Aquí $m$ es el número de filas y
+$n$ el de columnas, así que $m\cdot n$ es el total de casillas. Que el tiempo
+sea $O(m\cdot n)$ significa que cada casilla entra y sale de la cola una sola
+vez: tocamos cada una una vez. Comparado con la idea lenta de buscar el cero
+por separado para cada \texttt{1}, esto es muchísimo más rápido.
+
+\paragraph{Consejos para la entrevista (Amazon).} La frase mágica que quieren
+oír es \emph{BFS multi-fuente}: darte cuenta de que soltar todas las ondas a la
+vez convierte un problema que parecía lentísimo en uno rápido. Como alternativa
+puedes mencionar la \emph{programación dinámica} (resolver algo grande a partir
+de resultados pequeños ya calculados) con dos pasadas: una de arriba-izquierda
+hacia abajo y otra de abajo-derecha hacia arriba. También es rápida y no
+necesita cola.

@@ -6,11 +6,18 @@ celdas con \texttt{0} y moviéndose en las 8 direcciones (incluidas las
 diagonales). Su longitud es el número de celdas visitadas. Devolvemos la
 longitud del camino más corto, o $-1$ si no existe.
 
-\paragraph{Intuición.} En un grafo sin pesos, ``camino más corto'' es sinónimo
-de BFS: la onda que sale del origen alcanza cada celda por su ruta mínima. La
-única diferencia con los BFS de cuadrícula previos es que aquí un paso puede
-ser diagonal, así que cada celda tiene hasta 8 vecinas (movimiento de rey de
-ajedrez).
+\paragraph{La idea, con un ejemplo de la vida real.} Queremos ir de una esquina
+del tablero a la esquina opuesta pisando solo casillas libres (\texttt{0}), y
+usando el camino más corto posible. Aquí sí podemos movernos en diagonal, así
+que cada casilla tiene hasta 8 vecinas: es el movimiento del rey en el ajedrez,
+que avanza a cualquiera de las casillas que lo rodean.
+
+Para encontrar el camino más corto usamos \emph{BFS} (búsqueda en anchura):
+soltamos una onda desde la casilla de salida, como los círculos que hace una
+piedra al caer al agua. La onda crece de un paso en un paso y toca antes las
+casillas cercanas que las lejanas. Por eso, la \emph{primera} vez que la onda
+toca la casilla de llegada, lo hace por el camino más corto: no hay forma de
+llegar antes. Ese número de casillas recorridas es la respuesta.
 
 \begin{center}
 \ttfamily
@@ -24,18 +31,38 @@ ajedrez).
 \noindent Las 8 celdas que rodean a $(r,c)$. La primera vez que la onda toca
 $(n{-}1,n{-}1)$, esa es la distancia mínima en celdas.
 
-\paragraph{Solución.} BFS por niveles desde $(0,0)$ (que ya cuenta como celda
-1). En cada nivel avanzamos un paso; al sacar el destino de la cola devolvemos
-la longitud acumulada. Marcamos visitadas mutando la celda a \texttt{1} para
-no reencolarla. Si el origen o el destino están bloqueados, o nunca llegamos,
-devolvemos $-1$.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos una \emph{cola}:
+una fila de espera donde el primero que entra es el primero que sale.
+\begin{enumerate}
+  \item Si la esquina de salida o la de llegada están bloqueadas
+        (valen \texttt{1}), devolvemos $-1$ de inmediato: es imposible.
+  \item Metemos la esquina de salida a la cola con longitud 1 (ella misma ya
+        cuenta como una casilla del camino).
+  \item Procesamos la cola por capas. Cada capa es un paso más de la onda.
+        Sacamos una casilla y miramos sus 8 vecinas; si una vecina está libre y
+        no la hemos visitado, le anotamos la longitud del camino (la actual más
+        1) y la metemos a la cola.
+  \item Para no volver a pisar una casilla ya visitada, la marcamos cambiándola
+        a \texttt{1} en cuanto la usamos. En cuanto sacamos la esquina de
+        llegada de la cola, devolvemos su longitud.
+  \item Si vaciamos la cola sin haber llegado nunca, devolvemos $-1$.
+\end{enumerate}
 
 \lstinputlisting{src/01-grafos/1091-shortest-path-binary-matrix.cpp}
 
 \complejidad{$O(n^2)$}{$O(n^2)$}
 
-\paragraph{Notas de entrevista (Amazon).} Recalca por qué BFS y no DFS: DFS
-encuentra \emph{un} camino, no el más corto. Cuida los casos borde de una
-línea: origen o destino en \texttt{1} (respuesta $-1$ inmediata) y la
-cuadrícula $1\times1$ con un solo \texttt{0} (longitud 1). Si pidieran pesos,
-el salto natural sería Dijkstra o 0-1 BFS.
+\paragraph{¿Qué significa esa complejidad?} El tablero es de $n\times n$, así
+que tiene $n^2$ casillas en total. Que el tiempo sea $O(n^2)$ significa que, en
+el peor caso, cada casilla entra y sale de la cola una sola vez: revisamos cada
+una una vez. No se puede menos, porque tal vez haya que recorrer todo el
+tablero para encontrar la salida.
+
+\paragraph{Consejos para la entrevista (Amazon).} Explica por qué usamos BFS y
+no DFS: el DFS (búsqueda en profundidad, meterse hasta el fondo por un camino)
+encuentra \emph{algún} camino, pero no garantiza que sea el más corto; el BFS
+sí, porque avanza por capas parejas. Cuida los casos raros: que la salida o la
+llegada estén bloqueadas (respuesta $-1$ de inmediato) y un tablero de una sola
+casilla con un \texttt{0} (respuesta 1). Si además pusieran «costos» distintos
+por casilla, el siguiente paso sería usar el algoritmo de Dijkstra o el 0-1
+BFS.

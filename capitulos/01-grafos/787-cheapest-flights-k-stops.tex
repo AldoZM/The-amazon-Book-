@@ -8,13 +8,18 @@ usando \textbf{a lo más \texttt{k} escalas} (paradas intermedias), o
 \texttt{-1} si no existe tal ruta. Usar a lo más \texttt{k} escalas equivale
 a usar a lo más \texttt{k+1} vuelos (aristas) en el camino.
 
-\paragraph{Intuición.} Dijkstra procesa nodos por distancia mínima
-acumulada, pero no da control directo sobre \emph{cuántas aristas} usa un
-camino: una vez que confirmamos la distancia mínima a un nodo, ya no
-sabemos ni nos importa cuántos saltos costó. Aquí sí importa: dos rutas al
-mismo destino con el mismo precio pero distinto número de escalas no son
-intercambiables. Necesitamos un algoritmo que avance \emph{una arista a la
-vez} y nos deje cortar exactamente después de \texttt{k+1} aristas.
+\paragraph{La idea, con un ejemplo de la vida real.} Quieres volar de una
+ciudad a otra lo más barato posible, pero con un límite: como mucho
+\texttt{k} \emph{escalas} (paradas intermedias). Una ruta con muchas escalas
+puede salir más barata, pero si se pasa del límite no te sirve, aunque cueste
+menos.
+
+Podríamos pensar en Dijkstra (el del problema anterior), pero Dijkstra solo
+se fija en el precio total y no lleva la cuenta de \emph{cuántos vuelos}
+usaste. Y aquí eso importa muchísimo: dos rutas que cuestan igual no valen lo
+mismo si una usa más escalas que la otra. Necesitamos un método que avance
+\emph{un vuelo a la vez} y nos deje detenernos justo después de \texttt{k+1}
+vuelos.
 
 \begin{center}
 \ttfamily
@@ -30,41 +35,49 @@ $100+100+200=400$ pero usa \emph{2} escalas (nodos 1 y 2), más de las
 permitidas. La única ruta con a lo más 1 escala es $0\to1\to3$, que cuesta
 $100+600=700$. Respuesta: \texttt{700}.
 
-\paragraph{Bellman-Ford limitado a rondas (patrón nuevo).} Bellman-Ford
-relaja \textbf{todas} las aristas del grafo, ronda tras ronda. Se puede
-demostrar que, después de $r$ rondas de relajación, \texttt{dist[v]} es el
-costo mínimo para llegar a \texttt{v} usando \textbf{a lo más $r$ aristas}.
-Como $k$ escalas equivalen a $k+1$ aristas, basta con ejecutar
-\textbf{exactamente $k+1$ rondas}: ni una más (usaríamos más escalas de las
-permitidas) ni una menos.
+\paragraph{Cómo lo resuelve: Bellman-Ford por rondas (patrón nuevo).}
+\emph{Bellman-Ford} es otro algoritmo de caminos. Su idea es sencilla: hace
+\emph{rondas}, y en cada ronda revisa \textbf{todos} los vuelos e intenta
+abaratar el precio de llegar a cada ciudad. Lo bonito es esto: después de $r$
+rondas, el precio apuntado para cada ciudad es lo más barato que se puede
+llegar \emph{usando a lo más $r$ vuelos}. Como $k$ escalas son $k+1$ vuelos,
+hacemos \textbf{exactamente $k+1$ rondas}: ni una más (usaríamos más escalas
+de las permitidas) ni una menos (nos quedaríamos cortos).
 
-\paragraph{El truco de la copia.} En cada ronda construimos un arreglo
-\texttt{nuevaDist} a partir de una \emph{fotografía fija} de la ronda
-anterior (\texttt{dist}), y solo al terminar de recorrer todas las aristas
-reemplazamos \texttt{dist} por \texttt{nuevaDist}. Si en vez de eso
-actualizáramos \texttt{dist} ``en el lugar'' como en Dijkstra, una sola
-ronda podría encadenar varias relajaciones seguidas: por ejemplo, relajar
-$0\to1$ y, en esa misma ronda, usar ya el nuevo \texttt{dist[1]} para
-relajar $1\to2$. Eso colaría de contrabando dos aristas (dos escalas) en
-una sola ronda, dando una respuesta más barata pero inválida porque excede
-el límite de \texttt{k} escalas. Al copiar, cada ronda solo puede sumar
-\emph{exactamente una} arista por camino, sin importar el orden en que
-iteremos la lista de vuelos.
+\paragraph{El truco de la copia (la parte clave).} En cada ronda trabajamos
+sobre una \emph{fotografía congelada} de los precios de la ronda anterior. Es
+decir: construimos un arreglo nuevo, \texttt{nuevaDist}, mirando siempre los
+precios ``de ayer'' (\texttt{dist}), y solo al terminar toda la ronda
+reemplazamos los viejos por los nuevos.
+
+¿Por qué? Si actualizáramos los precios ``en el momento'' (como hace
+Dijkstra), una sola ronda podría encadenar varios vuelos seguidos: abaratar
+$0\to1$ y, en esa misma ronda, usar ya el nuevo precio de $1$ para abaratar
+$1\to2$. Eso metería dos vuelos (dos escalas) de contrabando en una sola
+ronda, y daría una ruta más barata pero \emph{tramposa}, porque usa más
+escalas de las permitidas. Al copiar la fotografía, cada ronda solo puede
+sumar \emph{exactamente un} vuelo por camino, sin importar en qué orden
+revisemos la lista de vuelos.
 
 \lstinputlisting{src/01-grafos/787-cheapest-flights-k-stops.cpp}
 
 \complejidad{$O(k\cdot E)$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} Este problema es la puerta de
-entrada al patrón de \textbf{Bellman-Ford con rondas acotadas}, muy usado
-cuando el límite del problema no es sobre el costo sino sobre el
-\emph{número de aristas} del camino (aquí, escalas de vuelo). El error más
-común es olvidar la copia y relajar sobre el mismo arreglo, lo que permite
-que una ruta use más escalas de las permitidas en una sola ronda -Amazon
-suele preguntar explícitamente por qué esa copia es necesaria-. Otro error
-es confundir ``k escalas'' con ``k aristas'': hay que iterar \texttt{k+1}
-rondas, no \texttt{k}. Casos borde a mencionar: \texttt{src == dst}
-(costo \texttt{0} sin volar), destino inalcanzable con cualquier número de
-escalas (\texttt{-1}), y \texttt{k} tan grande que el límite de escalas ya
-no restringe nada (el algoritmo simplemente converge al Bellman-Ford
-completo, sin rondas de más que puedan dañar el resultado).
+\paragraph{¿Qué significa esa complejidad?} $O(k\cdot E)$ significa que
+hacemos $k+1$ rondas y en cada ronda miramos las $E$ conexiones (los vuelos)
+una vez; es decir, el trabajo es simplemente ``número de rondas por número de
+vuelos''. El espacio $O(n)$ es porque solo guardamos un precio por cada una
+de las $n$ ciudades (más su copia).
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema es la puerta
+de entrada al patrón de \textbf{Bellman-Ford con rondas limitadas}, muy útil
+cuando el límite no es sobre el costo sino sobre el \emph{número de aristas}
+del camino (aquí, las escalas). El error más común es olvidar la copia y
+actualizar sobre el mismo arreglo, lo que deja colar rutas con más escalas de
+las permitidas; Amazon suele preguntar justo por qué esa copia es necesaria.
+Otro tropiezo es confundir ``k escalas'' con ``k vuelos'': hay que hacer
+\texttt{k+1} rondas, no \texttt{k}. Casos raros: \texttt{src == dst} (cuesta
+\texttt{0}, ni siquiera vuelas), destino imposible de alcanzar con cualquier
+número de escalas (\texttt{-1}) y una \texttt{k} tan grande que el límite ya
+no estorba (el algoritmo simplemente termina de calcular el más barato de
+todos, sin que las rondas de más dañen el resultado).

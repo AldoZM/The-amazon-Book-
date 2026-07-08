@@ -8,11 +8,19 @@ longitud cuenta las palabras (incluyendo begin y end); si no existe tal
 secuencia, o \texttt{endWord} no está en \texttt{wordList}, devolvemos
 \texttt{0}.
 
-\paragraph{Intuición.} Cada palabra es un nodo de un grafo implícito: hay
-arista entre dos palabras si difieren en exactamente una letra. Buscar la
-transformación más corta es buscar el camino más corto en un grafo no
-ponderado, y eso es justo lo que resuelve un BFS por niveles: cada nivel del
-BFS corresponde a un paso de transformación.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina un juego de mesa
+donde cada palabra es una casilla. Dos casillas están conectadas por un puente
+si sus palabras se diferencian en una sola letra (por ejemplo \texttt{hit} y
+\texttt{hot}). Queremos ir de la casilla inicial a la casilla final dando la
+menor cantidad de saltos posible.
+
+Para encontrar el camino más corto en un tablero así, la mejor forma es
+explorar ``en anillos'', desde la casilla de salida hacia afuera: primero todas
+las casillas a las que llegas en un salto, luego todas a las que llegas en dos
+saltos, y así. En cuanto uno de esos anillos toca la casilla final, sabemos que
+ese es el número mínimo de saltos, porque exploramos de menos a más. Esa forma
+de explorar por anillos, o por capas, se llama \emph{BFS} (búsqueda en anchura):
+cada anillo del BFS es un paso de transformación.
 
 \begin{center}
 \ttfamily
@@ -33,27 +41,44 @@ cog \\
 \end{tabular}
 \end{center}
 
-\paragraph{Solución.} No construimos el grafo explícitamente porque sería
-carísimo con muchas palabras: en su lugar generamos los vecinos de una
-palabra ``sobre la marcha''. Para cada posición probamos las 26 letras del
-alfabeto distintas a la original y comprobamos si la palabra resultante está
-en el conjunto de \texttt{wordList} (un \texttt{unordered\_set} da
-pertenencia en $O(1)$). El BFS avanza por capas (\texttt{cola.size()} al
-inicio de cada nivel) y marcamos palabras visitadas para no reprocesarlas.
+\paragraph{Cómo lo resuelve el código, paso a paso.} No dibujamos todos los
+puentes de antemano, porque con muchas palabras sería carísimo. En vez de eso,
+descubrimos los vecinos de una palabra ``sobre la marcha''.
+\begin{enumerate}
+  \item Usamos una \emph{cola} (una fila: primero en entrar, primero en salir)
+        y metemos la palabra inicial.
+  \item Para sacar los vecinos de una palabra, recorremos cada posición y
+        probamos cambiarla por las $26$ letras del abecedario. Cada palabra que
+        resulte y que esté en \texttt{wordList} es una casilla vecina. Guardamos
+        las palabras en un \texttt{unordered\_set} (una especie de bolsa mágica
+        donde revisar si algo está adentro es instantáneo).
+  \item Vamos anillo por anillo: al empezar cada nivel miramos cuántas palabras
+        hay en la cola en ese momento (\texttt{cola.size()}) y procesamos justo
+        esas antes de pasar al siguiente anillo.
+  \item Marcamos como visitada cada palabra que ya usamos, para no volver a
+        pasar por ella y dar vueltas en círculo.
+\end{enumerate}
+En cuanto un anillo alcanza \texttt{endWord}, contamos cuántos anillos llevamos
+y esa es la respuesta.
 
 \lstinputlisting{src/01-grafos/127-word-ladder.cpp}
 
 \complejidad{$O(N \cdot L^2 \cdot 26)$}{$O(N \cdot L)$}
 
-\noindent donde $N$ es el número de palabras en \texttt{wordList} y $L$ la
-longitud de cada palabra.
+\paragraph{¿Qué significa esa complejidad?} Aquí $N$ es cuántas palabras hay en
+\texttt{wordList} y $L$ cuántas letras tiene cada palabra. Para cada palabra
+probamos cambiar cada una de sus $L$ letras por las $26$ del abecedario, y armar
+cada palabra nueva cuesta otras $L$ letras; por eso aparece $L^2$ y el $26$.
+En resumen: es el trabajo de generar y revisar todos los cambios de una letra,
+por todas las palabras.
 
-\paragraph{Notas de entrevista (Amazon).} El primer chequeo obligatorio es
-verificar que \texttt{endWord} esté en \texttt{wordList}; si no, la respuesta
-es \texttt{0} sin hacer ningún BFS. El error típico es generar vecinos
-comparando contra cada palabra de la lista letra por letra ($O(N \cdot L)$
-por palabra), en vez de generar las variaciones directamente y consultarlas
-en un conjunto ($O(L \cdot 26)$ por palabra), lo cual escala mucho mejor
-cuando \texttt{wordList} es grande. También vale la pena mencionar
-Bidirectional BFS (buscar simultáneamente desde beginWord y endWord) como
-optimización adicional para reducir el factor de ramificación efectivo.
+\paragraph{Consejos para la entrevista (Amazon).} Lo primero, sin falta, es
+revisar que \texttt{endWord} esté en \texttt{wordList}; si no está, la respuesta
+es \texttt{0} y ni siquiera vale la pena empezar a explorar. El error típico es
+buscar los vecinos comparando la palabra contra cada palabra de la lista letra
+por letra, lo cual es lentísimo cuando la lista es grande; es mucho mejor
+generar los cambios de una letra y preguntarle a la bolsa mágica
+(\texttt{unordered\_set}) si esa palabra existe. También puedes mencionar el
+\emph{BFS bidireccional}: explorar al mismo tiempo desde la palabra inicial y
+desde la final, para que los dos anillos se encuentren en medio y haya menos
+trabajo.

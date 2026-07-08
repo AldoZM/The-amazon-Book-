@@ -11,13 +11,20 @@ es justo lo que distingue a este problema del más sencillo \#314 y lo que lo
 hace Hard: no basta con recorrer el árbol, hay que ordenar con un criterio
 compuesto de tres niveles.
 
-\paragraph{Intuición.} Si en vez de pensar en "izquierda/derecha" pensamos en
-coordenadas, cada nodo termina siendo una terna
-$(\text{columna}, \text{fila}, \text{valor})$. Una vez que tenemos todas las
-ternas, el problema se reduce a \emph{ordenarlas}: por columna, luego por
-fila, luego por valor. El orden natural de una tupla ya hace exactamente eso.
-No hace falta ninguna estructura de datos sofisticada: un DFS que acumula
-ternas y un \texttt{sort} al final resuelven el problema completo.
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que el árbol está
+dibujado sobre una hoja cuadriculada. A cada \emph{nodo} (cada personaje del
+árbol) le damos dos números, como las coordenadas de un mapa: la \emph{columna}
+dice qué tan a la izquierda o a la derecha está, y la \emph{fila} dice qué tan
+abajo está. Así cada nodo se convierte en una tarjeta con tres datos:
+$(\text{columna}, \text{fila}, \text{valor})$.
+
+Cuando ya tenemos todas las tarjetas, el problema se vuelve tan sencillo como
+\emph{ordenar un montón de fichas}: primero por columna, y si dos caen en la
+misma columna, por fila, y si además coinciden en fila, por su valor (el número
+más chico va antes). Lo bonito es que en el lenguaje de programación una terna de
+tres números ya se compara así sola, en ese mismo orden. Por eso no hace falta
+nada raro: recorremos el árbol apuntando la tarjeta de cada nodo, y al final las
+ordenamos todas de un solo golpe.
 
 \begin{center}
 \begin{verbatim}
@@ -43,33 +50,42 @@ $2$  & 2 & 7 \\
 Al agrupar por columna (ya ordenado) obtenemos
 \texttt{[[9],[3,15],[20],[7]]}: exactamente el resultado esperado.
 
-\paragraph{Solución.} Un DFS (o BFS, es indistinto) recorre el árbol y por
-cada nodo guarda la terna \texttt{(columna, fila, valor)} en un vector. El
-hijo izquierdo se visita con \texttt{columna-1, fila+1}; el derecho con
-\texttt{columna+1, fila+1}. Al terminar, ordenamos el vector de ternas: como
-\texttt{tuple<int,int,int>} ya compara componente a componente, un solo
-\texttt{sort} deja todo en el orden pedido, incluido el desempate por valor.
-Por último recorremos el vector ordenado agrupando los valores consecutivos
-que comparten columna.
-
-El caso donde el desempate por valor realmente importa: en el árbol completo
+\paragraph{Cómo lo resuelve el código, paso a paso.} La idea son dos fases bien
+separadas: primero recolectar, luego ordenar.
+\begin{enumerate}
+  \item Recorremos el árbol (da igual por pisos o hacia el fondo) y por cada
+        nodo guardamos su tarjeta \texttt{(columna, fila, valor)} en una lista.
+  \item Al bajar, el hijo izquierdo hereda \texttt{columna-1} y \texttt{fila+1}
+        (un paso a la izquierda y uno hacia abajo); el hijo derecho,
+        \texttt{columna+1} y \texttt{fila+1}.
+  \item Cuando terminamos, ordenamos toda la lista de tarjetas de una sola vez.
+        Como una terna de tres números se compara primero por el primer número,
+        luego por el segundo y luego por el tercero, ese único ordenamiento ya
+        deja todo como se pide, incluido el desempate por valor.
+  \item Por último recorremos la lista ya ordenada y juntamos en un mismo grupo
+        los valores que comparten columna.
+\end{enumerate}
+Un ejemplo donde el desempate por valor de verdad importa: en el árbol
 \texttt{[1,2,3,4,5,6,7]}, el nodo \texttt{5} (hijo derecho de \texttt{2}) y el
-nodo \texttt{6} (hijo izquierdo de \texttt{3}) caen ambos en columna \texttt{0},
-fila \texttt{2}. Sin el desempate por valor el orden entre ellos sería
-ambiguo; con él, \texttt{5} siempre va antes que \texttt{6}.
+nodo \texttt{6} (hijo izquierdo de \texttt{3}) caen los dos en la columna
+\texttt{0}, fila \texttt{2}. Sin la regla de desempate, no sabríamos cuál va
+primero; con ella, el \texttt{5} siempre va antes que el \texttt{6}.
 
 \lstinputlisting{src/02-arboles/987-vertical-order.cpp}
 
 \complejidad{$O(n \log n)$}{$O(n)$}
 
-\paragraph{Notas de entrevista (Amazon).} El error típico es asumir que un
-recorrido en orden (BFS por niveles o DFS in-order) ya entrega el resultado
-final: no es así, porque nodos de columnas distintas pueden intercalarse en
-el mismo nivel del recorrido. La forma robusta es separar completamente las
-dos fases: primero \emph{recolectar} toda la información posicional de cada
-nodo (columna, fila, valor) sin preocuparse por el orden, y después
-\emph{ordenar} con el criterio compuesto correcto. Vale la pena mencionar en
-la entrevista que este problema es la versión "difícil" de LeetCode 314
-(Binary Tree Vertical Order Traversal): la diferencia entera está en el
-desempate por valor cuando coinciden columna y fila, algo fácil de pasar por
-alto si se resuelve de memoria.
+\paragraph{¿Qué significa esa complejidad?} $n$ es el número de nodos. El
+tiempo $O(n \log n)$ viene del ordenamiento final: ordenar $n$ fichas cuesta un
+poco más que solo mirarlas una vez, y ese «poco más» es el factor $\log n$
+(piénsalo como el número de veces que puedes partir el montón a la mitad).
+La memoria $O(n)$ es porque guardamos una tarjeta por cada nodo.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error típico es creer que
+un recorrido normal (por pisos o en orden) ya deja todo listo: no es así, porque
+nodos de columnas distintas pueden mezclarse en el mismo piso del recorrido. La
+forma segura es separar las dos fases: primero \emph{recolectar} la posición de
+cada nodo sin preocuparse por el orden, y después \emph{ordenar} con la regla
+completa. Vale la pena decir que este es la versión «difícil» del LeetCode 314:
+toda la diferencia está en el desempate por valor cuando dos nodos coinciden en
+columna y fila, algo fácil de olvidar si lo resuelves de memoria.

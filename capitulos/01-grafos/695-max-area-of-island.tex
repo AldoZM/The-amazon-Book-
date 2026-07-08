@@ -5,10 +5,17 @@ Nos dan una cuadrícula de \texttt{0} (agua) y \texttt{1} (tierra). Una
 \emph{área} es cuántas celdas de tierra la forman. Queremos el área de la
 isla más grande (0 si no hay tierra).
 
-\paragraph{Intuición.} Es el mismo sobrevuelo de \emph{Number of Islands},
-pero ahora no contamos islas: medimos cada una. Al pisar tierra nueva
-recorremos toda la isla conectada sumando 1 por celda y hundiéndola para no
-recontarla. Nos quedamos con el área máxima vista.
+\paragraph{La idea, con un ejemplo de la vida real.} Es el mismo mapa visto
+desde un avión que en \emph{Number of Islands}, pero ahora no nos importa
+cuántas islas hay, sino cuál es la más grande. El \emph{área} de una isla es
+simplemente cuántas casillas de tierra la forman.
+
+Vamos leyendo el tablero casilla por casilla, como un libro. Cuando pisamos un
+pedazo de tierra nuevo, recorremos toda su isla contando 1 por cada casilla de
+tierra que la forma. Igual que antes, en cuanto pisamos una casilla la
+«inundamos» (la pintamos de agua) para no contarla dos veces. Cuando terminamos
+de medir una isla, comparamos su tamaño con el récord que llevamos y nos
+quedamos con el mayor.
 
 \begin{center}
 \ttfamily
@@ -23,16 +30,40 @@ recontarla. Nos quedamos con el área máxima vista.
 \noindent La isla central conecta \textbf{5} celdas; la celda suelta de abajo
 a la derecha es otra isla de área 1. La respuesta es \textbf{5}.
 
-\paragraph{Solución.} DFS que, en lugar de un valor booleano, devuelve el
-tamaño de la isla: \texttt{1} por la celda actual más la suma recursiva de sus
-cuatro vecinas. Hundimos cada celda visitada marcándola como agua.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Recorremos todas las
+casillas con dos ciclos (uno para filas, otro para columnas). Cuando
+encontramos tierra, llamamos a una ayudante que mide la isla completa.
+\begin{enumerate}
+  \item Si la casilla se sale del tablero o es agua, la ayudante devuelve
+        \texttt{0}: no aporta nada.
+  \item Si es tierra, la inunda (la pinta de agua para no recontarla) y cuenta
+        \texttt{1} por ella misma.
+  \item Luego se llama a sí misma sobre sus cuatro vecinas (arriba, abajo,
+        izquierda, derecha) y suma todo lo que ellas le regresen. Que una
+        función se llame a sí misma se llama \emph{recursión}: es como una
+        ficha de dominó que tira a sus vecinas, y esas a las suyas, hasta que
+        ya no queda tierra que tocar. Este recorrido que avanza «hacia el
+        fondo» por los vecinos se conoce como \emph{DFS} (búsqueda en
+        profundidad).
+  \item El total que devuelve es el área de esa isla. Lo comparamos con el
+        récord y guardamos el mayor.
+\end{enumerate}
 
 \lstinputlisting{src/01-grafos/695-max-area-of-island.cpp}
 
 \complejidad{$O(m\cdot n)$}{$O(m\cdot n)$}
 
-\paragraph{Notas de entrevista (Amazon).} Si te acaban de preguntar
-\emph{Number of Islands}, este es el seguimiento natural: cambia el DFS de
-``contar'' a ``medir''. Comenta que hundir la cuadrícula ahorra el arreglo
-\texttt{visited}; si no puedes mutar la entrada, usa BFS con cola o un
-conjunto de visitados. El máximo se puede llevar como acumulador global.
+\paragraph{¿Qué significa esa complejidad?} Aquí $m$ es el número de filas y
+$n$ el de columnas, así que $m\cdot n$ es el total de casillas. Que el tiempo
+sea $O(m\cdot n)$ quiere decir que, en el peor caso, tocamos cada casilla una
+sola vez (gracias al truco de inundarla, ninguna se cuenta dos veces). No se
+puede ir más rápido: hay que mirar el mapa completo al menos una vez.
+
+\paragraph{Consejos para la entrevista (Amazon).} Si te acaban de preguntar
+\emph{Number of Islands}, este es la continuación natural: es el mismo DFS, pero
+en vez de «contar islas» ahora «mide cada isla». Un buen detalle que puedes
+mencionar: como vamos pintando de agua la tierra ya visitada, no necesitamos
+una lista aparte de casillas visitadas. Si el entrevistador te pide \emph{no}
+modificar el mapa original, entonces sí necesitas esa lista (o resolverlo con
+una cola, técnica llamada BFS). El récord del área máxima se lleva en una sola
+variable que vas actualizando.
