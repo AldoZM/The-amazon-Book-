@@ -66,10 +66,11 @@ editor: {
     return v === 0 ? 1 : 0;
   },
   // Cómo pintar una celda del editor: reutiliza las clases de celda existentes.
-  cellView(v, r, c, rows, cols) {
+  // Se invoca como método (usa this.rows / this.cols), igual que toggle().
+  cellView(v, r, c) {
     if (v === 1) return { v: "", cls: "wall" };
     if (r === 0 && c === 0) return { v: "A", cls: "current" };        // inicio
-    if (r === rows - 1 && c === cols - 1) return { v: "B", cls: "target" }; // meta
+    if (r === this.rows - 1 && c === this.cols - 1) return { v: "B", cls: "target" }; // meta
     return { v: "", cls: "water" };
   },
   // Convierte lo editado en el input que espera build(). En 1091 build(input)
