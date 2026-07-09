@@ -87,7 +87,7 @@ ok("los muros dibujados persisten al re-entrar en edición",
    Engine.editState[3][3] === 1 && Engine.editState[3][4] === 1 && Engine.editState[4][3] === 1);
 
 // --- el motor respeta que inicio y meta no se amurallan ---
-Engine.editState[0][0] = problem.editor.cycle(Engine.editState[0][0], 0, 0);
+problem.editor.cycle(Engine.editState, 0, 0);
 ok("el inicio sigue libre tras alternarlo", Engine.editState[0][0] === 0);
 
 // --- Hallazgo 1 (regresión): en modo edición las acciones de reproducción

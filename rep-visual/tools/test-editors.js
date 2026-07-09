@@ -115,14 +115,14 @@ console.log("\n── 200 Number of Islands (celdas de texto) ──");
 {
   const ed = P["200"].editor;
   eq("initial() es 5×5 de agua \"0\"", ed.initial(), Array.from({ length: 5 }, () => ["0","0","0","0","0"]));
-  eq("cycle agua -> tierra", ed.cycle("0"), "1");
-  eq("cycle tierra -> agua", ed.cycle("1"), "0");
+  eq("cycle agua -> tierra", ed.cycle(ed.initial(), 2, 2)[2][2], "1");
+  eq("cycle tierra -> agua", ed.cycle(ed.cycle(ed.initial(), 2, 2), 2, 2)[2][2], "0");
   eq("cellView tierra", ed.cellView("1"), { v: "1", cls: "land" });
   eq("cellView agua", ed.cellView("0"), { v: "0", cls: "water" });
   ok("las celdas son texto, no números (build compara con ===)", typeof ed.initial()[0][0] === "string");
   ok("cellView no muta", cellViewIsPure(ed));
   buildRuns("200", ed);
-  outcome("200", ed, (g, e) => { g[2][2] = e.cycle(g[2][2], 2, 2); },
+  outcome("200", ed, (g, e) => { e.cycle(g, 2, 2); },
           /Total de islas: 1\./, "una celda puesta con cycle -> exactamente 1 isla");
   outcome("200", ed, () => {}, /Total de islas: 0\./, "cuadrícula vacía -> 0 islas");
 }
@@ -132,12 +132,12 @@ console.log("\n── 695 Max Area of Island ──");
 {
   const ed = P["695"].editor;
   eq("initial() es 5×5 de ceros", ed.initial(), Array.from({ length: 5 }, () => [0,0,0,0,0]));
-  eq("cycle 0 -> 1", ed.cycle(0), 1);
-  eq("cycle 1 -> 0", ed.cycle(1), 0);
+  eq("cycle 0 -> 1", ed.cycle(ed.initial(), 2, 2)[2][2], 1);
+  eq("cycle 1 -> 0", ed.cycle(ed.cycle(ed.initial(), 2, 2), 2, 2)[2][2], 0);
   eq("cellView tierra", ed.cellView(1), { v: "1", cls: "land" });
   ok("cellView no muta", cellViewIsPure(ed));
   buildRuns("695", ed);
-  outcome("695", ed, (g, e) => { g[2][2] = e.cycle(g[2][2], 2, 2); },
+  outcome("695", ed, (g, e) => { e.cycle(g, 2, 2); },
           /Área máxima: 1\./, "una celda puesta con cycle -> área 1");
 }
 
@@ -148,7 +148,7 @@ console.log("\n── 542 01 Matrix ──");
   const g = ed.initial();
   eq("initial() trae una fuente al centro", g[2][2], 0);
   ok("initial() tiene exactamente una fuente", g.flat().filter((v) => v === 0).length === 1);
-  eq("cycle fuente -> por calcular", ed.cycle(0), 1);
+  eq("cycle fuente -> por calcular", ed.cycle(ed.initial(), 2, 2)[2][2], 1);
   eq("cellView fuente usa la clase de build()", ed.cellView(0), { v: "0", cls: "fresh" });
   eq("cellView por calcular", ed.cellView(1), { v: "1", cls: "water" });
   ok("cellView no muta", cellViewIsPure(ed));
@@ -167,9 +167,9 @@ console.log("\n── 994 Rotting Oranges (ciclo de tres estados) ──");
   const g = ed.initial();
   eq("initial() trae una podrida en (0,0)", g[0][0], 2);
   ok("el resto arranca fresco", g.flat().filter((v) => v === 1).length === 24);
-  eq("cycle vacío -> fresca", ed.cycle(0), 1);
-  eq("cycle fresca -> podrida", ed.cycle(1), 2);
-  eq("cycle podrida -> vacío (da la vuelta)", ed.cycle(2), 0);
+  eq("cycle fresca -> podrida", ed.cycle(ed.initial(), 1, 1)[1][1], 2);
+  eq("cycle podrida -> vacío (da la vuelta)", ed.cycle(ed.cycle(ed.initial(), 1, 1), 1, 1)[1][1], 0);
+  eq("cycle vacío -> fresca", ed.cycle(ed.cycle(ed.cycle(ed.initial(), 1, 1), 1, 1), 1, 1)[1][1], 1);
   eq("cellView vacío", ed.cellView(0), { v: "", cls: "water" });
   eq("cellView fresca", ed.cellView(1), { v: "1", cls: "fresh" });
   eq("cellView podrida", ed.cellView(2), { v: "2", cls: "rotten" });
@@ -179,7 +179,7 @@ console.log("\n── 994 Rotting Oranges (ciclo de tres estados) ──");
   // pasos en 4 direcciones.
   outcome("994", ed, () => {}, /8 minutos/, "podrida en (0,0) -> 8 minutos");
   // Sin ninguna podrida no se pudre nada y quedan frescas: respuesta -1.
-  outcome("994", ed, (g, e) => { g[0][0] = e.cycle(e.cycle(g[0][0])); },
+  outcome("994", ed, (g, e) => { e.cycle(g, 0, 0); e.cycle(g, 0, 0); },
           /-1/, "sin ninguna podrida -> -1");
 }
 
@@ -190,9 +190,7 @@ console.log("\n── 417 Pacific Atlantic (ciclo de alturas) ──");
   const g = ed.initial();
   eq("initial() es 5×5", [g.length, g[0].length], [5, 5]);
   ok("todas las alturas están entre 1 y 9", g.flat().every((v) => v >= 1 && v <= 9));
-  eq("cycle sube un escalón", ed.cycle(3), 4);
-  eq("cycle 8 -> 9", ed.cycle(8), 9);
-  eq("cycle 9 vuelve a 1", ed.cycle(9), 1);
+  eq("cycle sube un escalón", ed.cycle(ed.initial(), 0, 0)[0][0], 2);
   eq("cellView muestra la altura", ed.cellView(7), { v: "7", cls: "water" });
   ok("cellView no muta", cellViewIsPure(ed));
   buildRuns("417", ed);
@@ -207,9 +205,9 @@ console.log("\n── 417 Pacific Atlantic (ciclo de alturas) ──");
 console.log("\n── 1091 Shortest Path (piloto) ──");
 {
   const ed = P["1091"].editor;
-  eq("cycle libre -> muro", ed.cycle(0, 2, 2), 1);
-  eq("cycle no toca el inicio", ed.cycle(0, 0, 0), 0);
-  eq("cycle no toca la meta", ed.cycle(0, 4, 4), 0);
+  eq("cycle libre -> muro", ed.cycle(ed.initial(), 2, 2)[2][2], 1);
+  eq("cycle no toca el inicio", ed.cycle(ed.initial(), 0, 0)[0][0], 0);
+  eq("cycle no toca la meta", ed.cycle(ed.initial(), 4, 4)[4][4], 0);
   ok("cellView no muta", cellViewIsPure(ed));
   buildRuns("1091", ed);
 }

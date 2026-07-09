@@ -58,10 +58,11 @@
         return Array.from({ length: this.rows }, () => new Array(this.cols).fill(0));
       },
       // Inicio (0,0) y meta (rows-1, cols-1) son fijos: el toque no los cambia.
-      cycle(v, r, c) {
-        if (r === 0 && c === 0) return v;
-        if (r === this.rows - 1 && c === this.cols - 1) return v;
-        return v === 0 ? 1 : 0;
+      cycle(g, r, c) {
+        if (r === 0 && c === 0) return g;
+        if (r === this.rows - 1 && c === this.cols - 1) return g;
+        g[r][c] = g[r][c] === 0 ? 1 : 0;
+        return g;
       },
       // El muro gana sobre inicio/meta, pero `cycle` nunca los amuralla.
       cellView(v, r, c) {

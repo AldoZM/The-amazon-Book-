@@ -58,11 +58,13 @@ eq("rows", ed.rows, 5);
 eq("cols", ed.cols, 5);
 eq("initial() es 5x5 de ceros", ed.initial(), Array.from({ length: 5 }, () => [0, 0, 0, 0, 0]));
 
-// --- cycle: alterna celdas normales, ignora inicio y meta ---
-eq("cycle libre -> muro", ed.cycle(0, 2, 2), 1);
-eq("cycle muro -> libre", ed.cycle(1, 2, 2), 0);
-eq("cycle no toca el inicio (0,0)", ed.cycle(0, 0, 0), 0);
-eq("cycle no toca la meta (4,4)", ed.cycle(0, 4, 4), 0);
+// --- cycle: recibe la cuadrícula, alterna una celda, ignora inicio y meta ---
+const g1 = ed.initial();
+eq("cycle libre -> muro", ed.cycle(g1, 2, 2)[2][2], 1);
+eq("cycle muro -> libre", ed.cycle(g1, 2, 2)[2][2], 0);
+eq("cycle no toca el inicio (0,0)", ed.cycle(ed.initial(), 0, 0)[0][0], 0);
+eq("cycle no toca la meta (4,4)", ed.cycle(ed.initial(), 4, 4)[4][4], 0);
+eq("cycle devuelve la misma cuadrícula", ed.cycle(g1, 1, 1), g1);
 
 // --- cellView: el muro gana sobre cualquier otra cosa ---
 eq("cellView muro", ed.cellView(1, 2, 2), { v: "", cls: "wall" });

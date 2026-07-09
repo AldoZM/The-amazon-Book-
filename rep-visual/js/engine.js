@@ -180,7 +180,9 @@
       const redraw = () => {
         stage.innerHTML = "";
         stage.appendChild(VIS.renderers.gridEditor(this.editState, ed, (r, c) => {
-          this.editState[r][c] = ed.cycle(this.editState[r][c], r, c);
+          // `cycle` recibe la cuadrícula entera: hay problemas (547) donde un
+          // toque cambia dos celdas.
+          this.editState = ed.cycle(this.editState, r, c);
           redraw();   // 5×5: re-dibujar entero es trivial y evita estado extra
         }));
       };

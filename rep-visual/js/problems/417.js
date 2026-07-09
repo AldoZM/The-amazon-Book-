@@ -67,7 +67,7 @@
           [5,1,1,2,4],
         ];
       },
-      cycle(v) { return v >= 9 ? 1 : v + 1; },
+      cycle(g, r, c) { g[r][c] = g[r][c] >= 9 ? 1 : g[r][c] + 1; return g; },
       cellView(v) { return { v: String(v), cls: "water" }; },
       toInput(grid) { return grid; },
       hint: {

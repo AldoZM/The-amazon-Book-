@@ -49,7 +49,7 @@
         g[2][2] = 0;   // una fuente al centro para arrancar con algo que ver
         return g;
       },
-      cycle(v) { return v === 0 ? 1 : 0; },
+      cycle(g, r, c) { g[r][c] = g[r][c] === 0 ? 1 : 0; return g; },
       cellView(v) {
         // Mismas clases que usa build(): fuente en verde, resto sin calcular.
         return v === 0 ? { v: "0", cls: "fresh" } : { v: "1", cls: "water" };

@@ -59,7 +59,7 @@
         g[0][0] = 2;   // una podrida para que el BFS tenga de dónde arrancar
         return g;
       },
-      cycle(v) { return (v + 1) % 3; },
+      cycle(g, r, c) { g[r][c] = (g[r][c] + 1) % 3; return g; },
       cellView(v) {
         // Mismas clases que usa build().
         if (v === 0) return { v: "", cls: "water" };

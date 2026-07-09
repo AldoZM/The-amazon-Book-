@@ -54,7 +54,7 @@
       initial() {
         return Array.from({ length: this.rows }, () => new Array(this.cols).fill(0));
       },
-      cycle(v) { return v === 0 ? 1 : 0; },
+      cycle(g, r, c) { g[r][c] = g[r][c] === 0 ? 1 : 0; return g; },
       cellView(v) {
         return v === 1 ? { v: "1", cls: "land" } : { v: "0", cls: "water" };
       },
