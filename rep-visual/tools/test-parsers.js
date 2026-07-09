@@ -86,6 +86,17 @@ eq("parse devuelve el arreglo, no el texto", ed.parse(ed.initial()).input, [1, 2
 eq("parse rechaza el corchete sin cerrar", ed.parse({ tree: "[1,2" }).ok, false);
 eq("y señala el campo tree", ed.parse({ tree: "[1,2" }).field, "tree");
 eq("previewSpec devuelve un árbol", ed.previewSpec([1, 2, 3]).type, "tree");
+
+/* El límite de nodos que aplica la fábrica. No es capricho: el SVG se escala al
+   ancho del panel, así que un árbol grande CABE, pero su texto se encoge. A 15
+   nodos son ~7.6px en un panel de 620px; a 20 ya son 5.7px, ilegibles.
+   Las aserciones de arriba pasan un máximo explícito al parser, así que no
+   fijaban este número: sin esto, cambiar la constante no rompería nada.        */
+const arbolDe = (n) => "[" + Array.from({ length: n }, (_, i) => i + 1).join(",") + "]";
+eq("la fábrica acepta 15 nodos", ed.parse({ tree: arbolDe(15) }).ok, true);
+eq("la fábrica rechaza 16", ed.parse({ tree: arbolDe(16) }).ok, false);
+ok("y el mensaje nombra el máximo real", /15/.test(ed.parse({ tree: arbolDe(16) }).error.es));
+
 ok("dos editores no comparten estado",
    VIS.treeEditor("[9]", hint).initial().tree === "[9]" && ed.initial().tree === "[1,2,3]");
 

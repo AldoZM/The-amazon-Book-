@@ -67,7 +67,11 @@
   };
 
   const ETIQUETA_ARBOL = { es: "Árbol", en: "Tree" };
-  const MAX_NODOS = 31;   // más allá, el dibujo deja de caber
+  // Un árbol grande sí cabe: el SVG lleva viewBox y se escala al ancho del
+  // panel. Lo que se pierde es la letra. Medido en un panel de 620px: 11 nodos
+  // → 10.3px, 15 → 7.6px, 20 → 5.7px, 31 → 3.7px. El caso predefinido más
+  // grande del visualizador (236) tiene 11 nodos.
+  const MAX_NODOS = 15;
 
   /* Descriptor completo de un problema de árbol. Los ocho reciben el mismo
      arreglo de LeetCode: comparten `parse` y `previewSpec`, y solo cambian el
