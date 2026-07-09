@@ -90,6 +90,18 @@ function outcome(num, ed, mutar, esperado, nombre) {
   else console.log(`  ✓ ${nombre}`);
 }
 
+/* Como `outcome`, pero para editores de árbol (kind "text", con parse() en
+   vez de toInput()): parsea un árbol escrito a mano y exige la nota final. */
+function treeOutcome(num, ed, arbol, esperado, nombre) {
+  const parsed = ed.parse({ tree: arbol });
+  if (!parsed.ok) { fails++; console.log(`  ✗ ${nombre}\n      parse rechazó "${arbol}": ${parsed.error && parsed.error.es}`); return; }
+  const steps = P[num].build(parsed.input);
+  const nota = steps[steps.length - 1].note.es.replace(/<[^>]+>/g, "");
+  const good = esperado.test(nota);
+  if (!good) { fails++; console.log(`  ✗ ${nombre}\n      nota final: ${nota}`); }
+  else console.log(`  ✓ ${nombre}`);
+}
+
 // Un editor de rejilla no puede mutar la cuadrícula al preguntarle cómo pintar.
 function cellViewIsPure(ed) {
   const g = ed.initial();
@@ -315,6 +327,22 @@ console.log("\n── Árboles (un arreglo de LeetCode) ──");
     "543": "[1,2,3,4,5]",
     "987": "[3,9,20,null,null,15,7]",
   };
+  // Nota final esperada para cada problema con el árbol [5,3,8,1,4] escrito a
+  // mano. Sirve para cazar un editor cuyo build() no truena pero produce el
+  // resultado equivocado (p. ej. devuelve el texto crudo en vez del arreglo
+  // parseado, o los nodos en otro orden): buildRuns/steps.length no lo vería,
+  // pero la nota final sí.
+  const NOTA_ESPERADA = {
+    "98":  /Todos los nodos respetan su rango: es BST\./,
+    "103": /Recorrido zigzag: \[\[5\], \[8,3\], \[1,4\]\]\./,
+    "124": /Suma máxima de camino: 20\./,
+    "199": /Vista desde la derecha: \[5, 8, 4\]\./,
+    "297": /Cadena final: 5,3,8,1,4,#,#,#,#,#,#\. Deserializar la lee en el mismo orden BFS\./,
+    "337": /Botín máximo = máx\(10, 13\) = 13\./,
+    "543": /Diámetro del árbol: 3 aristas\./,
+    "987": /Columnas de izquierda a derecha: c-2:\[1\]  c-1:\[3\]  c0:\[5,4\]  c1:\[8\]\./,
+  };
+
   for (const [n, arranque] of Object.entries(ARBOLES)) {
     const ed = P[n].editor;
     eq(`${n}: kind text, campo "tree"`, [ed.kind, ed.fields.map((f) => f.id)], ["text", ["tree"]]);
@@ -337,14 +365,24 @@ console.log("\n── Árboles (un arreglo de LeetCode) ──");
     try { steps = P[n].build(bien.input); } catch (e) { fails++; console.log(`  ✗ ${n}: build lanzó: ${e.message}`); }
     ok(`${n}: build(parse(initial())) genera pasos`, Array.isArray(steps) && steps.length > 0);
     ok(`${n}: todo paso trae line`, steps && steps.every((s) => s.line != null));
+
+    // Aserción de resultado: no basta con que build() no truene, la nota
+    // final del árbol [5,3,8,1,4] tiene que ser la correcta.
+    treeOutcome(n, ed, "[5,3,8,1,4]", NOTA_ESPERADA[n], `${n}: [5,3,8,1,4] -> nota final correcta`);
   }
+
+  // 98 aparte: distingue las dos ramas (BST válido vs. violación) con un
+  // segundo árbol que sí rompe la propiedad de BST.
+  treeOutcome("98", P["98"].editor, "[5,1,4,null,null,3,6]", /Encontramos una violación: no es BST\./,
+              "98: [5,1,4,null,null,3,6] no es BST -> nota final correcta");
 
   // Un árbol distinto del de arranque también funciona: 543 con una cadena.
   const ed543 = P["543"].editor;
   const cadena = ed543.parse({ tree: "[1,2,null,3,null,4]" });
   ok("543 acepta una cadena escrita a mano", cadena.ok === true);
   const st = P["543"].build(cadena.input);
-  ok("543 sobre la cadena da diámetro 3", /3/.test(st[st.length - 1].note.es));
+  const notaCadena = st[st.length - 1].note.es.replace(/<[^>]+>/g, "");
+  ok("543 sobre la cadena da diámetro 3", /Diámetro del árbol: 3 aristas\./.test(notaCadena));
 
   // Salen todos de la misma fábrica, pero cada uno con su propio estado: si
   // compartieran el objeto, escribir en un problema cambiaría el de al lado.
