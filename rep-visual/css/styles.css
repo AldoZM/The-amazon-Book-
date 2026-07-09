@@ -413,8 +413,21 @@ pre.code .tok-com { color: #6a737d; font-style: italic; }/* comentarios */
   min-height: 42px;
   width: 13em;
 }
-.editor-field input:focus { outline: none; border-color: var(--azul); }
-.editor-field input.invalid { border-color: var(--rojo); }
+.editor-field select {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--mono);
+  font-size: .95rem;
+  min-height: 42px;
+  cursor: pointer;
+}
+.editor-field input:focus,
+.editor-field select:focus { outline: none; border-color: var(--azul); }
+.editor-field input.invalid,
+.editor-field select.invalid { border-color: var(--rojo); }
 .editor-hint.error { color: var(--rojo); }
 .editor-bar button {
   background: var(--azul);
@@ -469,4 +482,5 @@ pre.code .tok-com { color: #6a737d; font-style: italic; }/* comentarios */
   .editor-fields { width: 100%; }
   .editor-field { flex: 1; min-width: 100%; }
   .editor-field input { width: 100%; }
+  .editor-field select { width: 100%; }
 }

@@ -164,29 +164,44 @@
           wrap.innerHTML = "";
           wrap.style.display = "flex";
           ed.fields.forEach((f) => {
-            const campo = VIS.el("label", "editor-field");
-            campo.appendChild(VIS.el("span", "lbl", VIS.pick(f.label)));
-            const inp = VIS.el("input");
-            inp.type = "text";
-            inp.id = "editor-field-" + f.id;
-            inp.autocomplete = "off";
-            inp.spellcheck = false;
-            inp.value = this.editState[f.id];
-            inp.placeholder = VIS.pick(f.placeholder) || "";
-            // Solo si el campo los declara: nada codificado a fuego aquí.
-            if (f.maxlength != null) inp.maxLength = f.maxlength;
-            if (f.autocapitalize != null) inp.autocapitalize = f.autocapitalize;
-            // Se sanea en cada pulsación y se devuelve al campo: lo que se ve es
-            // exactamente lo que va a parse().
-            inp.oninput = () => {
-              const limpio = f.sanitize ? f.sanitize(inp.value) : inp.value;
-              if (limpio !== inp.value) inp.value = limpio;
-              this.editState[f.id] = limpio;
-              this.refreshPreview();
-            };
-            campo.appendChild(inp);
-            wrap.appendChild(campo);
-          });
+              const campo = VIS.el("label", "editor-field");
+              campo.appendChild(VIS.el("span", "lbl", VIS.pick(f.label)));
+
+              if (f.type === "select") {
+                const sel = VIS.el("select");
+                sel.id = "editor-field-" + f.id;
+                // Las opciones las rellena refreshPreview() -> syncSelects():
+                // dependen de lo escrito en los otros campos.
+                sel.onchange = () => {
+                  this.editState[f.id] = sel.value;
+                  this.refreshPreview();
+                };
+                campo.appendChild(sel);
+                wrap.appendChild(campo);
+                return;
+              }
+
+              const inp = VIS.el("input");
+              inp.type = "text";
+              inp.id = "editor-field-" + f.id;
+              inp.autocomplete = "off";
+              inp.spellcheck = false;
+              inp.value = this.editState[f.id];
+              inp.placeholder = VIS.pick(f.placeholder) || "";
+              // Solo si el campo los declara: nada codificado a fuego aquí.
+              if (f.maxlength != null) inp.maxLength = f.maxlength;
+              if (f.autocapitalize != null) inp.autocapitalize = f.autocapitalize;
+              // Se sanea en cada pulsación y se devuelve al campo: lo que se ve es
+              // exactamente lo que va a parse().
+              inp.oninput = () => {
+                const limpio = f.sanitize ? f.sanitize(inp.value) : inp.value;
+                if (limpio !== inp.value) inp.value = limpio;
+                this.editState[f.id] = limpio;
+                this.refreshPreview();
+              };
+              campo.appendChild(inp);
+              wrap.appendChild(campo);
+            });
         }
         this.refreshPreview();
         return;
@@ -206,6 +221,41 @@
       this.refreshPreview();
     },
 
+    /* Recalcula las opciones de cada desplegable y reconcilia su valor.
+
+       Las opciones dependen de lo escrito en otro campo (los nodos del árbol),
+       así que al teclear el valor elegido puede dejar de existir. La regla: si ya
+       no está entre las opciones, cae a la primera (la raíz del árbol). Nunca
+       queda un estado inválido, y Ejecutar sigue habilitado.
+
+       Si el árbol es inválido, `options()` devuelve [] y el valor se conserva tal
+       cual: el error del árbol ya deshabilita Ejecutar.                       */
+    syncSelects() {
+      const ed = this.problem.editor;
+      (ed.fields || []).forEach((f) => {
+        if (f.type !== "select") return;
+        const sel = qs("#editor-field-" + f.id);
+        if (!sel) return;
+
+        const ops = f.options(this.editState) || [];
+        if (!ops.length) return;
+
+        if (!ops.some((o) => o.value === this.editState[f.id])) {
+          this.editState[f.id] = ops[0].value;
+        }
+
+        // Se repintan siempre: son unas pocas opciones, y el desplegable no puede
+        // estar abierto mientras se teclea en otro campo.
+        sel.innerHTML = "";
+        ops.forEach((o) => {
+          const op = VIS.el("option", null, o.label);
+          op.value = o.value;
+          sel.appendChild(op);
+        });
+        sel.value = this.editState[f.id];
+      });
+    },
+
     // Refleja si la entrada actual es válida: vista previa o error, y decide
     // si Ejecutar está habilitado. Es el único sitio que lo decide, para
     // cualquier tipo de editor.
@@ -219,6 +269,10 @@
         if (run) run.disabled = false;
         return;
       }
+
+      // Antes de parsear: reconciliar los desplegables con lo que se escribió.
+      // parse() lee editState, y la reconciliación puede cambiarlo.
+      this.syncSelects();
 
       const res = ed.parse(this.editState);
       const hintEl = qs("#editor-hint");
