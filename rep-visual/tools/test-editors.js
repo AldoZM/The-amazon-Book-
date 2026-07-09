@@ -240,6 +240,12 @@ console.log("\n── 79 Word Search (modo texto) ──");
   bien.input.board[0][0] = "Z";
   eq("parse copia el tablero (no lo comparte)", ed.board[0][0], "A");
 
+  // Hallazgo 2 (regresión): el campo `word` declaraba maxlength/autocapitalize
+  // en el <input> de problem.html; el motor los tiene que fijar si el campo
+  // los declara.
+  eq("campo word declara maxlength 10", ed.fields[0].maxlength, 10);
+  eq("campo word declara autocapitalize characters", ed.fields[0].autocapitalize, "characters");
+
   const spec = ed.previewSpec();
   eq("previewSpec es una rejilla", spec.type, "grid");
   eq("previewSpec: 3 filas × 4 columnas", [spec.cells.length, spec.cells[0].length], [3, 4]);
@@ -283,6 +289,17 @@ console.log("\n── 547 Number of Provinces (matriz simétrica) ──");
   // Unir 0-1 y 1-2 deja 3 provincias: {0,1,2}, {3}, {4}.
   outcome("547", ed, (g, e) => { e.cycle(g, 0, 1); e.cycle(g, 1, 2); },
           /3/, "dos conexiones encadenadas -> 3 provincias");
+}
+
+/* ------------------------------------------------- VIS.treeEditor (factoría) */
+console.log("\n── VIS.treeEditor (campo tree) ──");
+{
+  // Hallazgo 2 (regresión): un árbol como [3,9,20,null,null,15,7] pasa de 10
+  // caracteres y no se escribe en mayúsculas, así que el campo `tree` NO debe
+  // declarar maxlength ni autocapitalize.
+  const ed = sandbox.VIS.treeEditor("[3,9,20,null,null,15,7]", { es: "hint", en: "hint" });
+  ok("campo tree no declara maxlength", ed.fields[0].maxlength === undefined);
+  ok("campo tree no declara autocapitalize", ed.fields[0].autocapitalize === undefined);
 }
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");

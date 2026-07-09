@@ -24,11 +24,16 @@ function mkNode() {
   Object.defineProperty(n, "innerHTML", { get() { return n._html; }, set(v) { n._html = v; n.children.length = 0; } });
   return n;
 }
+// Los nodos por selector se cachean: si no, cada qs("#btn-run") del motor
+// devolvería un nodo distinto y su estado (p. ej. `disabled`) no persistiría
+// entre llamadas, ni sería visible desde el test.
+const nodosPorSelector = {};
+const qsFalso = (sel) => (nodosPorSelector[sel] = nodosPorSelector[sel] || mkNode());
 const sandbox = {
   console,
   document: {
     createElement: mkNode, createTextNode: (t) => ({ _txt: t }),
-    querySelector: () => mkNode(), querySelectorAll: () => [],
+    querySelector: qsFalso, querySelectorAll: () => [],
     documentElement: { setAttribute() {} }, getElementById: () => mkNode(),
     addEventListener() {},
   },
@@ -63,6 +68,11 @@ Engine.enterEditMode();
 ok("mode = edit", Engine.mode === "edit");
 ok("editState arranca como editor.initial()",
    JSON.stringify(Engine.editState) === JSON.stringify(problem.editor.initial()));
+// --- Hallazgo 1 (regresión): 1091 es "grid", y una cuadrícula siempre tiene
+//     entrada válida. refreshPreview() debe ser quien habilite Ejecutar,
+//     también para este tipo de editor (no solo paintEditor()).
+ok("#btn-run queda habilitado tras enterEditMode() (editor grid)",
+   qsFalso("#btn-run").disabled === false);
 
 // --- ejecutar la cuadrícula vacía: diagonal libre, 5 celdas ---
 Engine.runCustom();

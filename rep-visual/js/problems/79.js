@@ -71,6 +71,8 @@
           id: "word",
           label: { es: "Palabra", en: "Word" },
           placeholder: { es: "Ej. ABCCED", en: "e.g. ABCCED" },
+          maxlength: 10,
+          autocapitalize: "characters",
           // Lo que se ve en el campo es exactamente lo que recibirá build().
           sanitize(raw) { return String(raw).toUpperCase().replace(/[^A-Z]/g, "").slice(0, 10); },
         },

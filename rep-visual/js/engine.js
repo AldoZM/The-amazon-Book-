@@ -173,6 +173,9 @@
             inp.spellcheck = false;
             inp.value = this.editState[f.id];
             inp.placeholder = VIS.pick(f.placeholder) || "";
+            // Solo si el campo los declara: nada codificado a fuego aquí.
+            if (f.maxlength != null) inp.maxLength = f.maxlength;
+            if (f.autocapitalize != null) inp.autocapitalize = f.autocapitalize;
             // Se sanea en cada pulsación y se devuelve al campo: lo que se ve es
             // exactamente lo que va a parse().
             inp.oninput = () => {
@@ -200,17 +203,25 @@
         }));
       };
       redraw();
-      const run = qs("#btn-run");
-      if (run) run.disabled = false;
+      this.refreshPreview();
     },
 
-    // Corre parse() y refleja el resultado: vista previa o error. Es el único
-    // sitio que decide si Ejecutar está habilitado.
+    // Refleja si la entrada actual es válida: vista previa o error, y decide
+    // si Ejecutar está habilitado. Es el único sitio que lo decide, para
+    // cualquier tipo de editor.
     refreshPreview() {
       const ed = this.problem.editor;
+      const run = qs("#btn-run");
+
+      // La cuadrícula siempre tiene entrada válida: no hay parse ni vista
+      // previa que recalcular (la pinta paintEditor).
+      if ((ed.kind || "grid") === "grid") {
+        if (run) run.disabled = false;
+        return;
+      }
+
       const res = ed.parse(this.editState);
       const hintEl = qs("#editor-hint");
-      const run = qs("#btn-run");
 
       (ed.fields || []).forEach((f) => {
         const inp = qs("#editor-field-" + f.id);
