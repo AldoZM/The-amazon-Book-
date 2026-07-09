@@ -191,6 +191,8 @@ console.log("\n── 417 Pacific Atlantic (ciclo de alturas) ──");
   eq("initial() es 5×5", [g.length, g[0].length], [5, 5]);
   ok("todas las alturas están entre 1 y 9", g.flat().every((v) => v >= 1 && v <= 9));
   eq("cycle sube un escalón", ed.cycle(ed.initial(), 0, 0)[0][0], 2);
+  eq("cycle borde 8 -> 9", (() => { const g2 = ed.initial(); g2[0][0] = 8; return ed.cycle(g2, 0, 0)[0][0]; })(), 9);
+  eq("cycle da la vuelta 9 -> 1", (() => { const g2 = ed.initial(); g2[0][0] = 9; return ed.cycle(g2, 0, 0)[0][0]; })(), 1);
   eq("cellView muestra la altura", ed.cellView(7), { v: "7", cls: "water" });
   ok("cellView no muta", cellViewIsPure(ed));
   buildRuns("417", ed);
