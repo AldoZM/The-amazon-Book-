@@ -100,5 +100,68 @@ ok("y el mensaje nombra el máximo real", /15/.test(ed.parse({ tree: arbolDe(16)
 ok("dos editores no comparten estado",
    VIS.treeEditor("[9]", hint).initial().tree === "[9]" && ed.initial().tree === "[1,2,3]");
 
+/* ------------------------------------------------- ayudantes de árbol */
+const ARBOL = [3, 5, 1, 6, 2, 0, 8, null, null, 7, 4];
+
+eq("valores(): ordenados y sin repetidos", VIS.arbol.valores(ARBOL), [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+eq("valores() de un solo nodo", VIS.arbol.valores([7]), [7]);
+eq("valores() con negativos", VIS.arbol.valores([-1, -5, 3]), [-5, -1, 3]);
+
+// La distancia entre dos nodos puede subir y volver a bajar: el diámetro NO es
+// la altura. En este árbol la altura es 4 y el diámetro 5 (por ejemplo, de 7 a 0).
+eq("diametro() del árbol de ejemplo", VIS.arbol.diametro(ARBOL), 5);
+eq("diametro() de un solo nodo", VIS.arbol.diametro([7]), 0);
+eq("diametro() de una cadena de tres", VIS.arbol.diametro([1, 2, null, 3]), 2);
+
+eq("opcionesDeNodos()", VIS.arbol.opcionesDeNodos("[1,2,3]"),
+   [{ value: "1", label: "1" }, { value: "2", label: "2" }, { value: "3", label: "3" }]);
+eq("opcionesDeNodos() con árbol roto devuelve []", VIS.arbol.opcionesDeNodos("[1,2"), []);
+eq("opcionesDeNodos() con texto vacío devuelve []", VIS.arbol.opcionesDeNodos(""), []);
+
+// Cadena 1-2-3: diámetro 2, así que k puede ser 0, 1 o 2.
+eq("opcionesDeK()", VIS.arbol.opcionesDeK("[1,2,null,3]"),
+   [{ value: "0", label: "0" }, { value: "1", label: "1" }, { value: "2", label: "2" }]);
+eq("opcionesDeK() de un solo nodo: solo el 0", VIS.arbol.opcionesDeK("[7]"), [{ value: "0", label: "0" }]);
+eq("opcionesDeK() con árbol roto devuelve []", VIS.arbol.opcionesDeK("[1,2"), []);
+
+/* --- El campo del árbol y el parse, compartidos: idénticos en los tres
+       editores, así que viven una vez. El límite de nodos, también.        */
+const campo = VIS.arbol.campo();
+eq("campo(): id y tipo", [campo.id, campo.type], ["tree", "text"]);
+ok("campo(): etiqueta bilingüe", typeof campo.label.es === "string" && typeof campo.label.en === "string");
+ok("campo(): marcador de posición bilingüe", typeof campo.placeholder.es === "string");
+ok("campo() devuelve un objeto nuevo cada vez", VIS.arbol.campo() !== campo);
+
+const bien = VIS.arbol.parseCon({ tree: "[1,2,3]", p: "2", q: "3" }, ["p", "q"]);
+eq("parseCon(): ok", bien.ok, true);
+eq("parseCon(): devuelve el árbol parseado", bien.input.tree, [1, 2, 3]);
+eq("parseCon(): convierte a número los campos nombrados", [bien.input.p, bien.input.q], [2, 3]);
+ok("parseCon(): no arrastra campos que no se le piden", bien.input.otro === undefined);
+
+const roto = VIS.arbol.parseCon({ tree: "[1,2", p: "1" }, ["p"]);
+eq("parseCon(): con el árbol roto, ok:false", roto.ok, false);
+eq("parseCon(): y señala el campo tree", roto.field, "tree");
+ok("parseCon(): con mensaje bilingüe", typeof roto.error.es === "string" && typeof roto.error.en === "string");
+
+// El límite vive en parseCon, no copiado en cada problema: 16 nodos lo exceden.
+const dieciseis = "[" + Array.from({ length: 16 }, (_, i) => i + 1).join(",") + "]";
+eq("parseCon(): aplica el límite de nodos del módulo", VIS.arbol.parseCon({ tree: dieciseis }, []).ok, false);
+ok("parseCon(): y el mensaje nombra el máximo", /15/.test(VIS.arbol.parseCon({ tree: dieciseis }, []).error.es));
+
+/* ------------------------------------- vista previa con nodos resaltados */
+const sinResaltar = VIS.preview.tree([1, 2, 3], { es: "a", en: "a" });
+ok("sin tercer argumento, ningún nodo va resaltado", sinResaltar.nodes.every((n) => n.cls === ""));
+
+const conResaltado = VIS.preview.tree([1, 2, 3], { es: "a", en: "a" }, [2, 3]);
+const claseDe = (spec, valor) => spec.nodes.find((n) => n.label === valor).cls;
+eq("el nodo 2 va resaltado", claseDe(conResaltado, 2), "target");
+eq("el nodo 3 va resaltado", claseDe(conResaltado, 3), "target");
+eq("el nodo 1 no", claseDe(conResaltado, 1), "");
+ok("VIS.renderers sabe pintarlo", typeof VIS.renderers[conResaltado.type] === "function");
+
+// Un valor que no está en el árbol se ignora, no rompe: 1644 lo necesita (q=99).
+const conFantasma = VIS.preview.tree([1, 2, 3], { es: "a", en: "a" }, [2, 99]);
+eq("un resaltado inexistente no rompe", conFantasma.nodes.filter((n) => n.cls === "target").length, 1);
+
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
 process.exit(fails ? 1 : 0);

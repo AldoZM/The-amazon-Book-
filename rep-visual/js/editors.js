@@ -55,13 +55,21 @@
     return { ok: true, arr };
   };
 
-  /* Vista previa de un árbol, con los mismos ayudantes que usa build(). */
-  VIS.preview.tree = function (arr, label) {
+  /* Vista previa de un árbol, con los mismos ayudantes que usa build().
+     `resaltados` es opcional: los nodos cuyo valor esté en la lista se pintan
+     con la clase `target`, la misma que usa build() para marcar lo buscado.
+     Un valor que no está en el árbol simplemente no marca nada: 1644 lo
+     necesita, porque su caso didáctico es un nodo que no existe.             */
+  VIS.preview.tree = function (arr, label, resaltados) {
+    const marca = new Set(resaltados || []);
     const root = VIS.treeFromArray(arr);
     const layout = VIS.binaryLayout(root);
     return {
       type: "tree", label, r: 18,
-      nodes: layout.nodes.map((n) => ({ id: n.id, label: n.label, x: n.x, y: n.y, cls: "" })),
+      nodes: layout.nodes.map((n) => ({
+        id: n.id, label: n.label, x: n.x, y: n.y,
+        cls: marca.has(n.label) ? "target" : "",
+      })),
       edges: layout.edges,
     };
   };
@@ -72,6 +80,95 @@
   // → 10.3px, 15 → 7.6px, 20 → 5.7px, 31 → 3.7px. El caso predefinido más
   // grande del visualizador (236) tiene 11 nodos.
   const MAX_NODOS = 15;
+
+  /* ------------------------------------------------------ ayudantes de árbol
+     Funciones puras sobre el arreglo de LeetCode. Los editores las usan para
+     poblar sus desplegables.                                                 */
+  VIS.arbol = VIS.arbol || {};
+
+  VIS.arbol.valores = function (arr) {
+    const root = VIS.treeFromArray(arr);
+    const vals = [];
+    (function recorrer(n) {
+      if (!n) return;
+      vals.push(n.val);
+      recorrer(n.left);
+      recorrer(n.right);
+    })(root);
+    return [...new Set(vals)].sort((a, b) => a - b);
+  };
+
+  /* La distancia entre dos nodos puede subir y volver a bajar, así que el
+     diámetro NO es la altura: en [3,5,1,6,2,0,8,null,null,7,4] la altura es 4
+     y el diámetro 5. Se recorre el árbol como un grafo no dirigido.          */
+  VIS.arbol.diametro = function (arr) {
+    const root = VIS.treeFromArray(arr);
+    if (!root) return 0;
+    const vecinos = new Map();
+    const unir = (a, b) => {
+      if (!vecinos.has(a)) vecinos.set(a, []);
+      vecinos.get(a).push(b);
+    };
+    (function recorrer(n, padre) {
+      if (!n) return;
+      if (!vecinos.has(n.id)) vecinos.set(n.id, []);
+      if (padre != null) { unir(n.id, padre); unir(padre, n.id); }
+      recorrer(n.left, n.id);
+      recorrer(n.right, n.id);
+    })(root, null);
+
+    let diam = 0;
+    for (const inicio of vecinos.keys()) {
+      const dist = new Map([[inicio, 0]]);
+      const cola = [inicio];
+      while (cola.length) {
+        const u = cola.shift();
+        for (const v of vecinos.get(u)) {
+          if (!dist.has(v)) { dist.set(v, dist.get(u) + 1); cola.push(v); }
+        }
+      }
+      for (const d of dist.values()) diam = Math.max(diam, d);
+    }
+    return diam;
+  };
+
+  const opcion = (v) => ({ value: String(v), label: String(v) });
+
+  VIS.arbol.opcionesDeNodos = function (texto) {
+    const r = VIS.parse.treeArray(texto, MAX_NODOS);
+    if (!r.ok) return [];
+    return VIS.arbol.valores(r.arr).map(opcion);
+  };
+
+  VIS.arbol.opcionesDeK = function (texto) {
+    const r = VIS.parse.treeArray(texto, MAX_NODOS);
+    if (!r.ok) return [];
+    const d = VIS.arbol.diametro(r.arr);
+    return Array.from({ length: d + 1 }, (_, i) => opcion(i));
+  };
+
+  /* El campo de texto del árbol es idéntico en los tres editores que lo usan.
+     Se devuelve un objeto nuevo en cada llamada: si se compartiera, mutar el
+     campo de un problema cambiaría el de los otros.                          */
+  VIS.arbol.campo = function () {
+    return {
+      id: "tree", type: "text", label: ETIQUETA_ARBOL,
+      placeholder: { es: "[1,2,3,null,4]", en: "[1,2,3,null,4]" },
+    };
+  };
+
+  /* Parsea el campo `tree` y convierte a número los parámetros nombrados.
+
+     Existe para que el límite de nodos y el manejo del error del árbol vivan en
+     un solo sitio: 236 y 1644 tenían un `parse` idéntico carácter a carácter, y
+     863 solo cambiaba los nombres de sus dos parámetros.                      */
+  VIS.arbol.parseCon = function (state, numericos) {
+    const r = VIS.parse.treeArray(state.tree, MAX_NODOS);
+    if (!r.ok) return { ok: false, field: "tree", error: r.error };
+    const input = { tree: r.arr };
+    (numericos || []).forEach((id) => { input[id] = Number(state[id]); });
+    return { ok: true, input };
+  };
 
   /* Descriptor completo de un problema de árbol. Los ocho reciben el mismo
      arreglo de LeetCode: comparten `parse` y `previewSpec`, y solo cambian el
