@@ -39,7 +39,8 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
-const NUMS = ["79","98","103","124","199","200","297","337","417","542","543","547","695","987","994","1091"];
+const NUMS = ["79", "98", "103", "124", "199", "200", "236", "297", "337", "417",
+              "542", "543", "547", "695", "863", "987", "994", "1091", "1644"];
 for (const f of ["js/i18n.js", "js/renderers.js", "js/editors.js"])
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), "utf8"), sandbox, { filename: f });
 for (const n of NUMS)
@@ -391,6 +392,84 @@ console.log("\n── Árboles (un arreglo de LeetCode) ──");
   ok("y su propio árbol de partida", a.initial().tree !== b.initial().tree);
   ok("los ocho comparten el mismo parse (viene de la fábrica)",
      Object.keys(ARBOLES).every((n) => typeof P[n].editor.parse === "function"));
+}
+
+/* -------------------------------- árboles con parámetros (236, 1644, 863) */
+console.log("\n── Árboles con parámetros ──");
+{
+  const ARB = "[3,5,1,6,2,0,8,null,null,7,4]";
+  const nota = (steps) => steps[steps.length - 1].note.es.replace(/<[^>]+>/g, "");
+
+  /* --- 236: p y q, solo nodos que existen --- */
+  const e236 = P["236"].editor;
+  eq("236: kind text", e236.kind, "text");
+  eq("236: tres campos", e236.fields.map((f) => f.id), ["tree", "p", "q"]);
+  eq("236: tipos", e236.fields.map((f) => f.type), ["text", "select", "select"]);
+  eq("236: initial()", e236.initial(), { tree: ARB, p: "5", q: "1" });
+
+  eq("236: las opciones son los nodos, ordenados",
+     e236.fields[1].options({ tree: ARB }).map((o) => o.value),
+     ["0", "1", "2", "3", "4", "5", "6", "7", "8"]);
+  eq("236: con el árbol roto, sin opciones", e236.fields[1].options({ tree: "[3,5" }), []);
+
+  const r236 = e236.parse(e236.initial());
+  ok("236: parse acepta su arranque", r236.ok === true);
+  eq("236: parse convierte p y q a número", [r236.input.p, r236.input.q], [5, 1]);
+  ok("236: parse devuelve el árbol parseado", Array.isArray(r236.input.tree));
+  eq("236: parse rechaza el árbol roto", e236.parse({ tree: "[3,5", p: "5", q: "1" }).field, "tree");
+  eq("236: previewSpec resalta p y q",
+     e236.previewSpec(r236.input).nodes.filter((n) => n.cls === "target").map((n) => n.label).sort(),
+     [1, 5]);
+  eq("236: LCA(5,1) = 3", nota(P["236"].build(r236.input)), "LCA(5, 1) = 3.");
+
+  /* --- 1644: q ofrece además la trampa "no existe" --- */
+  const e1644 = P["1644"].editor;
+  eq("1644: initial()", e1644.initial(), { tree: ARB, p: "5", q: "99" });
+  const opsQ = e1644.fields[2].options({ tree: ARB });
+  eq("1644: la última opción de q es la trampa", opsQ[opsQ.length - 1].value, "99");
+  ok("1644: y su etiqueta lo advierte", /no existe/.test(opsQ[opsQ.length - 1].label));
+  ok("1644: p NO ofrece la trampa",
+     e1644.fields[1].options({ tree: ARB }).every((o) => o.value !== "99"));
+
+  // Si el árbol YA tiene un 99, la trampa se omite: dos opciones con el mismo
+  // value serían un desplegable ambiguo, y la etiqueta "no existe" una mentira.
+  const con99 = e1644.fields[2].options({ tree: "[99,1]" });
+  eq("1644: con un 99 real, la trampa no se duplica",
+     con99.filter((o) => o.value === "99").length, 1);
+  ok("1644: y esa opción no dice 'no existe'",
+     !/no existe/.test(con99.find((o) => o.value === "99").label));
+
+  const r1644 = e1644.parse(e1644.initial());
+  eq("1644: q=99 se acepta", [r1644.ok, r1644.input.q], [true, 99]);
+  eq("1644: con q=99 la respuesta es null",
+     nota(P["1644"].build(r1644.input)), "Solo encontramos 1/2. Respuesta null.");
+  eq("1644: con p=5 y q=4 el LCA es 5",
+     nota(P["1644"].build(e1644.parse({ tree: ARB, p: "5", q: "4" }).input)),
+     "Ambos presentes. LCA = 5.");
+
+  /* --- 863: target solo existente (build lanza si no), k hasta el diámetro --- */
+  const e863 = P["863"].editor;
+  eq("863: tres campos", e863.fields.map((f) => f.id), ["tree", "target", "k"]);
+  eq("863: initial()", e863.initial(), { tree: ARB, target: "5", k: "2" });
+  ok("863: target NO ofrece nodos inexistentes",
+     e863.fields[1].options({ tree: ARB }).every((o) => Number(o.value) <= 8));
+  eq("863: k llega al diámetro (5), no a la altura-1 (3)",
+     e863.fields[2].options({ tree: ARB }).map((o) => o.value), ["0", "1", "2", "3", "4", "5"]);
+
+  const r863 = e863.parse(e863.initial());
+  eq("863: parse convierte target y k a número", [r863.input.target, r863.input.k], [5, 2]);
+  eq("863: previewSpec resalta el objetivo",
+     e863.previewSpec(r863.input).nodes.filter((n) => n.cls === "target").map((n) => n.label), [5]);
+  eq("863: target=5, k=2 -> [7, 4, 1]",
+     nota(P["863"].build(r863.input)), "Distancia 2 = K. Nodos: [7, 4, 1].");
+  eq("863: un k sin resultados no es un error, es una lección",
+     nota(P["863"].build(e863.parse({ tree: ARB, target: "3", k: "5" }).input)),
+     "No hay nodos a distancia 5. Respuesta [].");
+
+  // La razón por la que `target` es un desplegable y no un campo libre.
+  let lanzo = false;
+  try { P["863"].build({ tree: JSON.parse(ARB), target: 99, k: 1 }); } catch (e) { lanzo = true; }
+  ok("863: build LANZA con un target inexistente (por eso el desplegable)", lanzo);
 }
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");

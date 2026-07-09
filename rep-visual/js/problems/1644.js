@@ -54,6 +54,34 @@
       { name: L("q=99 no existe → null", "q=99 missing → null"), input: { tree: [3,5,1,6,2,0,8], p: 5, q: 99 } },
     ],
 
+    // Modo interactivo: como 236, pero `q` ofrece además un nodo que NO está en
+    // el árbol. Ésa es la lección entera de 1644: si falta uno de los dos, la
+    // respuesta es null. La trampa se omite si el árbol ya contiene un 99, para
+    // no tener dos opciones con el mismo valor ni una etiqueta que mienta.
+    editor: {
+      kind: "text",
+      fields: [
+        VIS.arbol.campo(),
+        { id: "p", type: "select", label: { es: "p", en: "p" },
+          options(state) { return VIS.arbol.opcionesDeNodos(state.tree); } },
+        { id: "q", type: "select", label: { es: "q", en: "q" },
+          options(state) {
+            const ops = VIS.arbol.opcionesDeNodos(state.tree);
+            if (!ops.length || ops.some((o) => o.value === "99")) return ops;
+            return ops.concat([{ value: "99", label: "99 (no existe)" }]);
+          } },
+      ],
+      initial() { return { tree: "[3,5,1,6,2,0,8,null,null,7,4]", p: "5", q: "99" }; },
+      parse(state) { return VIS.arbol.parseCon(state, ["p", "q"]); },
+      previewSpec(input) {
+        return VIS.preview.tree(input.tree, { es: "Árbol", en: "Tree" }, [input.p, input.q]);
+      },
+      hint: {
+        es: "Escribe el árbol y elige dos nodos. Prueba con 99, que no existe: la respuesta es null. Luego pulsa Ejecutar.",
+        en: "Type the tree and pick two nodes. Try 99, which is missing: the answer is null. Then press Run.",
+      },
+    },
+
     build(input) {
       const root = VIS.treeFromArray(input.tree);
       const layout = VIS.binaryLayout(root);

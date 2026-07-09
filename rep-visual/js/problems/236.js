@@ -39,6 +39,28 @@
       { name: L("p=5, q=4 → 5", "p=5, q=4 → 5"), input: { tree: [3,5,1,6,2,0,8,null,null,7,4], p: 5, q: 4 } },
     ],
 
+    // Modo interactivo: escribe el árbol y elige p y q de un desplegable con los
+    // nodos que existen. Así no se puede pedir un nodo que no está.
+    editor: {
+      kind: "text",
+      fields: [
+        VIS.arbol.campo(),
+        { id: "p", type: "select", label: { es: "p", en: "p" },
+          options(state) { return VIS.arbol.opcionesDeNodos(state.tree); } },
+        { id: "q", type: "select", label: { es: "q", en: "q" },
+          options(state) { return VIS.arbol.opcionesDeNodos(state.tree); } },
+      ],
+      initial() { return { tree: "[3,5,1,6,2,0,8,null,null,7,4]", p: "5", q: "1" }; },
+      parse(state) { return VIS.arbol.parseCon(state, ["p", "q"]); },
+      previewSpec(input) {
+        return VIS.preview.tree(input.tree, { es: "Árbol", en: "Tree" }, [input.p, input.q]);
+      },
+      hint: {
+        es: "Escribe el árbol y elige dos nodos. Se busca su ancestro común más bajo. Luego pulsa Ejecutar.",
+        en: "Type the tree and pick two nodes. We look for their lowest common ancestor. Then press Run.",
+      },
+    },
+
     build(input) {
       const root = VIS.treeFromArray(input.tree);
       const layout = VIS.binaryLayout(root);

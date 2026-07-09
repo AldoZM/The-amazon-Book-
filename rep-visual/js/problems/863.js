@@ -47,6 +47,31 @@
       { name: L("target=3, k=1", "target=3, k=1"), input: { tree: [3,5,1,6,2,0,8], target: 3, k: 1 } },
     ],
 
+    // Modo interactivo: escribe el árbol, elige el objetivo y la distancia.
+    // `target` es un desplegable de nodos existentes por una razón dura:
+    // build() lanza una excepción si el objetivo no está en el árbol.
+    // `k` llega al diámetro, no a la altura: la distancia puede subir y volver a
+    // bajar, así que hay nodos más lejos de lo que el árbol es alto.
+    editor: {
+      kind: "text",
+      fields: [
+        VIS.arbol.campo(),
+        { id: "target", type: "select", label: { es: "Objetivo", en: "Target" },
+          options(state) { return VIS.arbol.opcionesDeNodos(state.tree); } },
+        { id: "k", type: "select", label: { es: "Distancia k", en: "Distance k" },
+          options(state) { return VIS.arbol.opcionesDeK(state.tree); } },
+      ],
+      initial() { return { tree: "[3,5,1,6,2,0,8,null,null,7,4]", target: "5", k: "2" }; },
+      parse(state) { return VIS.arbol.parseCon(state, ["target", "k"]); },
+      previewSpec(input) {
+        return VIS.preview.tree(input.tree, { es: "Árbol", en: "Tree" }, [input.target]);
+      },
+      hint: {
+        es: "Escribe el árbol, elige un nodo objetivo y una distancia. Se buscan los nodos a exactamente esa distancia. Luego pulsa Ejecutar.",
+        en: "Type the tree, pick a target node and a distance. We look for the nodes exactly that far away. Then press Run.",
+      },
+    },
+
     build(input) {
       const root = VIS.treeFromArray(input.tree);
       const layout = VIS.binaryLayout(root);
