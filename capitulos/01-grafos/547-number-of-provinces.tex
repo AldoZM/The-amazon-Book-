@@ -17,7 +17,7 @@ directamente. Contar provincias es contar cuántos grupos de amigos separados
 hay.
 
 La matriz solo es otra manera de darnos el mismo mapa de amistades: en lugar
-de una lista de parejas de amigos, nos entregan un tablero que, para cada
+de una lista de parejas de amigos, nos entregan una matriz que, para cada
 par de ciudades $(i,j)$, dice con un \texttt{1} o un \texttt{0} si son amigas
 directas.
 
@@ -42,7 +42,7 @@ provincia exactamente cuando comparten capitán.
 \begin{enumerate}
   \item Al principio nadie se conoce, así que cada ciudad es su propio
         capitán: hay \texttt{n} grupos (\texttt{n} provincias).
-  \item Recorremos el tablero. Como es simétrico (si $i$ es amiga de $j$,
+  \item Recorremos la matriz. Como es simétrica (si $i$ es amiga de $j$,
         entonces $j$ es amiga de $i$), basta mirar la mitad de arriba
         ($i < j$) para no repetir trabajo.
   \item Cada vez que encontramos un \texttt{1} (ciudades $i$ y $j$
@@ -62,27 +62,27 @@ cadenas no se hagan largas).
 \complejidad{$O(n^2\cdot\alpha(n))$}{$O(n)$}
 
 \paragraph{¿Qué significa esa complejidad?} Recorremos las $n^2$ casillas
-del tablero (en la práctica solo la mitad de arriba), y por eso el tiempo
+de la matriz (en la práctica solo la mitad de arriba), y por eso el tiempo
 depende de $n^2$. Buscar o unir capitanes cuesta casi nada, prácticamente
 un paso, gracias a los dos trucos de arriba; ese ``casi nada'' se escribe
 $\alpha(n)$ (la inversa de Ackermann), una función que crece tan
 increíblemente lento que para cualquier cantidad de ciudades del mundo real
 vale $4$ o menos. En resumen: no puedes bajar de $n^2$ porque solo
-\emph{leer} el tablero completo ya cuesta eso.
+\emph{leer} la matriz completa ya cuesta eso.
 
 \paragraph{Consejos para la entrevista (Amazon).} Este problema es hermano
 de \textbf{323. Number of Connected Components}: lo único que cambia es cómo
-te entregan las conexiones (un tablero en vez de una lista de parejas); por
+te entregan las conexiones (una matriz en vez de una lista de parejas); por
 dentro es el mismo Union-Find. También se puede resolver con DFS/BFS: por
 cada ciudad que no hayas visitado, sumas una provincia y ``te contagias''
 visitando a todos sus amigos, y a los amigos de sus amigos, marcándolos como
 vistos (igual que se ``hunde'' la tierra en \textbf{200. Number of
 Islands}). Vale la pena mencionar ambos: DFS/BFS es más fácil de explicar
-cuando la entrada ya es un tablero, pero Union-Find gana si el entrevistador
+cuando la entrada ya es una matriz, pero Union-Find gana si el entrevistador
 pregunta ``¿y si las conexiones llegan una por una en vez de todas de
 golpe?''. Ojo con el costo: si $n$ es grande, $O(n^2)$ es simplemente lo que
-cuesta leer el tablero, así que ninguna técnica baja de ahí; con pocas
-conexiones convendría recibir una lista de parejas en lugar del tablero
+cuesta leer la matriz, así que ninguna técnica baja de ahí; con pocas
+conexiones convendría recibir una lista de parejas en lugar de la matriz
 completo. Casos raros: una sola ciudad ($1$ provincia), ninguna ciudad
 conectada con otra (cada una es su propia provincia) y todas conectadas
 entre sí ($1$ provincia).

@@ -4,7 +4,7 @@ Nos dan una cuadrícula de caracteres donde \texttt{'1'} es tierra y
 \texttt{'0'} es agua. Una \emph{isla} es un grupo de tierras conectadas en
 horizontal o vertical. Queremos contar cuántas islas hay.
 
-\paragraph{La idea, con un ejemplo de la vida real.} Imagina que ese tablero es
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que esa cuadrícula es
 un mapa y que tú lo miras desde un avión. Vas leyendo casilla por casilla, como
 cuando lees un libro: de izquierda a derecha y de arriba abajo. Cuando ves un
 pedazo de tierra por primera vez, gritas «¡isla nueva!» y sumas 1 a tu conteo.
@@ -14,7 +14,7 @@ cuentas otra vez, te dará un número equivocado. ¿El truco? En cuanto pisas un
 casilla de tierra, la «inundas»: la pintas de agua (la cambias a \texttt{'0'}).
 Así ya no la vuelves a ver como tierra y no la cuentas dos veces. Y desde esa
 casilla te vas caminando a sus vecinas de tierra e inundas todas también, hasta
-que toda la isla quede bajo el agua. Cuando terminas, sigues leyendo el tablero
+que toda la isla quede bajo el agua. Cuando terminas, sigues leyendo la cuadrícula
 buscando la siguiente tierra sin pisar.
 
 \begin{center}
@@ -44,7 +44,7 @@ vecinas (arriba, abajo, izquierda, derecha). Que una función se llame a sí
 misma se llama \emph{recursión}; piénsalo como una ficha de dominó que tira a
 las de al lado, y esas a las suyas, hasta que ya no queda tierra que tocar.
 Antes de inundar, \texttt{hundir} revisa dos cosas para no equivocarse: que no
-se salga del tablero y que la casilla sea de verdad tierra. Este recorrido que
+se salga de la cuadrícula y que la casilla sea de verdad tierra. Este recorrido que
 avanza «hacia el fondo» por los vecinos se conoce como \emph{Depth-First
 Search} (DFS, búsqueda en profundidad). El código completo (haz clic en el título para
 abrirlo en tu editor):

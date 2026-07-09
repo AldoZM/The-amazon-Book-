@@ -10,7 +10,7 @@ La solución es como tratar el árbol igual que un mapa de amistades: si en vez 
 \paragraph{Cómo lo resuelve el código, paso a paso.} Lo hacemos en dos etapas.
 \begin{enumerate}
   \item \textbf{Averiguar quién es el padre de cada quien.} Recorremos el árbol una vez bajando por las ramas y guardamos en un diccionario (un \emph{mapa hash}, que es como una agenda que empareja cada nodo con un dato) quién es el padre de cada nodo. Así cada nodo ya conoce a sus tres vecinos.
-  \item \textbf{Expandirnos como una gota de tinta en agua.} Partimos del objetivo y avanzamos por niveles, tocando primero a los vecinos que están a 1 paso, luego a los que están a 2 pasos, y así. Esta forma de explorar ``en círculos que crecen'' se llama \emph{BFS} (búsqueda en anchura). Usamos una \emph{cola} (una fila, como la del supermercado: el primero que entra es el primero que sale) y un \emph{conjunto} de visitados para no regresar por donde ya pasamos. Cuando hemos avanzado exactamente $K$ niveles, todos los nodos que quedaron en la fila son justo los que están a distancia $K$.
+  \item \textbf{Expandirnos como una gota de tinta en agua.} Partimos del objetivo y avanzamos por niveles, tocando primero a los vecinos que están a 1 paso, luego a los que están a 2 pasos, y así. Esta forma de explorar ``en círculos que crecen'' se llama \emph{BFS}. Usamos una \emph{cola} (una fila, como la del supermercado: el primero que entra es el primero que sale) y un \emph{conjunto} de visitados para no regresar por donde ya pasamos. Cuando hemos avanzado exactamente $K$ niveles, todos los nodos que quedaron en la fila son justo los que están a distancia $K$.
 \end{enumerate}
 
 \lstinputlisting{src/02-arboles/863-all-nodes-distance-k-in-binary-tree.cpp}

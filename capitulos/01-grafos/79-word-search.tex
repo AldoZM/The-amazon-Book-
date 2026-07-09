@@ -36,13 +36,12 @@ la primera \texttt{B}, la única forma de volver a una \texttt{B} obligaría a
 reutilizar una celda ya visitada en ese mismo camino.
 
 \paragraph{Cómo lo resuelve el código, paso a paso.} Como no sabemos dónde
-empieza la palabra, probamos empezar desde cada casilla del tablero. Desde cada
-una lanzamos una ayudante que busca el resto de la palabra con \emph{DFS}
-(búsqueda en profundidad: seguir un camino hasta el fondo antes de probar
-otro). Que la ayudante se llame a sí misma para seguir con la siguiente letra
+empieza la palabra, probamos empezar desde cada casilla de la cuadrícula. Desde cada
+una lanzamos una ayudante que busca el resto de la palabra con \emph{DFS}.
+Que la ayudante se llame a sí misma para seguir con la siguiente letra
 se llama \emph{recursión}.
 \begin{enumerate}
-  \item Si la casilla se sale del tablero o su letra no es la que toca, este
+  \item Si la casilla se sale de la cuadrícula o su letra no es la que toca, este
         camino falla: devolvemos «no».
   \item Si la letra coincide y era la última de la palabra, ¡lo logramos!
   \item Si coincide pero faltan letras, marcamos la casilla con \texttt{'\#'}
@@ -68,7 +67,7 @@ la palabra, guardando el camino que lleva.
 \paragraph{Consejos para la entrevista (Amazon).} Lo más importante es el
 \emph{backtracking}: marcar la casilla al entrar y \textbf{siempre} devolverle
 su letra al salir, incluso cuando el camino tuvo éxito. Si el entrevistador te
-pide \emph{no} modificar el tablero, usa un tablero de marcas aparte en lugar
+pide \emph{no} modificar la cuadrícula, usa una cuadrícula de marcas aparte en lugar
 del \texttt{'\#'}. No olvides los casos raros: una palabra de una sola letra
-(basta con que esa letra exista), un tablero de una sola casilla y palabras que
+(basta con que esa letra exista), una cuadrícula de una sola casilla y palabras que
 obligarían a reutilizar una casilla (deben fallar).

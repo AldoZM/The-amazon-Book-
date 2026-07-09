@@ -56,7 +56,7 @@ P \phantom{P P P} & A A A A A A A A\\
 \end{tabular}
 \end{center}
 
-\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos dos tableros de
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos dos matrices de
 marcas del mismo tamaño que el mapa: uno para el océano Pacífico y otro para el
 Atlántico. Una marca dice «desde aquí el agua sí puede llegar a este mar».
 \begin{enumerate}
@@ -70,7 +70,7 @@ Atlántico. Una marca dice «desde aquí el agua sí puede llegar a este mar».
         mayor (porque vamos «río arriba»), y solo si no la habíamos marcado ya.
   \item Hacemos exactamente lo mismo para el Atlántico, empezando desde su
         orilla (la fila de abajo y la columna de la derecha).
-  \item Al final, las casillas que quedaron marcadas en \emph{los dos} tableros
+  \item Al final, las casillas que quedaron marcadas en \emph{las dos} matrices
         son la respuesta: desde ellas el agua llega a ambos océanos.
 \end{enumerate}
 

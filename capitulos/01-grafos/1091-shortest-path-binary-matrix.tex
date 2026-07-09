@@ -7,12 +7,12 @@ diagonales). Su longitud es el número de celdas visitadas. Devolvemos la
 longitud del camino más corto, o $-1$ si no existe.
 
 \paragraph{La idea, con un ejemplo de la vida real.} Queremos ir de una esquina
-del tablero a la esquina opuesta pisando solo casillas libres (\texttt{0}), y
+de la cuadrícula a la esquina opuesta pisando solo casillas libres (\texttt{0}), y
 usando el camino más corto posible. Aquí sí podemos movernos en diagonal, así
 que cada casilla tiene hasta 8 vecinas: es el movimiento del rey en el ajedrez,
 que avanza a cualquiera de las casillas que lo rodean.
 
-Para encontrar el camino más corto usamos \emph{BFS} (búsqueda en anchura):
+Para encontrar el camino más corto usamos \emph{BFS}:
 soltamos una onda desde la casilla de salida, como los círculos que hace una
 piedra al caer al agua. La onda crece de un paso en un paso y toca antes las
 casillas cercanas que las lejanas. Por eso, la \emph{primera} vez que la onda
@@ -52,17 +52,17 @@ una fila de espera donde el primero que entra es el primero que sale.
 
 \complejidad{$O(n^2)$}{$O(n^2)$}
 
-\paragraph{¿Qué significa esa complejidad?} El tablero es de $n\times n$, así
+\paragraph{¿Qué significa esa complejidad?} La cuadrícula es de $n\times n$, así
 que tiene $n^2$ casillas en total. Que el tiempo sea $O(n^2)$ significa que, en
 el peor caso, cada casilla entra y sale de la cola una sola vez: revisamos cada
 una una vez. No se puede menos, porque tal vez haya que recorrer todo el
-tablero para encontrar la salida.
+cuadrícula para encontrar la salida.
 
 \paragraph{Consejos para la entrevista (Amazon).} Explica por qué usamos BFS y
-no DFS: el DFS (búsqueda en profundidad, meterse hasta el fondo por un camino)
-encuentra \emph{algún} camino, pero no garantiza que sea el más corto; el BFS
+no DFS: el DFS encuentra \emph{algún} camino, pero no garantiza que sea el más
+corto; el BFS
 sí, porque avanza por capas parejas. Cuida los casos raros: que la salida o la
-llegada estén bloqueadas (respuesta $-1$ de inmediato) y un tablero de una sola
+llegada estén bloqueadas (respuesta $-1$ de inmediato) y una cuadrícula de una sola
 casilla con un \texttt{0} (respuesta 1). Si además pusieran «costos» distintos
 por casilla, el siguiente paso sería usar el algoritmo de Dijkstra o el 0-1
 BFS.

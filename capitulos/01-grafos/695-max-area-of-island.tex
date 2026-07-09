@@ -10,7 +10,7 @@ desde un avión que en \emph{Number of Islands}, pero ahora no nos importa
 cuántas islas hay, sino cuál es la más grande. El \emph{área} de una isla es
 simplemente cuántas casillas de tierra la forman.
 
-Vamos leyendo el tablero casilla por casilla, como un libro. Cuando pisamos un
+Vamos leyendo la cuadrícula casilla por casilla, como un libro. Cuando pisamos un
 pedazo de tierra nuevo, recorremos toda su isla contando 1 por cada casilla de
 tierra que la forma. Igual que antes, en cuanto pisamos una casilla la
 «inundamos» (la pintamos de agua) para no contarla dos veces. Cuando terminamos
@@ -34,7 +34,7 @@ a la derecha es otra isla de área 1. La respuesta es \textbf{5}.
 casillas con dos ciclos (uno para filas, otro para columnas). Cuando
 encontramos tierra, llamamos a una ayudante que mide la isla completa.
 \begin{enumerate}
-  \item Si la casilla se sale del tablero o es agua, la ayudante devuelve
+  \item Si la casilla se sale de la cuadrícula o es agua, la ayudante devuelve
         \texttt{0}: no aporta nada.
   \item Si es tierra, la inunda (la pinta de agua para no recontarla) y cuenta
         \texttt{1} por ella misma.
