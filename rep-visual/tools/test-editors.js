@@ -40,7 +40,7 @@ sandbox.window = sandbox;
 vm.createContext(sandbox);
 
 const NUMS = ["79", "200", "417", "542", "547", "695", "994", "1091"];
-for (const f of ["js/i18n.js", "js/renderers.js"])
+for (const f of ["js/i18n.js", "js/renderers.js", "js/editors.js"])
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), "utf8"), sandbox, { filename: f });
 for (const n of NUMS)
   vm.runInContext(fs.readFileSync(path.join(ROOT, "js/problems", n + ".js"), "utf8"), sandbox, { filename: n });
@@ -105,9 +105,11 @@ for (const n of NUMS) {
   ok(`${n}: tiene editor`, !!ed);
   if (!ed) continue;
   const kind = ed.kind || "grid";
-  ok(`${n}: kind válido (${kind})`, kind === "grid" || kind === "word");
+  ok(`${n}: kind válido (${kind})`, kind === "grid" || kind === "text");
   ok(`${n}: hint bilingüe`, typeof ed.hint.es === "string" && typeof ed.hint.en === "string");
-  ok(`${n}: initial() y toInput() son funciones`, typeof ed.initial === "function" && typeof ed.toInput === "function");
+  ok(`${n}: initial() es función`, typeof ed.initial === "function");
+  if (kind === "grid") ok(`${n}: toInput() es función`, typeof ed.toInput === "function");
+  else ok(`${n}: parse() y previewSpec() son funciones`, typeof ed.parse === "function" && typeof ed.previewSpec === "function");
 }
 
 /* -------------------------------------------------------------- 200 (texto) */
@@ -214,34 +216,39 @@ console.log("\n── 1091 Shortest Path (piloto) ──");
   buildRuns("1091", ed);
 }
 
-/* --------------------------------------------------------- 79 (modo palabra) */
-console.log("\n── 79 Word Search (modo palabra) ──");
+/* --------------------------------------------------------- 79 (modo texto) */
+console.log("\n── 79 Word Search (modo texto) ──");
 {
   const ed = P["79"].editor;
-  eq("kind es word", ed.kind, "word");
-  eq("initial() es una palabra", ed.initial(), "ABCCED");
-  eq("sanitize pasa a mayúsculas", ed.sanitize("abc"), "ABC");
-  eq("sanitize tira lo que no es letra", ed.sanitize("a1b-c "), "ABC");
-  eq("sanitize corta a 10", ed.sanitize("ABCDEFGHIJKLMNOP").length, 10);
-  eq("sanitize de vacío es vacío", ed.sanitize(""), "");
-  eq("validate rechaza la palabra vacía", ed.validate(""), false);
-  eq("validate acepta una palabra", ed.validate("SEE"), true);
-  eq("placeholder bilingüe", [typeof ed.placeholder.es, typeof ed.placeholder.en], ["string", "string"]);
+  eq("kind es text", ed.kind, "text");
+  eq("un solo campo, llamado word", ed.fields.map((f) => f.id), ["word"]);
+  eq("initial() es un objeto de campos", ed.initial(), { word: "ABCCED" });
+
+  const san = ed.fields[0].sanitize;
+  eq("sanitize pasa a mayúsculas", san("abc"), "ABC");
+  eq("sanitize tira lo que no es letra", san("a1b-c "), "ABC");
+  eq("sanitize corta a 10", san("ABCDEFGHIJKLMNOP").length, 10);
+
+  const vacio = ed.parse({ word: "" });
+  eq("parse rechaza la palabra vacía", vacio.ok, false);
+  eq("y señala el campo", vacio.field, "word");
+  ok("con mensaje bilingüe", typeof vacio.error.es === "string" && typeof vacio.error.en === "string");
+
+  const bien = ed.parse({ word: "SEE" });
+  eq("parse acepta una palabra", bien.ok, true);
+  ok("y devuelve {board, word}", Array.isArray(bien.input.board) && bien.input.word === "SEE");
+  bien.input.board[0][0] = "Z";
+  eq("parse copia el tablero (no lo comparte)", ed.board[0][0], "A");
 
   const spec = ed.previewSpec();
+  eq("previewSpec es una rejilla", spec.type, "grid");
   eq("previewSpec: 3 filas × 4 columnas", [spec.cells.length, spec.cells[0].length], [3, 4]);
-  eq("previewSpec: la esquina es la A", spec.cells[0][0], { v: "A", cls: "water" });
+  ok("VIS.renderers sabe pintar ese type", typeof sandbox.VIS.renderers[spec.type] === "function");
 
-  const input = ed.toInput("SEE");
-  ok("toInput da {board, word}", Array.isArray(input.board) && input.word === "SEE");
-  input.board[0][0] = "Z";
-  eq("toInput copia el tablero (no lo comparte)", ed.board[0][0], "A");
-
-  buildRuns("79", ed);
   // Palabras conocidas del tablero clásico.
-  const existe = P["79"].build(ed.toInput("SEE"));
+  const existe = P["79"].build(ed.parse({ word: "SEE" }).input);
   ok("SEE existe en el tablero", /verdadero/.test(existe[existe.length - 1].note.es));
-  const noExiste = P["79"].build(ed.toInput("ABCB"));
+  const noExiste = P["79"].build(ed.parse({ word: "ABCB" }).input);
   ok("ABCB no existe", /falso/.test(noExiste[noExiste.length - 1].note.es));
 }
 

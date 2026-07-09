@@ -393,22 +393,29 @@ pre.code .tok-com { color: #6a737d; font-style: italic; }/* comentarios */
   flex-wrap: wrap;
 }
 .editor-hint { color: var(--muted); font-size: .85rem; flex: 1; min-width: 180px; }
-/* Campo de texto del modo palabra (79): el tablero es fijo, la palabra se escribe. */
-.editor-word {
+/* Campos del modo texto: el usuario escribe la entrada (árbol, palabra, aristas). */
+.editor-fields { display: flex; gap: 12px; flex-wrap: wrap; }
+.editor-field { display: flex; flex-direction: column; gap: 4px; }
+.editor-field .lbl {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted);
+}
+.editor-field input {
   background: var(--bg-3);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 8px;
   padding: 9px 12px;
   font-family: var(--mono);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: .12em;
-  text-transform: uppercase;
+  font-size: .95rem;
   min-height: 42px;
-  width: 9.5em;
+  width: 13em;
 }
-.editor-word:focus { outline: none; border-color: var(--azul); }
+.editor-field input:focus { outline: none; border-color: var(--azul); }
+.editor-field input.invalid { border-color: var(--rojo); }
+.editor-hint.error { color: var(--rojo); }
 .editor-bar button {
   background: var(--azul);
   color: #fff;
@@ -459,5 +466,7 @@ pre.code .tok-com { color: #6a737d; font-style: italic; }/* comentarios */
   .case-select select { flex: 1; min-height: 40px; }
   .editor-bar { padding: 10px 12px; }
   .editor-bar button { width: 100%; }
-  .editor-word { width: 100%; }
+  .editor-fields { width: 100%; }
+  .editor-field { flex: 1; min-width: 100%; }
+  .editor-field input { width: 100%; }
 }

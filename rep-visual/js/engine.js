@@ -152,31 +152,44 @@
       this.setPlaybackEnabled(true);
     },
 
-    // Escenario en modo edición: una cuadrícula que se toca (kind "grid") o el
-    // tablero fijo más un campo de texto (kind "word").
+    // Escenario en modo edición: una cuadrícula que se toca (kind "grid") o unos
+    // campos de texto con vista previa en vivo (kind "text").
     paintEditor() {
       const ed = this.problem.editor;
       const stage = qs("#stage");
-      const word = qs("#editor-word");
+      const wrap = qs("#editor-fields");
 
-      if ((ed.kind || "grid") === "word") {
-        stage.innerHTML = "";
-        stage.appendChild(VIS.renderers.grid(ed.previewSpec()));
-        if (word) {
-          word.style.display = "";
-          word.value = this.editState;
-          word.placeholder = VIS.pick(ed.placeholder) || "";
-          // Se sanea en cada pulsación y se devuelve al campo: así lo que se ve
-          // es exactamente lo que recibirá build().
-          word.oninput = () => {
-            this.editState = ed.sanitize(word.value);
-            word.value = this.editState;
-          };
+      if ((ed.kind || "grid") === "text") {
+        if (wrap) {
+          wrap.innerHTML = "";
+          wrap.style.display = "flex";
+          ed.fields.forEach((f) => {
+            const campo = VIS.el("label", "editor-field");
+            campo.appendChild(VIS.el("span", "lbl", VIS.pick(f.label)));
+            const inp = VIS.el("input");
+            inp.type = "text";
+            inp.id = "editor-field-" + f.id;
+            inp.autocomplete = "off";
+            inp.spellcheck = false;
+            inp.value = this.editState[f.id];
+            inp.placeholder = VIS.pick(f.placeholder) || "";
+            // Se sanea en cada pulsación y se devuelve al campo: lo que se ve es
+            // exactamente lo que va a parse().
+            inp.oninput = () => {
+              const limpio = f.sanitize ? f.sanitize(inp.value) : inp.value;
+              if (limpio !== inp.value) inp.value = limpio;
+              this.editState[f.id] = limpio;
+              this.refreshPreview();
+            };
+            campo.appendChild(inp);
+            wrap.appendChild(campo);
+          });
         }
+        this.refreshPreview();
         return;
       }
 
-      if (word) word.style.display = "none";
+      if (wrap) wrap.style.display = "none";
       const redraw = () => {
         stage.innerHTML = "";
         stage.appendChild(VIS.renderers.gridEditor(this.editState, ed, (r, c) => {
@@ -187,6 +200,44 @@
         }));
       };
       redraw();
+      const run = qs("#btn-run");
+      if (run) run.disabled = false;
+    },
+
+    // Corre parse() y refleja el resultado: vista previa o error. Es el único
+    // sitio que decide si Ejecutar está habilitado.
+    refreshPreview() {
+      const ed = this.problem.editor;
+      const res = ed.parse(this.editState);
+      const hintEl = qs("#editor-hint");
+      const run = qs("#btn-run");
+
+      (ed.fields || []).forEach((f) => {
+        const inp = qs("#editor-field-" + f.id);
+        if (inp) inp.classList.remove("invalid");
+      });
+
+      if (res.ok) {
+        if (hintEl) { hintEl.classList.remove("error"); hintEl.textContent = VIS.pick(ed.hint); }
+        const spec = ed.previewSpec(res.input);
+        const pintor = VIS.renderers[spec.type];
+        if (pintor) {
+          const stage = qs("#stage");
+          stage.innerHTML = "";
+          stage.appendChild(pintor(spec));
+        }
+        if (run) run.disabled = false;
+        return;
+      }
+
+      if (hintEl) { hintEl.classList.add("error"); hintEl.textContent = VIS.pick(res.error); }
+      if (res.field) {
+        const inp = qs("#editor-field-" + res.field);
+        if (inp) inp.classList.add("invalid");
+      }
+      if (run) run.disabled = true;
+      // El escenario NO se toca: se conserva el último dibujo válido, para que
+      // no parpadee mientras se escribe.
     },
 
     // Modo interactivo: el usuario construye la entrada y luego la ejecuta.
@@ -196,17 +247,15 @@
       if (!ed) return;
       this.mode = "edit";
       this.steps = [];   // fuera los pasos del caso anterior: aún no hay reproducción
-      // `== null` y no `!editState`: en modo palabra la cadena vacía es un
-      // estado legítimo, y `!""` haría reaparecer la palabra por defecto.
+      // `== null` y no `!editState`: la cadena vacía y el objeto vacío son
+      // estados legítimos, y `!""` haría reaparecer el valor por defecto.
       if (this.editState == null) this.editState = ed.initial();
-
-      this.paintEditor();
 
       const hint = VIS.pick(ed.hint);
       const bar = qs("#editor-bar");
       if (bar) bar.style.display = "flex";
       const hintEl = qs("#editor-hint");
-      if (hintEl) hintEl.textContent = hint;
+      if (hintEl) { hintEl.classList.remove("error"); hintEl.textContent = hint; }
       const run = qs("#btn-run");
       if (run) run.textContent = VIS.t("run");
       const be = qs("#btn-edit");
@@ -218,16 +267,26 @@
       const bar2 = qs("#bar");
       if (bar2) bar2.style.width = "0%";
       this.setPlaybackEnabled(false);
+
+      // Al final: `refreshPreview()` puede sustituir la instrucción por un error
+      // y deshabilitar Ejecutar. Nadie debe pisarlo después.
+      this.paintEditor();
     },
 
     // Alimenta el build() del problema con la entrada que construyó el usuario.
     runCustom() {
       const ed = this.problem.editor;
       if (!ed || this.editState == null) return;
-      // Entrada incompleta (p. ej. palabra vacía): no hay nada que animar.
-      if (ed.validate && !ed.validate(this.editState)) return;
+      let entrada;
+      if ((ed.kind || "grid") === "text") {
+        const res = ed.parse(this.editState);
+        if (!res.ok) return;      // el usuario ya ve el error; Ejecutar no hace nada
+        entrada = res.input;
+      } else {
+        entrada = ed.toInput(this.editState);
+      }
       try {
-        this.steps = this.problem.build(ed.toInput(this.editState)) || [];
+        this.steps = this.problem.build(entrada) || [];
       } catch (err) {
         this.steps = [{ note: "Error generando pasos: " + err.message, line: 0 }];
         console.error(err);
