@@ -54,6 +54,30 @@
     return box(spec.label, g);
   };
 
+  /* ---------------------------------------------------------- GRID EDITABLE */
+  // Cuadrícula que responde al clic/toque. No participa en el pipeline de pasos:
+  // el motor la coloca en #stage durante el modo edición.
+  //   editState: number[][]  — estado actual, propiedad del motor
+  //   editor:    problem.editor — decide cómo se ve cada celda
+  //   onToggle:  (r, c) => void — el motor decide qué hacer con el toque
+  // El pintor no muta editState: solo reporta el toque.
+  VIS.renderers.gridEditor = function (editState, editor, onToggle) {
+    const rows = editState.length;
+    const cols = rows ? editState[0].length : 0;
+    const g = el("div", "grid");
+    g.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const view = editor.cellView(editState[r][c], r, c);
+        const d = el("div", "cell editable " + (view.cls || ""));
+        d.appendChild(document.createTextNode(view.v != null ? view.v : ""));
+        d.addEventListener("click", () => onToggle(r, c));
+        g.appendChild(d);
+      }
+    }
+    return g;
+  };
+
   /* --------------------------------------------------- COLA / PILA / LISTA */
   // spec: { type:'queue'|'stack'|'list', label, items:[{v,cls}], arrows }
   function renderDS(spec) {

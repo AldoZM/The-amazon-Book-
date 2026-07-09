@@ -49,6 +49,30 @@
       { name: L("Sin frescas (0)", "No fresh (0)"), input: [[0,2]] },
     ],
 
+    // Modo interactivo: coloca naranjas y mira cuántos minutos tarda en pudrirse
+    // todo. Aquí la celda tiene tres estados, así que `cycle` da una vuelta
+    // completa: vacío → fresca → podrida → vacío.
+    editor: {
+      rows: 5, cols: 5,
+      initial() {
+        const g = Array.from({ length: this.rows }, () => new Array(this.cols).fill(1));
+        g[0][0] = 2;   // una podrida para que el BFS tenga de dónde arrancar
+        return g;
+      },
+      cycle(v) { return (v + 1) % 3; },
+      cellView(v) {
+        // Mismas clases que usa build().
+        if (v === 0) return { v: "", cls: "water" };
+        if (v === 1) return { v: "1", cls: "fresh" };
+        return { v: "2", cls: "rotten" };
+      },
+      toInput(grid) { return grid; },
+      hint: {
+        es: "Toca una celda para cambiarla: vacío → fresca (1) → podrida (2). Luego pulsa Ejecutar.",
+        en: "Tap a cell to change it: empty → fresh (1) → rotten (2). Then press Run.",
+      },
+    },
+
     build(input) {
       const grid = input.map((r) => r.slice());
       const m = grid.length, n = grid[0].length;

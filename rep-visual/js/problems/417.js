@@ -51,6 +51,31 @@
         [3,3,3]] },
     ],
 
+    // Modo interactivo: esculpe la isla y mira desde qué celdas el agua alcanza
+    // los dos océanos. La celda no es binaria: guarda una altura de 1 a 9, y
+    // `cycle` sube un escalón (tras el 9 vuelve al 1).
+    editor: {
+      rows: 5, cols: 5,
+      // Se arranca con las alturas del ejemplo clásico: da algo interesante que
+      // modificar, en vez de una meseta plana donde todo alcanza ambos océanos.
+      initial() {
+        return [
+          [1,2,2,3,5],
+          [3,2,3,4,4],
+          [2,4,5,3,1],
+          [6,7,1,4,5],
+          [5,1,1,2,4],
+        ];
+      },
+      cycle(v) { return v >= 9 ? 1 : v + 1; },
+      cellView(v) { return { v: String(v), cls: "water" }; },
+      toInput(grid) { return grid; },
+      hint: {
+        es: "Toca una celda para subir su altura (del 1 al 9, luego vuelve al 1). El Pacífico está arriba y a la izquierda; el Atlántico, abajo y a la derecha. Luego pulsa Ejecutar.",
+        en: "Tap a cell to raise its height (1 to 9, then back to 1). The Pacific is up and left; the Atlantic is down and right. Then press Run.",
+      },
+    },
+
     build(input) {
       const h = input, m = h.length, n = h[0].length;
       const pac = h.map((r) => r.map(() => false));

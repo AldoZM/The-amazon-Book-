@@ -39,6 +39,28 @@
       { name: L("Un solo cero", "A single zero"), input: [[1,1,1],[1,0,1],[1,1,1]] },
     ],
 
+    // Modo interactivo: coloca las fuentes (0) y mira cómo se propagan las
+    // distancias. Sin ninguna fuente, todas las distancias quedan en infinito:
+    // es un resultado correcto, y didáctico.
+    editor: {
+      rows: 5, cols: 5,
+      initial() {
+        const g = Array.from({ length: this.rows }, () => new Array(this.cols).fill(1));
+        g[2][2] = 0;   // una fuente al centro para arrancar con algo que ver
+        return g;
+      },
+      cycle(v) { return v === 0 ? 1 : 0; },
+      cellView(v) {
+        // Mismas clases que usa build(): fuente en verde, resto sin calcular.
+        return v === 0 ? { v: "0", cls: "fresh" } : { v: "1", cls: "water" };
+      },
+      toInput(grid) { return grid; },
+      hint: {
+        es: "Toca una celda para alternar entre fuente (0) y celda por calcular (1). Luego pulsa Ejecutar.",
+        en: "Tap a cell to switch between source (0) and cell to compute (1). Then press Run.",
+      },
+    },
+
     build(input) {
       const m = input.length, n = input[0].length;
       const INF = Infinity;

@@ -43,6 +43,8 @@
     timer: null,
     speed: 900,
     codePre: null,
+    mode: "play",        // "play" | "edit"
+    editState: null,     // cuadrícula que el usuario edita (modo interactivo)
 
     init(problem) {
       this.problem = problem;
@@ -62,11 +64,12 @@
       this.codePre = VIS.renderCode(qs("#code"), VIS.pickCode(this.problem.code));
       this.buildLegend();
       const sel = qs("#case-select");
-      const cur = +sel.value;
+      const cur = sel.value;          // puede ser "custom": se guarda como texto
       this.buildCaseSelect();
       sel.value = cur;
       this.setPlayLabel();
-      this.render();
+      if (this.mode === "edit") this.enterEditMode();
+      else this.render();
     },
 
     buildHeader() {
@@ -89,7 +92,16 @@
         o.value = i;
         sel.appendChild(o);
       });
-      sel.onchange = () => this.loadCase(+sel.value);
+      // Si el problema trae editor, se ofrece como un caso más: lo haces tú.
+      if (this.problem.editor) {
+        const o = VIS.el("option", null, VIS.t("custom"));
+        o.value = "custom";
+        sel.appendChild(o);
+      }
+      sel.onchange = () => {
+        if (sel.value === "custom") this.enterEditMode();
+        else this.loadCase(+sel.value);
+      };
     },
 
     buildLegend() {
@@ -111,6 +123,8 @@
 
     loadCase(idx) {
       this.pause();
+      this.mode = "play";
+      this.hideEditorUI();
       const c = (this.problem.cases || [{}])[idx] || {};
       try {
         this.steps = this.problem.build(c.input) || [];
@@ -118,6 +132,110 @@
         this.steps = [{ note: "Error generando pasos: " + err.message, line: 0 }];
         console.error(err);
       }
+      this.i = 0;
+      this.render();
+    },
+
+    // Enciende o apaga los cuatro controles de reproducción de una vez.
+    setPlaybackEnabled(on) {
+      ["#btn-prev", "#btn-next", "#btn-play", "#btn-reset"].forEach((s) => {
+        const b = qs(s); if (b) b.disabled = !on;
+      });
+    },
+
+    // Oculta la barra del editor y el botón Editar, y reactiva la reproducción.
+    hideEditorUI() {
+      const bar = qs("#editor-bar");
+      if (bar) bar.style.display = "none";
+      const be = qs("#btn-edit");
+      if (be) be.style.display = "none";
+      this.setPlaybackEnabled(true);
+    },
+
+    // Escenario en modo edición: una cuadrícula que se toca (kind "grid") o el
+    // tablero fijo más un campo de texto (kind "word").
+    paintEditor() {
+      const ed = this.problem.editor;
+      const stage = qs("#stage");
+      const word = qs("#editor-word");
+
+      if ((ed.kind || "grid") === "word") {
+        stage.innerHTML = "";
+        stage.appendChild(VIS.renderers.grid(ed.previewSpec()));
+        if (word) {
+          word.style.display = "";
+          word.value = this.editState;
+          word.placeholder = VIS.pick(ed.placeholder) || "";
+          // Se sanea en cada pulsación y se devuelve al campo: así lo que se ve
+          // es exactamente lo que recibirá build().
+          word.oninput = () => {
+            this.editState = ed.sanitize(word.value);
+            word.value = this.editState;
+          };
+        }
+        return;
+      }
+
+      if (word) word.style.display = "none";
+      const redraw = () => {
+        stage.innerHTML = "";
+        stage.appendChild(VIS.renderers.gridEditor(this.editState, ed, (r, c) => {
+          this.editState[r][c] = ed.cycle(this.editState[r][c], r, c);
+          redraw();   // 5×5: re-dibujar entero es trivial y evita estado extra
+        }));
+      };
+      redraw();
+    },
+
+    // Modo interactivo: el usuario construye la entrada y luego la ejecuta.
+    enterEditMode() {
+      this.pause();
+      const ed = this.problem.editor;
+      if (!ed) return;
+      this.mode = "edit";
+      this.steps = [];   // fuera los pasos del caso anterior: aún no hay reproducción
+      // `== null` y no `!editState`: en modo palabra la cadena vacía es un
+      // estado legítimo, y `!""` haría reaparecer la palabra por defecto.
+      if (this.editState == null) this.editState = ed.initial();
+
+      this.paintEditor();
+
+      const hint = VIS.pick(ed.hint);
+      const bar = qs("#editor-bar");
+      if (bar) bar.style.display = "flex";
+      const hintEl = qs("#editor-hint");
+      if (hintEl) hintEl.textContent = hint;
+      const run = qs("#btn-run");
+      if (run) run.textContent = VIS.t("run");
+      const be = qs("#btn-edit");
+      if (be) be.style.display = "none";
+
+      // Todavía no hay pasos: la narración explica qué hacer y no se reproduce.
+      const nar = qs("#narration");
+      if (nar) nar.innerHTML = hint;
+      const bar2 = qs("#bar");
+      if (bar2) bar2.style.width = "0%";
+      this.setPlaybackEnabled(false);
+    },
+
+    // Alimenta el build() del problema con la entrada que construyó el usuario.
+    runCustom() {
+      const ed = this.problem.editor;
+      if (!ed || this.editState == null) return;
+      // Entrada incompleta (p. ej. palabra vacía): no hay nada que animar.
+      if (ed.validate && !ed.validate(this.editState)) return;
+      try {
+        this.steps = this.problem.build(ed.toInput(this.editState)) || [];
+      } catch (err) {
+        this.steps = [{ note: "Error generando pasos: " + err.message, line: 0 }];
+        console.error(err);
+      }
+      this.mode = "play";
+      const bar = qs("#editor-bar");
+      if (bar) bar.style.display = "none";
+      const be = qs("#btn-edit");
+      if (be) { be.style.display = ""; be.textContent = VIS.t("edit"); }
+      this.setPlaybackEnabled(true);
       this.i = 0;
       this.render();
     },
@@ -146,15 +264,21 @@
       qs("#btn-next").disabled = this.i >= this.steps.length - 1;
     },
 
-    next() { if (this.i < this.steps.length - 1) { this.i++; this.render(); return true; } return false; },
-    prev() { if (this.i > 0) { this.i--; this.render(); } },
-    reset() { this.pause(); this.i = 0; this.render(); },
+    // La guarda va en la ACCIÓN y no en el botón: deshabilitar los botones no
+    // bloquea el teclado ni el swipe, que también desembocan aquí. En modo
+    // "edit" (el usuario está dibujando la rejilla) toda reproducción se ignora.
+    locked() { return this.mode === "edit"; },
+
+    next() { if (this.locked()) return false; if (this.i < this.steps.length - 1) { this.i++; this.render(); return true; } return false; },
+    prev() { if (this.locked()) return; if (this.i > 0) { this.i--; this.render(); } },
+    reset() { if (this.locked()) return; this.pause(); this.i = 0; this.render(); },
 
     setPlayLabel() {
       const b = qs("#btn-play");
       if (b) b.textContent = this.timer ? VIS.t("pause") : VIS.t("play");
     },
     play() {
+      if (this.locked()) return;
       if (this.i >= this.steps.length - 1) this.i = 0;
       const b = qs("#btn-play");
       b.textContent = VIS.t("pause");
@@ -169,13 +293,17 @@
       const b = qs("#btn-play");
       if (b) { b.textContent = VIS.t("play"); b.classList.remove("primary"); }
     },
-    toggle() { this.timer ? this.pause() : this.play(); },
+    toggle() { if (this.locked()) return; this.timer ? this.pause() : this.play(); },
 
     bindControls() {
       qs("#btn-play").onclick = () => this.toggle();
       qs("#btn-next").onclick = () => { this.pause(); this.next(); };
       qs("#btn-prev").onclick = () => { this.pause(); this.prev(); };
       qs("#btn-reset").onclick = () => this.reset();
+      const run = qs("#btn-run");
+      if (run) run.onclick = () => this.runCustom();
+      const be = qs("#btn-edit");
+      if (be) be.onclick = () => this.enterEditMode();
       const sp = qs("#speed");
       sp.oninput = () => {
         this.speed = 1900 - +sp.value; // rango invertido: derecha = rápido

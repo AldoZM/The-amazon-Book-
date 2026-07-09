@@ -49,6 +49,35 @@
         [0,1,1,1,0]] },
     ],
 
+    // Modo interactivo: el usuario dibuja los muros y ejecuta este mismo BFS.
+    // Los métodos usan `this`, así que hay que llamarlos sobre el objeto.
+    editor: {
+      rows: 5,
+      cols: 5,
+      initial() {
+        return Array.from({ length: this.rows }, () => new Array(this.cols).fill(0));
+      },
+      // Inicio (0,0) y meta (rows-1, cols-1) son fijos: el toque no los cambia.
+      cycle(v, r, c) {
+        if (r === 0 && c === 0) return v;
+        if (r === this.rows - 1 && c === this.cols - 1) return v;
+        return v === 0 ? 1 : 0;
+      },
+      // El muro gana sobre inicio/meta, pero `cycle` nunca los amuralla.
+      cellView(v, r, c) {
+        if (v === 1) return { v: "", cls: "wall" };
+        if (r === 0 && c === 0) return { v: "A", cls: "current" };
+        if (r === this.rows - 1 && c === this.cols - 1) return { v: "B", cls: "target" };
+        return { v: "", cls: "water" };
+      },
+      // build(input) de 1091 recibe la cuadrícula directamente.
+      toInput(grid) { return grid; },
+      hint: {
+        es: "Toca una celda para poner o quitar un muro. Inicio (A) y meta (B) son fijos. Luego pulsa Ejecutar.",
+        en: "Tap a cell to add or remove a wall. Start (A) and goal (B) are fixed. Then press Run.",
+      },
+    },
+
     build(input) {
       const n = input.length;
       const dist = input.map((r) => r.map(() => 0));

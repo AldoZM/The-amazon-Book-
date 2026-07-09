@@ -27,6 +27,13 @@
         <div class="panel-title" data-i18n="stage">Escenario</div>
         <div class="stage" id="stage"></div>
         <div class="legend" id="legend"></div>
+        <div class="editor-bar" id="editor-bar" style="display:none">
+          <span class="editor-hint" id="editor-hint"></span>
+          <input class="editor-word" id="editor-word" type="text" maxlength="10"
+                 autocomplete="off" autocapitalize="characters" spellcheck="false"
+                 style="display:none">
+          <button id="btn-run" class="primary" data-i18n="run">▶ Ejecutar</button>
+        </div>
       </div>
 
       <div class="panel">
@@ -38,6 +45,7 @@
           <button id="btn-prev" data-i18n="prev">◀ Anterior</button>
           <button id="btn-play" class="primary" data-i18n="play">▶ Reproducir</button>
           <button id="btn-next" data-i18n="next">Siguiente ▶</button>
+          <button id="btn-edit" data-i18n="edit" style="display:none">✏️ Editar</button>
           <span class="grow"></span>
           <span class="speed"><span data-i18n="slow">Lento</span> <input id="speed" type="range" min="100" max="1800" value="1000"> <span data-i18n="fast">Rápido</span></span>
         </div>

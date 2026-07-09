@@ -241,6 +241,10 @@ a:hover { text-decoration: underline; }
 .cell.target  { background: #1e3a2f; color: var(--cian); border-color: var(--cian); }
 .cell.dim     { opacity: .35; }
 
+/* Celda de la cuadrícula editable (modo interactivo) */
+.cell.editable { cursor: pointer; user-select: none; }
+.cell.editable:hover { border-color: var(--azul-soft); }
+
 /* Etiqueta genérica de sección dentro del stage */
 .stage-box { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .stage-box .label { font-size: .72rem; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
@@ -379,6 +383,44 @@ pre.code .tok-com { color: #6a737d; font-style: italic; }/* comentarios */
 .legend .lg { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--muted); }
 .legend .sw { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); }
 
+/* Barra del modo interactivo: instrucción + botón Ejecutar */
+.editor-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.editor-hint { color: var(--muted); font-size: .85rem; flex: 1; min-width: 180px; }
+/* Campo de texto del modo palabra (79): el tablero es fijo, la palabra se escribe. */
+.editor-word {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  min-height: 42px;
+  width: 9.5em;
+}
+.editor-word:focus { outline: none; border-color: var(--azul); }
+.editor-bar button {
+  background: var(--azul);
+  color: #fff;
+  border: 1px solid var(--azul);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: .92rem;
+  min-height: 42px;
+  cursor: pointer;
+}
+.editor-bar button:hover { background: var(--azul-soft); }
+
 /* ============================================================================
    MÓVIL — teléfono en vertical (≤ 600px)
    El workspace ya se apila en una columna a 980px; aquí se ajustan márgenes,
@@ -415,4 +457,7 @@ pre.code .tok-com { color: #6a737d; font-style: italic; }/* comentarios */
 
   .case-select { padding: 10px 12px; }
   .case-select select { flex: 1; min-height: 40px; }
+  .editor-bar { padding: 10px 12px; }
+  .editor-bar button { width: 100%; }
+  .editor-word { width: 100%; }
 }

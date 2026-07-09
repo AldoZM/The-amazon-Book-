@@ -55,6 +55,24 @@
         ["0","0","0"]] },
     ],
 
+    // Modo interactivo: dibuja tus islas y cuenta cuántas hay.
+    // Ojo: build() compara con === contra "1"/"0", así que las celdas son texto.
+    editor: {
+      rows: 5, cols: 5,
+      initial() {
+        return Array.from({ length: this.rows }, () => new Array(this.cols).fill("0"));
+      },
+      cycle(v) { return v === "0" ? "1" : "0"; },
+      cellView(v) {
+        return v === "1" ? { v: "1", cls: "land" } : { v: "0", cls: "water" };
+      },
+      toInput(grid) { return grid; },
+      hint: {
+        es: "Toca una celda para alternar entre tierra (1) y agua (0). Luego pulsa Ejecutar.",
+        en: "Tap a cell to switch between land (1) and water (0). Then press Run.",
+      },
+    },
+
     build(input) {
       const grid = input.map((r) => r.slice());
       const m = grid.length, n = grid[0].length;

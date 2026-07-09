@@ -55,6 +55,38 @@
         ["A","D","E","E"]], word: "ABCB" } },
     ],
 
+    // Modo interactivo, variante "palabra": aquí lo editable no es una
+    // cuadrícula. build() recibe {board, word}, y ciclar letras A→Z a toques
+    // serían 26 toques por celda. Así que el tablero queda fijo y se escribe la
+    // palabra en un campo de texto.
+    editor: {
+      kind: "word",
+      board: [
+        ["A","B","C","E"],
+        ["S","F","C","S"],
+        ["A","D","E","E"],
+      ],
+      initial() { return "ABCCED"; },
+      // Lo que se ve en el campo es exactamente lo que recibirá build().
+      sanitize(raw) {
+        return String(raw).toUpperCase().replace(/[^A-Z]/g, "").slice(0, 10);
+      },
+      validate(word) { return word.length > 0; },
+      // Tablero de solo lectura, con el pintor `grid` de siempre.
+      previewSpec() {
+        return {
+          label: { es: "Tablero (fijo)", en: "Board (fixed)" },
+          cells: this.board.map((row) => row.map((ch) => ({ v: ch, cls: "water" }))),
+        };
+      },
+      toInput(word) { return { board: this.board.map((r) => r.slice()), word }; },
+      placeholder: { es: "Ej. ABCCED", en: "e.g. ABCCED" },
+      hint: {
+        es: "El tablero es fijo. Escribe la palabra a buscar y pulsa Ejecutar. Prueba ABCCED, SEE o ABF.",
+        en: "The board is fixed. Type the word to search and press Run. Try ABCCED, SEE or ABF.",
+      },
+    },
+
     build(input) {
       const board = input.board.map((r) => r.slice());
       const word = input.word;

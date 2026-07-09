@@ -409,6 +409,8 @@ Une las dos piezas: el desplegable gana un caso "Personalizado", el escenario se
 - Produces:
   - `Engine.mode: "edit" | "play"` — en qué estado está el motor.
   - `Engine.editState: number[][]` — la cuadrícula que el usuario edita; persiste entre ediciones durante la sesión.
+  - `Engine.setPlaybackEnabled(on: boolean): void` — enciende/apaga los cuatro botones de reproducción. Único sitio que toca `disabled`.
+  - `Engine.hideEditorUI(): void` — oculta barra y botón Editar, reactiva reproducción.
   - `Engine.enterEditMode(): void` — pinta el editor, muestra la barra, apaga los controles de reproducción.
   - `Engine.runCustom(): void` — `build(editor.toInput(editState))` → `steps`, pasa a `mode = "play"` y reproduce.
   - Ids del DOM: `#editor-bar`, `#editor-hint`, `#btn-run`, `#btn-edit`.
@@ -590,15 +592,20 @@ Sustituir el método `loadCase(idx)` completo por (añade el apagado del editor)
 Justo debajo de `loadCase`, insertar los tres métodos nuevos:
 
 ```js
+    // Enciende o apaga los cuatro controles de reproducción de una vez.
+    setPlaybackEnabled(on) {
+      ["#btn-prev", "#btn-next", "#btn-play", "#btn-reset"].forEach((s) => {
+        const b = qs(s); if (b) b.disabled = !on;
+      });
+    },
+
     // Oculta la barra del editor y el botón Editar, y reactiva la reproducción.
     hideEditorUI() {
       const bar = qs("#editor-bar");
       if (bar) bar.style.display = "none";
       const be = qs("#btn-edit");
       if (be) be.style.display = "none";
-      ["#btn-prev", "#btn-next", "#btn-play", "#btn-reset"].forEach((s) => {
-        const b = qs(s); if (b) b.disabled = false;
-      });
+      this.setPlaybackEnabled(true);
     },
 
     // Modo interactivo: el escenario pasa a ser una cuadrícula que se toca.
@@ -634,9 +641,7 @@ Justo debajo de `loadCase`, insertar los tres métodos nuevos:
       if (nar) nar.innerHTML = hint;
       const bar2 = qs("#bar");
       if (bar2) bar2.style.width = "0%";
-      ["#btn-prev", "#btn-next", "#btn-play", "#btn-reset"].forEach((s) => {
-        const b = qs(s); if (b) b.disabled = true;
-      });
+      this.setPlaybackEnabled(false);
     },
 
     // Alimenta el build() del problema con la cuadrícula que dibujó el usuario.
@@ -654,9 +659,7 @@ Justo debajo de `loadCase`, insertar los tres métodos nuevos:
       if (bar) bar.style.display = "none";
       const be = qs("#btn-edit");
       if (be) { be.style.display = ""; be.textContent = VIS.t("edit"); }
-      ["#btn-prev", "#btn-next", "#btn-play", "#btn-reset"].forEach((s) => {
-        const b = qs(s); if (b) b.disabled = false;
-      });
+      this.setPlaybackEnabled(true);
       this.i = 0;
       this.render();
     },
