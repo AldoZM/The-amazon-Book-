@@ -39,7 +39,7 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
-const NUMS = ["79", "200", "417", "542", "695", "994", "1091"];
+const NUMS = ["79", "200", "417", "542", "547", "695", "994", "1091"];
 for (const f of ["js/i18n.js", "js/renderers.js"])
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), "utf8"), sandbox, { filename: f });
 for (const n of NUMS)
@@ -243,6 +243,39 @@ console.log("\n── 79 Word Search (modo palabra) ──");
   ok("SEE existe en el tablero", /verdadero/.test(existe[existe.length - 1].note.es));
   const noExiste = P["79"].build(ed.toInput("ABCB"));
   ok("ABCB no existe", /falso/.test(noExiste[noExiste.length - 1].note.es));
+}
+
+/* ------------------------------------------- 547 (matriz de adyacencia) */
+console.log("\n── 547 Number of Provinces (matriz simétrica) ──");
+{
+  const ed = P["547"].editor;
+  const g = ed.initial();
+  eq("initial() es 5×5", [g.length, g[0].length], [5, 5]);
+  ok("la diagonal arranca en 1", [0,1,2,3,4].every((i) => g[i][i] === 1));
+  ok("fuera de la diagonal arranca en 0", g[0][1] === 0 && g[3][1] === 0);
+
+  // Un toque cambia DOS celdas: la matriz es simétrica.
+  const g2 = ed.cycle(ed.initial(), 1, 3);
+  eq("cycle marca (1,3)", g2[1][3], 1);
+  eq("cycle marca también (3,1)", g2[3][1], 1);
+  const g3 = ed.cycle(g2, 1, 3);
+  eq("volver a tocar desmarca las dos", [g3[1][3], g3[3][1]], [0, 0]);
+
+  // La diagonal no se toca: una ciudad siempre está conectada consigo misma.
+  const g4 = ed.cycle(ed.initial(), 2, 2);
+  eq("cycle no toca la diagonal", g4[2][2], 1);
+
+  eq("cellView conectada", ed.cellView(1, 0, 1), { v: "1", cls: "land" });
+  eq("cellView sin conexión", ed.cellView(0, 0, 1), { v: "0", cls: "water" });
+  eq("cellView diagonal", ed.cellView(1, 2, 2), { v: "1", cls: "visited" });
+  ok("cellView no muta", cellViewIsPure(ed));
+
+  buildRuns("547", ed);
+  // 5 ciudades sin ninguna conexión: 5 provincias.
+  outcome("547", ed, () => {}, /5/, "sin conexiones -> 5 provincias");
+  // Unir 0-1 y 1-2 deja 3 provincias: {0,1,2}, {3}, {4}.
+  outcome("547", ed, (g, e) => { e.cycle(g, 0, 1); e.cycle(g, 1, 2); },
+          /3/, "dos conexiones encadenadas -> 3 provincias");
 }
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");

@@ -40,6 +40,35 @@
       { name: L("Todas conectadas", "All connected"), input: [[1,1,0,0],[1,1,1,0],[0,1,1,1],[0,0,1,1]] },
     ],
 
+    // Modo interactivo: conecta ciudades y cuenta las provincias.
+    // La entrada es una matriz de adyacencia SIMÉTRICA: si i es amiga de j,
+    // j es amiga de i. Por eso `cycle` toca dos celdas de golpe, y la diagonal
+    // (toda ciudad consigo misma) no se puede cambiar.
+    editor: {
+      rows: 5, cols: 5,
+      initial() {
+        const g = Array.from({ length: this.rows }, () => new Array(this.cols).fill(0));
+        for (let i = 0; i < this.rows; i++) g[i][i] = 1;
+        return g;
+      },
+      cycle(g, r, c) {
+        if (r === c) return g;                    // la diagonal es siempre 1
+        const v = g[r][c] === 0 ? 1 : 0;
+        g[r][c] = v;
+        g[c][r] = v;                              // simétrica, siempre
+        return g;
+      },
+      cellView(v, r, c) {
+        if (r === c) return { v: "1", cls: "visited" };   // diagonal, fija
+        return v === 1 ? { v: "1", cls: "land" } : { v: "0", cls: "water" };
+      },
+      toInput(grid) { return grid; },
+      hint: {
+        es: "Toca una celda para conectar o desconectar dos ciudades. La matriz es simétrica y la diagonal es fija. Luego pulsa Ejecutar.",
+        en: "Tap a cell to connect or disconnect two cities. The matrix is symmetric and the diagonal is fixed. Then press Run.",
+      },
+    },
+
     build(input) {
       const M = input, n = M.length;
       const pos = VIS.circleLayout(n, 160, 150, Math.min(120, 40 + n * 12));
