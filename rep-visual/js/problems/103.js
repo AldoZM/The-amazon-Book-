@@ -47,6 +47,13 @@
       { name: L("[1,2,3,4,5,6,7]", "[1,2,3,4,5,6,7]"), input: [1,2,3,4,5,6,7] },
     ],
 
+    // Modo interactivo: escribe el árbol en la notación de LeetCode (por
+    // niveles, con null para los huecos) y se dibuja mientras escribes.
+    editor: VIS.treeEditor("[3,9,20,null,null,15,7]", {
+      es: "Escribe el árbol por niveles, con null para los huecos, y míralo recorrer en zigzag. Luego pulsa Ejecutar.",
+      en: "Type the tree level by level, with null for the gaps, and watch the zigzag traversal. Then press Run.",
+    }),
+
     build(input) {
       const root = VIS.treeFromArray(input);
       const steps = [];

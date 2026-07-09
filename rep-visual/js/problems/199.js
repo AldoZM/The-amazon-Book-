@@ -44,6 +44,13 @@
       { name: L("Rama izquierda", "Left branch"), input: [1,2,null,3,null,4] },
     ],
 
+    // Modo interactivo: escribe el árbol en la notación de LeetCode (por
+    // niveles, con null para los huecos) y se dibuja mientras escribes.
+    editor: VIS.treeEditor("[1,2,3,null,5,null,4]", {
+      es: "Escribe el árbol y mira qué nodos se ven desde la derecha. Luego pulsa Ejecutar.",
+      en: "Type the tree and see which nodes are visible from the right. Then press Run.",
+    }),
+
     build(input) {
       const root = VIS.treeFromArray(input);
       const steps = [];

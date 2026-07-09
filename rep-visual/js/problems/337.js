@@ -41,6 +41,13 @@
       { name: L("[3,4,5,1,3,null,1] → 9", "[3,4,5,1,3,null,1] → 9"), input: [3,4,5,1,3,null,1] },
     ],
 
+    // Modo interactivo: escribe el árbol en la notación de LeetCode (por
+    // niveles, con null para los huecos) y se dibuja mientras escribes.
+    editor: VIS.treeEditor("[3,2,3,null,3,null,1]", {
+      es: "Escribe el árbol de casas y busca el botín máximo sin robar dos casas vecinas. Luego pulsa Ejecutar.",
+      en: "Type the tree of houses and find the maximum loot without robbing two adjacent houses. Then press Run.",
+    }),
+
     build(input) {
       const root = VIS.treeFromArray(input);
       const layout = VIS.binaryLayout(root);

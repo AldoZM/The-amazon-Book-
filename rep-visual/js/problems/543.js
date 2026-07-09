@@ -39,6 +39,13 @@
       { name: L("Cadena → 3", "Chain → 3"), input: [1,2,null,3,null,4] },
     ],
 
+    // Modo interactivo: escribe el árbol en la notación de LeetCode (por
+    // niveles, con null para los huecos) y se dibuja mientras escribes.
+    editor: VIS.treeEditor("[1,2,3,4,5]", {
+      es: "Escribe el árbol y mide su diámetro: el camino más largo entre dos nodos. Luego pulsa Ejecutar.",
+      en: "Type the tree and measure its diameter: the longest path between two nodes. Then press Run.",
+    }),
+
     build(input) {
       const root = VIS.treeFromArray(input);
       const layout = VIS.binaryLayout(root);

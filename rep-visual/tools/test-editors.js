@@ -39,7 +39,7 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
-const NUMS = ["79", "200", "417", "542", "547", "695", "994", "1091"];
+const NUMS = ["79","98","103","124","199","200","297","337","417","542","543","547","695","987","994","1091"];
 for (const f of ["js/i18n.js", "js/renderers.js", "js/editors.js"])
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), "utf8"), sandbox, { filename: f });
 for (const n of NUMS)
@@ -300,6 +300,59 @@ console.log("\n── VIS.treeEditor (campo tree) ──");
   const ed = sandbox.VIS.treeEditor("[3,9,20,null,null,15,7]", { es: "hint", en: "hint" });
   ok("campo tree no declara maxlength", ed.fields[0].maxlength === undefined);
   ok("campo tree no declara autocapitalize", ed.fields[0].autocapitalize === undefined);
+}
+
+/* ------------------------------------------------- los ocho de árbol */
+console.log("\n── Árboles (un arreglo de LeetCode) ──");
+{
+  const ARBOLES = {
+    "98":  "[2,1,3]",
+    "103": "[3,9,20,null,null,15,7]",
+    "124": "[1,2,3]",
+    "199": "[1,2,3,null,5,null,4]",
+    "297": "[1,2,3,null,null,4,5]",
+    "337": "[3,2,3,null,3,null,1]",
+    "543": "[1,2,3,4,5]",
+    "987": "[3,9,20,null,null,15,7]",
+  };
+  for (const [n, arranque] of Object.entries(ARBOLES)) {
+    const ed = P[n].editor;
+    eq(`${n}: kind text, campo "tree"`, [ed.kind, ed.fields.map((f) => f.id)], ["text", ["tree"]]);
+    eq(`${n}: initial() trae su árbol`, ed.initial(), { tree: arranque });
+
+    const bien = ed.parse(ed.initial());
+    ok(`${n}: parse acepta su propio arranque`, bien.ok === true);
+    ok(`${n}: parse devuelve el arreglo que build() espera`, Array.isArray(bien.input));
+
+    const malo = ed.parse({ tree: "[1,2" });
+    eq(`${n}: parse rechaza el corchete sin cerrar`, malo.ok, false);
+    eq(`${n}: y señala el campo tree`, malo.field, "tree");
+
+    const spec = ed.previewSpec(bien.input);
+    eq(`${n}: previewSpec es un árbol`, spec.type, "tree");
+    ok(`${n}: VIS.renderers sabe pintarlo`, typeof sandbox.VIS.renderers[spec.type] === "function");
+
+    // Lo que de verdad importa: el arreglo que produce parse() lo digiere build().
+    let steps = null;
+    try { steps = P[n].build(bien.input); } catch (e) { fails++; console.log(`  ✗ ${n}: build lanzó: ${e.message}`); }
+    ok(`${n}: build(parse(initial())) genera pasos`, Array.isArray(steps) && steps.length > 0);
+    ok(`${n}: todo paso trae line`, steps && steps.every((s) => s.line != null));
+  }
+
+  // Un árbol distinto del de arranque también funciona: 543 con una cadena.
+  const ed543 = P["543"].editor;
+  const cadena = ed543.parse({ tree: "[1,2,null,3,null,4]" });
+  ok("543 acepta una cadena escrita a mano", cadena.ok === true);
+  const st = P["543"].build(cadena.input);
+  ok("543 sobre la cadena da diámetro 3", /3/.test(st[st.length - 1].note.es));
+
+  // Salen todos de la misma fábrica, pero cada uno con su propio estado: si
+  // compartieran el objeto, escribir en un problema cambiaría el de al lado.
+  const a = P["98"].editor, b = P["543"].editor;
+  ok("cada problema tiene su propio descriptor", a !== b);
+  ok("y su propio árbol de partida", a.initial().tree !== b.initial().tree);
+  ok("los ocho comparten el mismo parse (viene de la fábrica)",
+     Object.keys(ARBOLES).every((n) => typeof P[n].editor.parse === "function"));
 }
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");

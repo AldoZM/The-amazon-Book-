@@ -170,6 +170,7 @@ function main() {
   const sandbox = makeSandbox();
   run(sandbox, path.join(JS, "i18n.js"));
   run(sandbox, path.join(JS, "renderers.js"));
+  run(sandbox, path.join(JS, "editors.js"));
 
   let nErr = 0, nWarn = 0, nOk = 0;
 

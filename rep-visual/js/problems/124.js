@@ -40,6 +40,13 @@
       { name: L("[-10,9,20,null,null,15,7] → 42", "[-10,9,20,null,null,15,7] → 42"), input: [-10,9,20,null,null,15,7] },
     ],
 
+    // Modo interactivo: escribe el árbol en la notación de LeetCode (por
+    // niveles, con null para los huecos) y se dibuja mientras escribes.
+    editor: VIS.treeEditor("[1,2,3]", {
+      es: "Escribe un árbol y busca el camino de suma máxima. Prueba [-10,9,20,null,null,15,7]. Luego pulsa Ejecutar.",
+      en: "Type a tree and find the maximum path sum. Try [-10,9,20,null,null,15,7]. Then press Run.",
+    }),
+
     build(input) {
       const root = VIS.treeFromArray(input);
       const layout = VIS.binaryLayout(root);

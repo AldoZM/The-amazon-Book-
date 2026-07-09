@@ -41,6 +41,13 @@
       { name: L("[5,1,4,null,null,3,6] inválido", "[5,1,4,null,null,3,6] invalid"), input: [5,1,4,null,null,3,6] },
     ],
 
+    // Modo interactivo: escribe el árbol en la notación de LeetCode (por
+    // niveles, con null para los huecos) y se dibuja mientras escribes.
+    editor: VIS.treeEditor("[2,1,3]", {
+      es: "Escribe un árbol y comprueba si es un BST. Prueba [5,1,4,null,null,3,6], que no lo es. Luego pulsa Ejecutar.",
+      en: "Type a tree and check whether it is a BST. Try [5,1,4,null,null,3,6], which is not. Then press Run.",
+    }),
+
     build(input) {
       const root = VIS.treeFromArray(input);
       const layout = VIS.binaryLayout(root);
