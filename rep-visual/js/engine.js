@@ -186,6 +186,28 @@
         else if (e.key === "ArrowLeft") { this.pause(); this.prev(); }
         else if (e.key === " ") { e.preventDefault(); this.toggle(); }
       });
+      this.bindSwipe();
+    },
+
+    // Swipe horizontal sobre el escenario para avanzar/retroceder (móvil).
+    bindSwipe() {
+      const zone = qs(".stage-wrap");
+      if (!zone) return;
+      let x0 = 0, y0 = 0, tracking = false;
+      zone.addEventListener("touchstart", (e) => {
+        if (e.touches.length !== 1) { tracking = false; return; }
+        x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; tracking = true;
+      }, { passive: true });
+      zone.addEventListener("touchend", (e) => {
+        if (!tracking) return;
+        tracking = false;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - x0, dy = t.clientY - y0;
+        // Gesto horizontal claro: ignora scroll vertical y toques cortos.
+        if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        this.pause();
+        if (dx < 0) this.next(); else this.prev();
+      }, { passive: true });
     },
   };
 

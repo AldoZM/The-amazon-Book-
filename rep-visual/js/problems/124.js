@@ -2,6 +2,27 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",         "funcion maxPathSum(root):",                       "function maxPathSum(root):"],
+    ["mejor0",     "  mejor empieza en menos infinito",                        "  best becomes minus infinity"],
+    ["llama",      "  ganancia(root)",                                "  gain(root)"],
+    ["retorna",    "  retornar mejor",                                "  return best"],
+    ["",           "",                                                ""],
+    ["gananciaFn", "funcion ganancia(nodo):",                         "function gain(node):"],
+    ["esNulo",     "  si nodo es nulo:",                              "  if node is null:"],
+    ["cero",       "    retornar 0",                                  "    return 0"],
+    ["izq",        "  izq pasa a ser la mayor de ganancia(nodo.izq) y 0  // una rama negativa no conviene",
+                   "  left becomes the larger of gain(node.left) and 0  // a negative branch is not worth it"],
+    ["der",        "  der pasa a ser la mayor de ganancia(nodo.der) y 0",      "  right becomes the larger of gain(node.right) and 0"],
+    ["dobla",      "  mejor pasa a ser la mayor de mejor y (nodo.val + izq + der)  // el camino dobla aquí",
+                   "  best becomes the larger of best and (node.val + left + right)  // the path bends here"],
+    ["sube",       "  retornar nodo.val + la mayor de izq y der            // hacia arriba sube una sola rama",
+                   "  return node.val + the larger of left and right          // only one branch goes upward"],
+  ]);
+  const A = C.L;
+
   P["124"] = {
     num: 124, slug: "max-path-sum", title: "Binary Tree Maximum Path Sum",
     difficulty: "H", block: "arboles", tags: ["DFS", "recursión"],
@@ -13,34 +34,7 @@
       { cls: "done", label: L("procesado", "processed") },
       { cls: "path", label: L("mejor cima", "best apex") },
     ],
-    code: {
-      es: [
-        "funcion maxPathSum(root):",
-        "  mejor ← -∞",
-        "  ganancia(root)",
-        "  retornar mejor",
-        "",
-        "funcion ganancia(nodo):",
-        "  si nodo es nulo: retornar 0",
-        "  izq ← máx(ganancia(nodo.izq), 0)   // negativos se descartan",
-        "  der ← máx(ganancia(nodo.der), 0)",
-        "  mejor ← máx(mejor, nodo.val + izq + der)   // dobla aquí",
-        "  retornar nodo.val + máx(izq, der)          // sube una rama",
-      ],
-      en: [
-        "function maxPathSum(root):",
-        "  best ← -∞",
-        "  gain(root)",
-        "  return best",
-        "",
-        "function gain(node):",
-        "  if node is null: return 0",
-        "  left ← max(gain(node.left), 0)   // discard negatives",
-        "  right ← max(gain(node.right), 0)",
-        "  best ← max(best, node.val + left + right)   // bends here",
-        "  return node.val + max(left, right)          // go up one branch",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("[1,2,3] → 6", "[1,2,3] → 6"), input: [1,2,3] },
       { name: L("[-10,9,20,null,null,15,7] → 42", "[-10,9,20,null,null,15,7] → 42"), input: [-10,9,20,null,null,15,7] },
@@ -61,23 +55,24 @@
         vars: [{ k: L("mejor", "best"), v: mejor === -Infinity ? "-∞" : mejor, cls: "result" }] });
 
       snap(L("Postorden: calculamos la ganancia de cada rama.",
-             "Postorder: compute each branch's gain."), 2);
+             "Postorder: compute each branch's gain."), [A.mejor0, A.llama]);
       function ganancia(nd) {
         if (!nd) return 0;
         state[nd.id] = "current";
-        snap(L(`Entramos a ${nd.val}.`, `Enter ${nd.val}.`), [5]);
+        snap(L(`Entramos a ${nd.val}.`, `Enter ${nd.val}.`), A.gananciaFn);
         const izq = Math.max(ganancia(nd.left), 0);
         const der = Math.max(ganancia(nd.right), 0);
         const dobla = nd.val + izq + der;
         if (dobla > mejor) { mejor = dobla; mejorId = nd.id; }
         state[nd.id] = "done";
         snap(L(`En ${nd.val}: izq=${izq}, der=${der}. Camino que dobla = ${dobla}. Mejor = ${mejor}.`,
-               `At ${nd.val}: left=${izq}, right=${der}. Bending path = ${dobla}. Best = ${mejor}.`), [9, 10]);
+               `At ${nd.val}: left=${izq}, right=${der}. Bending path = ${dobla}. Best = ${mejor}.`),
+             [A.izq, A.der, A.dobla, A.sube]);
         return nd.val + Math.max(izq, der);
       }
       ganancia(root);
       snap(L(`Suma máxima de camino: <b>${mejor}</b>.`,
-             `Maximum path sum: <b>${mejor}</b>.`), 3);
+             `Maximum path sum: <b>${mejor}</b>.`), A.retorna);
       return steps;
     },
   };

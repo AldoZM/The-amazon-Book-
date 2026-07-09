@@ -2,6 +2,27 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",          "funcion maxAreaOfIsland(grid):",                "function maxAreaOfIsland(grid):"],
+    ["mejor0",      "  mejor empieza en 0",                                   "  best starts at 0"],
+    ["recorre",     "  para cada celda (r, c) de grid:",             "  for each cell (r, c) in grid:"],
+    ["esTierra",    "    si grid[r][c] es tierra:",                  "    if grid[r][c] is land:"],
+    ["actualiza",   "      mejor pasa a ser la mayor de mejor y area(r, c)",  "      best becomes the larger of best and area(r, c)"],
+    ["retorna",     "  retornar mejor",                              "  return best"],
+    ["",            "",                                              ""],
+    ["areaFn",      "funcion area(r, c):",                           "function area(r, c):"],
+    ["fuera",       "  si (r, c) cae fuera de la cuadrícula:",       "  if (r, c) falls outside the grid:"],
+    ["fueraCero",   "    retornar 0",                                "    return 0"],
+    ["noTierra",    "  si grid[r][c] no es tierra:",                 "  if grid[r][c] is not land:"],
+    ["noTierraCero", "    retornar 0",                               "    return 0"],
+    ["marcar",      "  marcar grid[r][c] como visitada",             "  mark grid[r][c] as visited"],
+    ["sumaVecinas", "  retornar 1 + la suma de las áreas de las 4 vecinas",
+                    "  return 1 + the sum of the areas of the 4 neighbors"],
+  ]);
+  const A = C.L;
+
   P["695"] = {
     num: 695, slug: "max-area-of-island", title: "Max Area of Island",
     difficulty: "M", block: "grafos", tags: ["DFS", "grid", "área"],
@@ -14,36 +35,7 @@
       { cls: "current", label: L("celda actual", "current cell") },
       { cls: "visited", label: L("contada", "counted") },
     ],
-    code: {
-      es: [
-        "funcion maxArea(grid):",
-        "  mejor ← 0",
-        "  para cada celda (r,c):",
-        "    si grid[r][c] == 1:",
-        "      mejor ← máx(mejor, area(r,c))",
-        "  retornar mejor",
-        "",
-        "funcion area(r,c):",
-        "  si fuera de límites o grid[r][c]==0: retornar 0",
-        "  grid[r][c] ← 0            // marcar visitada",
-        "  return 1 + area(r-1,c)+area(r+1,c)",
-        "           + area(r,c-1)+area(r,c+1)",
-      ],
-      en: [
-        "function maxArea(grid):",
-        "  best ← 0",
-        "  for each cell (r,c):",
-        "    if grid[r][c] == 1:",
-        "      best ← max(best, area(r,c))",
-        "  return best",
-        "",
-        "function area(r,c):",
-        "  if out of bounds or grid[r][c]==0: return 0",
-        "  grid[r][c] ← 0            // mark visited",
-        "  return 1 + area(r-1,c)+area(r+1,c)",
-        "           + area(r,c-1)+area(r,c+1)",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("Área máxima 5", "Max area 5"), input: [
         [0,0,1,0,0],
@@ -78,7 +70,7 @@
       };
 
       snap(L("Buscamos tierra sin visitar; por cada isla mediremos su área.",
-             "We look for unvisited land; for each island we'll measure its area."), [0, 2]);
+             "We look for unvisited land; for each island we'll measure its area."), [A.fn, A.recorre]);
 
       function area(r, c) {
         if (r < 0 || r >= m || c < 0 || c >= n || grid[r][c] === 0) return 0;
@@ -87,7 +79,8 @@
         areaActual++;
         cur = [r, c];
         snap(L(`Sumamos (${r},${c}) a la isla. Área acumulada: ${areaActual}.`,
-               `Add (${r},${c}) to the island. Running area: ${areaActual}.`), 9);
+               `Add (${r},${c}) to the island. Running area: ${areaActual}.`),
+             [A.marcar, A.sumaVecinas]);
         return 1 + area(r - 1, c) + area(r + 1, c) + area(r, c - 1) + area(r, c + 1);
       }
 
@@ -97,16 +90,16 @@
             areaActual = 0;
             cur = [r, c];
             snap(L(`Tierra nueva en (${r},${c}). Medimos su área con DFS.`,
-                   `New land at (${r},${c}). We measure its area with DFS.`), [3, 4]);
+                   `New land at (${r},${c}). We measure its area with DFS.`), [A.esTierra, A.actualiza]);
             const a = area(r, c);
             mejor = Math.max(mejor, a);
             cur = null;
             snap(L(`Isla completa: área ${a}. Mejor hasta ahora: <b>${mejor}</b>.`,
-                   `Island complete: area ${a}. Best so far: <b>${mejor}</b>.`), 4);
+                   `Island complete: area ${a}. Best so far: <b>${mejor}</b>.`), A.actualiza);
           }
 
       snap(L(`Recorrido terminado. Área máxima: <b>${mejor}</b>.`,
-             `Scan complete. Max area: <b>${mejor}</b>.`), 5);
+             `Scan complete. Max area: <b>${mejor}</b>.`), A.retorna);
       return steps;
     },
   };

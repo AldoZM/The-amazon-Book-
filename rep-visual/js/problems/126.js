@@ -2,6 +2,39 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",          "funcion findLadders(begin, end, lista):",              "function findLadders(begin, end, list):"],
+    ["dicc",        "  dicc pasa a ser el conjunto de palabras de lista",            "  dict becomes the set of words in list"],
+    ["sinFin",      "  si end no está en dicc:",                            "  if end is not in dict:"],
+    ["retVacio",    "    retornar la lista vacía",                          "    return the empty list"],
+    ["nivel",       "  nivel empieza con begin dentro",         "  level starts with begin inside"],
+    ["visto",       "  visto empieza con begin dentro",         "  seen starts with begin inside"],
+    ["padres",      "  padres guarda, para cada palabra, la lista de palabras desde las que se llegó a ella",
+                    "  parents holds, for each word, the list of words it was reached from"],
+    ["encontrado",  "  encontrado pasa a ser falso",                                 "  found becomes false"],
+    ["mientras",    "  mientras nivel no esté vacío y encontrado sea falso:",
+                    "  while level is not empty and found is false:"],
+    ["siguiente",   "    siguiente empieza vacío",                       "    next starts empty"],
+    ["porPalabra",  "    para cada palabra del nivel:",                     "    for each word of the level:"],
+    ["porVecina",   "      para cada vecina de palabra:      // vecina: cambia exactamente una letra",
+                    "      for each neighbor of word:        // neighbor: exactly one letter differs"],
+    ["valida",      "        si vecina está en dicc y no ha sido vista:",
+                    "        if neighbor is in dict and has not been seen:"],
+    ["guardaPadre", "          añadir palabra a padres[vecina]",            "          add word to parents[neighbor]"],
+    ["esFin",       "          si vecina es end:",                          "          if neighbor is end:"],
+    ["marcaFin",    "            encontrado pasa a ser verdadero",                   "            found becomes true"],
+    ["sumaSig",     "          añadir vecina a siguiente",                  "          add neighbor to next"],
+    ["marcaVistas", "    marcar como vistas todas las palabras de siguiente",
+                    "    mark every word of next as seen"],
+    ["avanza",      "    nivel pasa a ser siguiente",                                "    level becomes next"],
+    ["reconstruye", "  caminos pasa a ser recorrer padres hacia atrás desde end hasta begin, anotando cada ruta",
+                    "  paths becomes walk parents backwards from end to begin, noting every route"],
+    ["retorna",     "  retornar caminos",                                   "  return paths"],
+  ]);
+  const A = C.L;
+
   P["126"] = {
     num: 126, slug: "word-ladder-ii", title: "Word Ladder II",
     difficulty: "H", block: "grafos", tags: ["BFS", "backtracking"],
@@ -12,36 +45,7 @@
       { cls: "current", label: L("nivel actual", "current level") },
       { cls: "done", label: L("visitada", "visited") },
     ],
-    code: {
-      es: [
-        "funcion findLadders(begin, end, lista):",
-        "  dicc ← conjunto(lista); nivel ← {begin}",
-        "  padres ← {}; encontrado ← falso",
-        "  mientras nivel no vacío y no encontrado:",
-        "    siguiente ← {}",
-        "    para cada palabra del nivel:",
-        "      por cada vecina en dicc no visitada:",
-        "        padres[vecina] += palabra",
-        "        si vecina == end: encontrado ← verdadero",
-        "        añadir vecina a 'siguiente'",
-        "    marcar 'siguiente' como visitadas; nivel ← siguiente",
-        "  reconstruir caminos desde end usando padres",
-      ],
-      en: [
-        "function findLadders(begin, end, list):",
-        "  dict ← set(list); level ← {begin}",
-        "  parents ← {}; found ← false",
-        "  while level not empty and not found:",
-        "    next ← {}",
-        "    for each word in level:",
-        "      for each neighbor in dict, unvisited:",
-        "        parents[neighbor] += word",
-        "        if neighbor == end: found ← true",
-        "        add neighbor to 'next'",
-        "    mark 'next' as visited; level ← next",
-        "  reconstruct paths from end using parents",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("hit → cog", "hit → cog"), input: { begin: "hit", end: "cog", words: ["hot","dot","dog","lot","log","cog"] } },
       { name: L("a → c", "a → c"), input: { begin: "a", end: "c", words: ["a","b","c"] } },
@@ -67,13 +71,15 @@
       };
 
       if (!dicc.has(input.end)) { snap(L(`"${input.end}" no está en el diccionario. Respuesta [].`,
-                                        `"${input.end}" is not in the dictionary. Answer [].`), 1); return steps; }
-      snap(L(`BFS por niveles desde "${input.begin}".`, `Level BFS from "${input.begin}".`), [1, 2]);
+                                        `"${input.end}" is not in the dictionary. Answer [].`),
+                                      [A.sinFin, A.retVacio]); return steps; }
+      snap(L(`BFS por niveles desde "${input.begin}".`, `Level BFS from "${input.begin}".`),
+           [A.dicc, A.nivel, A.padres]);
 
       while (nivel.size && !encontrado) {
         const siguiente = new Set();
         snap(L(`Expandimos el nivel: [${Array.from(nivel).join(", ")}].`,
-               `Expand the level: [${Array.from(nivel).join(", ")}].`), [5, 6]);
+               `Expand the level: [${Array.from(nivel).join(", ")}].`), [A.siguiente, A.porPalabra]);
         for (const palabra of nivel) {
           const arr = palabra.split("");
           for (let i = 0; i < arr.length; i++) {
@@ -87,7 +93,8 @@
                 padres[cand].push(palabra);
                 if (cand === input.end) encontrado = true;
                 snap(L(`"${palabra}" → "${cand}". Guardamos predecesor.`,
-                       `"${palabra}" → "${cand}". Record predecessor.`), [7, 8, 9]);
+                       `"${palabra}" → "${cand}". Record predecessor.`),
+                     [A.valida, A.guardaPadre, A.esFin, A.sumaSig]);
               }
             }
             arr[i] = orig;
@@ -111,7 +118,7 @@
         ? L(`Caminos más cortos encontrados (${resultados.length}):<br>` + resultados.map((r) => "• " + r).join("<br>"),
             `Shortest paths found (${resultados.length}):<br>` + resultados.map((r) => "• " + r).join("<br>"))
         : L("No hay transformación posible. Respuesta [].", "No transformation possible. Answer []."),
-        11, { list: { label: L("Caminos", "Paths"), items: resultados.slice() } });
+        [A.reconstruye, A.retorna], { list: { label: L("Caminos", "Paths"), items: resultados.slice() } });
       return steps;
     },
   };

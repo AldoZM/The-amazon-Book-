@@ -2,6 +2,24 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",      "funcion buildTree(trozo de preorden, trozo de inorden):",
+                "function buildTree(chunk of preorder, chunk of inorder):"],
+    ["vacio",   "  si el trozo está vacío:",                         "  if the chunk is empty:"],
+    ["nulo",    "    retornar nulo",                                 "    return null"],
+    ["raiz",    "  raiz pasa a ser el primer valor del trozo de preorden",    "  root becomes the first value of the preorder chunk"],
+    ["busca",   "  k pasa a ser la posición de raiz dentro del trozo de inorden",
+                "  k becomes the position of root inside the inorder chunk"],
+    ["izq",     "  raiz.izq pasa a ser buildTree(lo que queda antes de k)  // subárbol izquierdo",
+                "  root.left becomes buildTree(what lies before k)   // left subtree"],
+    ["der",     "  raiz.der pasa a ser buildTree(lo que queda después de k)  // subárbol derecho",
+                "  root.right becomes buildTree(what lies after k)   // right subtree"],
+    ["retorna", "  retornar raiz",                                   "  return root"],
+  ]);
+  const A = C.L;
+
   P["105"] = {
     num: 105, slug: "build-tree-pre-in", title: "Construct Binary Tree from Preorder and Inorder",
     difficulty: "M", block: "arboles", tags: ["recursión", "divide y vencerás"],
@@ -12,26 +30,7 @@
       { cls: "current", label: L("raíz recién creada", "newly created root") },
       { cls: "done", label: L("ya construido", "already built") },
     ],
-    code: {
-      es: [
-        "funcion build(pre, ino):",
-        "  si rango vacío: retornar nulo",
-        "  raiz ← pre[inicio]        // 1º de preorder",
-        "  k ← posición de raiz en inorder",
-        "  izquierda ← build(mitad izquierda)",
-        "  derecha  ← build(mitad derecha)",
-        "  retornar raiz",
-      ],
-      en: [
-        "function build(pre, ino):",
-        "  if range empty: return null",
-        "  root ← pre[start]         // 1st of preorder",
-        "  k ← position of root in inorder",
-        "  left  ← build(left half)",
-        "  right ← build(right half)",
-        "  return root",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("pre=[3,9,20,15,7] in=[9,3,15,20,7]", "pre=[3,9,20,15,7] in=[9,3,15,20,7]"), input: { pre: [3,9,20,15,7], ino: [9,3,15,20,7] } },
       { name: L("pre=[1,2,3] in=[2,1,3]", "pre=[1,2,3] in=[2,1,3]"), input: { pre: [1,2,3], ino: [2,1,3] } },
@@ -70,15 +69,16 @@
       };
 
       snap(L("Construimos el árbol dividiendo con preorder + inorder.",
-             "We build the tree by splitting with preorder + inorder."), 0, null);
+             "We build the tree by splitting with preorder + inorder."), A.fn, null);
       for (const ev of events) {
         created.add(ev.id);
         state[ev.id] = "current";
         snap(L(`Raíz ${ev.val} (preorder). En inorder está en la posición ${ev.k}: a su izquierda el subárbol izquierdo, a la derecha el derecho.`,
-               `Root ${ev.val} (preorder). In inorder it's at position ${ev.k}: to its left the left subtree, to its right the right one.`), [2, 3], ev);
+               `Root ${ev.val} (preorder). In inorder it's at position ${ev.k}: to its left the left subtree, to its right the right one.`),
+             [A.raiz, A.busca], ev);
         state[ev.id] = "done";
       }
-      snap(L("Árbol reconstruido por completo.", "Tree fully reconstructed."), 6, null);
+      snap(L("Árbol reconstruido por completo.", "Tree fully reconstructed."), A.retorna, null);
       return steps;
     },
   };

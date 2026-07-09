@@ -1,8 +1,8 @@
 \problema{Construct Binary Tree from Preorder and Inorder Traversal}{105}{src/02-arboles/105-construct-binary-tree-from-preorder-and-inorder-traversal.cpp}{M}
 
 Dados dos arreglos de enteros \texttt{preorder} e \texttt{inorder}, donde el primero
-es el recorrido en preorden de un árbol binario y el segundo es su recorrido en
-inorden, reconstruye y devuelve el árbol binario original. (Se garantiza que no
+es el recorrido en pre-order de un árbol binario y el segundo es su recorrido en
+in-order, reconstruye y devuelve el árbol binario original. (Se garantiza que no
 hay valores duplicados en el árbol).
 
 \paragraph{La idea, con un ejemplo de la vida real.} Un ``recorrido'' es el
@@ -11,8 +11,8 @@ listas de ese paseo, y con las dos juntas tenemos que volver a dibujar el árbol
 como armar un mueble con dos hojas de instrucciones distintas. Fíjate en la
 forma de cada lista:
 \begin{itemize}
-    \item \textbf{Preorden:} anota primero la raíz y luego lo demás: \texttt{[RAÍZ, [Subárbol Izquierdo], [Subárbol Derecho]]}. Su primer elemento siempre es el jefe del árbol.
-    \item \textbf{Inorden:} anota primero todo lo de la izquierda, luego la raíz y al final lo de la derecha: \texttt{[[Subárbol Izquierdo], RAÍZ, [Subárbol Derecho]]}.
+    \item \textbf{Pre-order:} anota primero la raíz y luego lo demás: \texttt{[RAÍZ, [Subárbol Izquierdo], [Subárbol Derecho]]}. Su primer elemento siempre es el jefe del árbol.
+    \item \textbf{In-order:} anota primero todo lo de la izquierda, luego la raíz y al final lo de la derecha: \texttt{[[Subárbol Izquierdo], RAÍZ, [Subárbol Derecho]]}.
 \end{itemize}
 
 Junta las dos pistas y sale magia: \texttt{preorder} te regala quién es la raíz

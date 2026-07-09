@@ -52,11 +52,11 @@ avanzar por anillos anotando papás, y luego reconstruir los caminos hacia atrá
     \emph{regresar} a ellas (si regresara, el camino ya no sería el más corto).
     Si \texttt{endWord} aparece en un anillo, terminamos de revisar ese anillo
     completo (por si tiene varios papás) y ahí paramos.
-  \item \textbf{Reconstruir los caminos hacia atrás (DFS con vuelta atrás)}
+  \item \textbf{Reconstruir los caminos hacia atrás (DFS con backtracking)}
     desde \texttt{endWord}, siguiendo todos los papás anotados hasta llegar a
-    \texttt{beginWord}, y guardando cada camino completo. \emph{DFS} (búsqueda
-    en profundidad) significa seguir un camino hasta el fondo antes de probar
-    otro; \emph{vuelta atrás} quiere decir que, al llegar al final, deshacemos
+    \texttt{beginWord}, y guardando cada camino completo. \emph{DFS} significa
+    seguir un camino hasta el fondo antes de probar
+    otro; \emph{backtracking} quiere decir que, al llegar al final, deshacemos
     el último paso para probar otra rama. Como armamos cada camino de atrás
     hacia adelante, al final lo volteamos.
 \end{enumerate}

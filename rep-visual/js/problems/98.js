@@ -2,6 +2,28 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",       "funcion isValidBST(root):",                          "function isValidBST(root):"],
+    ["llama",    "  retornar valida(root, menos infinito, más infinito)",
+                 "  return valid(root, minus infinity, plus infinity)"],
+    ["",         "",                                                   ""],
+    ["validaFn", "funcion valida(nodo, bajo, alto):",                  "function valid(node, low, high):"],
+    ["esNulo",   "  si nodo es nulo:",                                 "  if node is null:"],
+    ["nuloOk",   "    retornar verdadero              // un hueco nunca rompe nada",
+                 "    return true                     // a gap never breaks anything"],
+    ["fuera",    "  si nodo.val no está entre bajo y alto:   // los extremos no cuentan",
+                 "  if node.val is not between low and high: // the ends don't count"],
+    ["falso",    "    retornar falso",                                 "    return false"],
+    ["izq",      "  izq pasa a ser valida(nodo.izq, bajo, nodo.val)  // a la izquierda, nodo.val es el techo",
+                 "  left becomes valid(node.left, low, node.val)  // on the left, node.val is the ceiling"],
+    ["der",      "  der pasa a ser valida(nodo.der, nodo.val, alto)  // a la derecha, nodo.val es el piso",
+                 "  right becomes valid(node.right, node.val, high)  // on the right, node.val is the floor"],
+    ["ambos",    "  retornar izq y der",                               "  return left and right"],
+  ]);
+  const A = C.L;
+
   P["98"] = {
     num: 98, slug: "validate-bst", title: "Validate Binary Search Tree",
     difficulty: "M", block: "arboles", tags: ["DFS", "rango"],
@@ -13,32 +35,7 @@
       { cls: "done", label: L("válido", "valid") },
       { cls: "target", label: L("viola el rango", "violates the range") },
     ],
-    code: {
-      es: [
-        "funcion isValidBST(root):",
-        "  retornar valida(root, -∞, +∞)",
-        "",
-        "funcion valida(nodo, bajo, alto):",
-        "  si nodo es nulo: retornar verdadero",
-        "  si nodo.val <= bajo o nodo.val >= alto:",
-        "    retornar falso   // fuera de rango",
-        "  izq ← valida(nodo.izq, bajo, nodo.val)",
-        "  der ← valida(nodo.der, nodo.val, alto)",
-        "  retornar izq y der",
-      ],
-      en: [
-        "function isValidBST(root):",
-        "  return valid(root, -∞, +∞)",
-        "",
-        "function valid(node, low, high):",
-        "  if node is null: return true",
-        "  if node.val <= low or node.val >= high:",
-        "    return false   // out of range",
-        "  left ← valid(node.left, low, node.val)",
-        "  right ← valid(node.right, node.val, high)",
-        "  return left and right",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("[2,1,3] válido", "[2,1,3] valid"), input: [2,1,3] },
       { name: L("[5,1,4,null,null,3,6] inválido", "[5,1,4,null,null,3,6] invalid"), input: [5,1,4,null,null,3,6] },
@@ -58,17 +55,17 @@
         vars: rango ? [{ k: L("rango permitido", "allowed range"), v: "(" + fmt(rango[0]) + ", " + fmt(rango[1]) + ")" }] : [] });
 
       snap(L("Cada nodo debe caer dentro de un rango (bajo, alto).",
-             "Each node must fall within a range (low, high)."), 1);
+             "Each node must fall within a range (low, high)."), [A.fn, A.llama]);
       let ok = true;
       function valida(nd, bajo, alto) {
         if (!nd) return true;
         state[nd.id] = "current";
         snap(L(`Validamos ${nd.val}: debe estar en (${fmt(bajo)}, ${fmt(alto)}).`,
-               `Validate ${nd.val}: must be in (${fmt(bajo)}, ${fmt(alto)}).`), [3, 4], [bajo, alto]);
+               `Validate ${nd.val}: must be in (${fmt(bajo)}, ${fmt(alto)}).`), [A.validaFn, A.fuera], [bajo, alto]);
         if (nd.val <= bajo || nd.val >= alto) {
           state[nd.id] = "target"; ok = false;
           snap(L(`${nd.val} viola el rango → NO es BST.`,
-                 `${nd.val} violates the range → NOT a BST.`), 5, [bajo, alto]);
+                 `${nd.val} violates the range → NOT a BST.`), [A.fuera, A.falso], [bajo, alto]);
           return false;
         }
         state[nd.id] = "done";
@@ -81,7 +78,7 @@
       snap(ok ? L("Todos los nodos respetan su rango: <b>es BST</b>.",
                  "All nodes respect their range: <b>it is a BST</b>.")
               : L("Encontramos una violación: <b>no es BST</b>.",
-                 "We found a violation: <b>not a BST</b>."), 9);
+                 "We found a violation: <b>not a BST</b>."), ok ? A.ambos : A.falso);
       return steps;
     },
   };

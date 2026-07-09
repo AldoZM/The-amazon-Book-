@@ -43,8 +43,7 @@ encontramos tierra, llamamos a una ayudante que mide la isla completa.
         función se llame a sí misma se llama \emph{recursión}: es como una
         ficha de dominó que tira a sus vecinas, y esas a las suyas, hasta que
         ya no queda tierra que tocar. Este recorrido que avanza «hacia el
-        fondo» por los vecinos se conoce como \emph{DFS} (búsqueda en
-        profundidad).
+        fondo» por los vecinos se conoce como \emph{DFS}.
   \item El total que devuelve es el área de esa isla. Lo comparamos con el
         récord y guardamos el mayor.
 \end{enumerate}
@@ -65,5 +64,6 @@ en vez de «contar islas» ahora «mide cada isla». Un buen detalle que puedes
 mencionar: como vamos pintando de agua la tierra ya visitada, no necesitamos
 una lista aparte de casillas visitadas. Si el entrevistador te pide \emph{no}
 modificar el mapa original, entonces sí necesitas esa lista (o resolverlo con
-una cola, técnica llamada BFS). El récord del área máxima se lleva en una sola
+una cola, técnica llamada \emph{BFS}). El récord del área máxima
+se lleva en una sola
 variable que vas actualizando.

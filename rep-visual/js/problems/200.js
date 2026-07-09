@@ -2,6 +2,30 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",       "funcion numIslands(grid):",                  "function numIslands(grid):"],
+    ["vacia",    "  si grid está vacía:",                      "  if grid is empty:"],
+    ["cero",     "    retornar 0",                             "    return 0"],
+    ["islas0",   "  islas empieza en 0",                       "  islands starts at 0"],
+    ["recorre",  "  para cada celda (r, c) de grid:",          "  for each cell (r, c) in grid:"],
+    ["esTierra", "    si grid[r][c] es tierra:",               "    if grid[r][c] is land:"],
+    ["suma",     "      sumar 1 a islas",                      "      add 1 to islands"],
+    ["lanza",    "      hundir(r, c)",                         "      sink(r, c)"],
+    ["total",    "  retornar islas",                           "  return islands"],
+    ["",         "",                                           ""],
+    ["hundirFn", "funcion hundir(r, c):",                      "function sink(r, c):"],
+    ["fuera",    "  si (r, c) cae fuera de la cuadrícula:",    "  if (r, c) falls outside the grid:"],
+    ["fueraRet", "    retornar",                               "    return"],
+    ["noTierra", "  si grid[r][c] no es tierra:",              "  if grid[r][c] is not land:"],
+    ["noTierraRet", "    retornar",                            "    return"],
+    ["marcar",   "  marcar grid[r][c] como agua",              "  mark grid[r][c] as water"],
+    ["vecinas",  "  hundir cada vecina: arriba, abajo, izquierda, derecha",
+                 "  sink each neighbor: up, down, left, right"],
+  ]);
+  const A = C.L;
+
   P["200"] = {
     num: 200, slug: "number-of-islands", title: "Number of Islands",
     difficulty: "M", block: "grafos", tags: ["DFS", "grid", "flood fill"],
@@ -14,42 +38,7 @@
       { cls: "current", label: L("celda actual", "current cell") },
       { cls: "visited", label: L("tierra hundida", "sunk land") },
     ],
-    code: {
-      es: [
-        "funcion numIslands(grid):",
-        "  si grid está vacía: retornar 0",
-        "  islas ← 0",
-        "  para cada celda (r, c) de grid:",
-        "    si grid[r][c] == '1':      // tierra nueva",
-        "      islas ← islas + 1",
-        "      hundir(r, c)",
-        "  retornar islas",
-        "",
-        "funcion hundir(r, c):",
-        "  si (r,c) fuera de límites: retornar",
-        "  si grid[r][c] != '1': retornar   // agua o ya visitada",
-        "  grid[r][c] ← '0'                 // hundir esta celda",
-        "  hundir(r-1,c); hundir(r+1,c)     // arriba / abajo",
-        "  hundir(r,c-1); hundir(r,c+1)     // izq / der",
-      ],
-      en: [
-        "function numIslands(grid):",
-        "  if grid is empty: return 0",
-        "  islands ← 0",
-        "  for each cell (r, c) in grid:",
-        "    if grid[r][c] == '1':      // new land",
-        "      islands ← islands + 1",
-        "      sink(r, c)",
-        "  return islands",
-        "",
-        "function sink(r, c):",
-        "  if (r,c) out of bounds: return",
-        "  if grid[r][c] != '1': return     // water or visited",
-        "  grid[r][c] ← '0'                 // sink this cell",
-        "  sink(r-1,c); sink(r+1,c)         // up / down",
-        "  sink(r,c-1); sink(r,c+1)         // left / right",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("3 islas (5×4)", "3 islands (5×4)"), input: [
         ["1","1","0","0","0"],
@@ -88,7 +77,7 @@
       };
 
       snap(L("Empezamos. Recorreremos la cuadrícula buscando tierra sin visitar.",
-             "We start. We'll scan the grid looking for unvisited land."), [0, 3]);
+             "We start. We'll scan the grid looking for unvisited land."), [A.fn, A.recorre]);
 
       function hundir(r, c) {
         if (r < 0 || r >= m || c < 0 || c >= n) return;
@@ -97,7 +86,8 @@
         sunk.add(r + "," + c);
         cur = [r, c];
         snap(L(`Hundimos (${r},${c}): tierra → agua para no recontarla. Exploramos sus 4 vecinas.`,
-               `Sink (${r},${c}): land → water so we don't recount it. We explore its 4 neighbors.`), 12);
+               `Sink (${r},${c}): land → water so we don't recount it. We explore its 4 neighbors.`),
+             [A.marcar, A.vecinas]);
         hundir(r - 1, c); hundir(r + 1, c);
         hundir(r, c - 1); hundir(r, c + 1);
       }
@@ -108,14 +98,15 @@
             islas++;
             cur = [r, c];
             snap(L(`(${r},${c}) es tierra nueva → isla #${islas}. Lanzamos DFS para hundir toda su región.`,
-                   `(${r},${c}) is new land → island #${islas}. We launch DFS to sink its whole region.`), [4, 5, 6]);
+                   `(${r},${c}) is new land → island #${islas}. We launch DFS to sink its whole region.`),
+                 [A.esTierra, A.suma, A.lanza]);
             hundir(r, c);
           }
         }
       }
       cur = null;
       snap(L(`Fin del recorrido. Total de islas: <b>${islas}</b>.`,
-             `Scan complete. Total islands: <b>${islas}</b>.`), 7);
+             `Scan complete. Total islands: <b>${islas}</b>.`), A.total);
       return steps;
     },
   };

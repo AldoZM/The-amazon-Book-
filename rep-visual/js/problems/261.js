@@ -2,6 +2,33 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",        "funcion validTree(n, edges):",                        "function validTree(n, edges):"],
+    ["cuenta",    "  si el número de aristas no es n - 1:",              "  if the number of edges is not n - 1:"],
+    ["noArbol",   "    retornar falso",                                  "    return false"],
+    ["padres",    "  padre[i] pasa a ser i, para todo i  // cada nodo empieza solo, siendo su propia raíz",
+                  "  parent[i] becomes i, for every i  // each node starts alone, being its own root"],
+    ["porArista", "  para cada arista (a, b):",                          "  for each edge (a, b):"],
+    ["raizA",     "    ra pasa a ser find(a)",                                    "    ra becomes find(a)"],
+    ["raizB",     "    rb pasa a ser find(b)",                                    "    rb becomes find(b)"],
+    ["mismaRaiz", "    si ra es rb:                // a y b ya estaban conectados: hay un ciclo",
+                  "    if ra is rb:                // a and b were already connected: there is a cycle"],
+    ["ciclo",     "      retornar falso",                                "      return false"],
+    ["une",       "    padre[ra] pasa a ser rb     // union: colgamos un grupo del otro",
+                  "    parent[ra] becomes rb       // union: hang one group under the other"],
+    ["esArbol",   "  retornar verdadero            // n - 1 aristas y sin ciclos: es conexo",
+                  "  return true                   // n - 1 edges and no cycles: it is connected"],
+    ["",          "",                                                    ""],
+    ["findFn",    "funcion find(x):                // la raíz del grupo de x",
+                  "function find(x):               // the root of x's group"],
+    ["subiendo",  "  mientras padre[x] no es x:",                        "  while parent[x] is not x:"],
+    ["sube",      "    x pasa a ser padre[x]",                                    "    x becomes parent[x]"],
+    ["raiz",      "  retornar x",                                        "  return x"],
+  ]);
+  const A = C.L;
+
   P["261"] = {
     num: 261, slug: "graph-valid-tree", title: "Graph Valid Tree",
     difficulty: "M", block: "grafos", tags: ["union-find", "ciclo"],
@@ -12,28 +39,7 @@
       { cls: "current", label: L("arista actual", "current edge") },
       { cls: "done", label: L("unido", "merged") },
     ],
-    code: {
-      es: [
-        "funcion validTree(n, edges):",
-        "  si #aristas != n-1: retornar falso",
-        "  padre[i] ← i",
-        "  para cada arista (a,b):",
-        "    ra ← find(a); rb ← find(b)",
-        "    si ra == rb: retornar falso   // ciclo",
-        "    padre[ra] ← rb                 // unir",
-        "  retornar verdadero   // conexo y sin ciclos",
-      ],
-      en: [
-        "function validTree(n, edges):",
-        "  if #edges != n-1: return false",
-        "  parent[i] ← i",
-        "  for each edge (a,b):",
-        "    ra ← find(a); rb ← find(b)",
-        "    if ra == rb: return false   // cycle",
-        "    parent[ra] ← rb             // union",
-        "  return true   // connected and acyclic",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("Árbol válido", "Valid tree"), input: { n: 5, edges: [[0,1],[0,2],[0,3],[1,4]] } },
       { name: L("Con ciclo", "With cycle"), input: { n: 4, edges: [[0,1],[1,2],[2,0],[2,3]] } },
@@ -58,11 +64,11 @@
 
       if (edges.length !== n - 1) {
         snap(L(`Tiene ${edges.length} aristas pero un árbol de ${n} nodos necesita ${n - 1}. Respuesta <b>falso</b>.`,
-               `It has ${edges.length} edges but a tree of ${n} nodes needs ${n - 1}. Answer <b>false</b>.`), 1);
+               `It has ${edges.length} edges but a tree of ${n} nodes needs ${n - 1}. Answer <b>false</b>.`), [A.cuenta, A.noArbol]);
         return steps;
       }
       snap(L(`${edges.length} aristas = n-1. Vamos uniendo y vigilando ciclos.`,
-             `${edges.length} edges = n-1. We merge while watching for cycles.`), [1, 2]);
+             `${edges.length} edges = n-1. We merge while watching for cycles.`), [A.cuenta, A.padres]);
 
       for (let k = 0; k < edges.length; k++) {
         const [a, b] = edges[k];
@@ -71,17 +77,17 @@
         state[a] = "current"; state[b] = "current";
         if (ra === rb) {
           snap(L(`Arista (${a},${b}): ya conectados (raíz ${ra}) → ciclo. Respuesta <b>falso</b>.`,
-                 `Edge (${a},${b}): already connected (root ${ra}) → cycle. Answer <b>false</b>.`), 5);
+                 `Edge (${a},${b}): already connected (root ${ra}) → cycle. Answer <b>false</b>.`), [A.mismaRaiz, A.ciclo]);
           return steps;
         }
         padre[ra] = rb;
         snap(L(`Arista (${a},${b}): unimos ${ra} bajo ${rb}.`,
-               `Edge (${a},${b}): merge ${ra} under ${rb}.`), 6);
+               `Edge (${a},${b}): merge ${ra} under ${rb}.`), [A.raizA, A.raizB, A.une]);
         state[a] = "done"; state[b] = "done";
       }
       hotEdge = edges.length;
       snap(L("Sin ciclos y con n-1 aristas → conexo. Es un árbol válido: <b>verdadero</b>.",
-             "No cycles and n-1 edges → connected. It's a valid tree: <b>true</b>."), 7);
+             "No cycles and n-1 edges → connected. It's a valid tree: <b>true</b>."), A.esArbol);
       return steps;
     },
   };

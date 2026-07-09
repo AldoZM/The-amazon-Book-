@@ -13,7 +13,7 @@ es lo contrario: leer esa lista y volver a armar el mueble idéntico. La clave e
 que la lista tenga suficiente información para que no haya dudas al rearmar.
 
 Hay varias formas de recorrer el árbol y anotarlo, pero la más cómoda de
-programar es el recorrido \emph{DFS en preorden} (primero la raíz, luego la
+programar es el \emph{Depth-First Search} (DFS) en \emph{pre-order} (primero la raíz, luego la
 rama izquierda, luego la derecha). El detalle mágico es que cada vez que nos
 topemos con un hueco (un \emph{puntero nulo}, o sea ``aquí no hay ningún nodo'')
 anotamos un símbolo especial, digamos \texttt{"N"}. Con esos huecos marcados, la
@@ -27,13 +27,13 @@ tira de texto describe el árbol sin ninguna ambigüedad.
 \end{tabular}
 \end{center}
 
-\noindent Usando preorden y comas como separadores, el árbol de arriba genera
+\noindent Usando pre-order y comas como separadores, el árbol de arriba genera
 la cadena: \texttt{"1,2,N,N,3,N,N,"}.
 
 \paragraph{Cómo lo resuelve el código, paso a paso.} Las dos mitades usan
 \emph{recursión} (una función que se llama a sí misma para bajar por las ramas):
 \begin{enumerate}
-    \item \textbf{Al desarmar (serializar):} vamos en preorden escribiendo el valor del nodo seguido de una coma; si el nodo es un hueco, escribimos \texttt{"N"}. Después hacemos lo mismo con su rama izquierda y luego con la derecha.
+    \item \textbf{Al desarmar (serializar):} vamos en pre-order escribiendo el valor del nodo seguido de una coma; si el nodo es un hueco, escribimos \texttt{"N"}. Después hacemos lo mismo con su rama izquierda y luego con la derecha.
     \item \textbf{Al armar (deserializar):} leemos la tira \emph{en el mismo orden} en que la escribimos. El primer valor es siempre la raíz. Si leemos \texttt{"N"}, ahí no va nada (hueco). Tras crear un nodo, la recursión sigue leyendo: lo siguiente que aparezca es su rama izquierda, y cuando esa termine, su rama derecha.
 \end{enumerate}
 Como los valores están separados por comas, en C++ un \texttt{stringstream}
@@ -55,6 +55,6 @@ entrevistadores quieren ver que dominas las herramientas del lenguaje: usar
 \texttt{std::stringstream} con \texttt{getline} en C++ se ve muy maduro. Suma
 puntos si mencionas que el recorrido BFS (por niveles) también funciona, pero
 suele pedir más código (colas y manejar los huecos nivel por nivel), mientras
-que el DFS en preorden gana por lo cortito de su recursión. Evita usar variables
+que el DFS en pre-order gana por lo cortito de su recursión. Evita usar variables
 globales para llevar la posición en la tira; en su lugar pasa el estado (el
 stream) por referencia.

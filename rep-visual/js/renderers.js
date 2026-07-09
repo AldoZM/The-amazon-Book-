@@ -36,7 +36,9 @@
     const rows = cells.length;
     const cols = rows ? cells[0].length : 0;
     const g = el("div", "grid");
-    g.style.gridTemplateColumns = `repeat(${cols}, 42px)`;
+    // El ancho de celda es fluido (var --cell): 42px en monitor, se encoge en
+    // móvil. Ver css/styles.css.
+    g.style.gridTemplateColumns = `repeat(${cols}, var(--cell))`;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const cell = cells[r][c] || {};
@@ -239,14 +241,20 @@
     "funcion", "función", "si", "sino", "entonces", "mientras", "para", "repetir",
     "veces", "hasta", "hacer", "retornar", "retorna", "cada", "de", "del", "en",
     "no", "y", "o", "seguir", "continuar", "algoritmo", "inicio", "fin",
+    // cópulas y conectores del pseudocódigo en prosa ("si la celda es tierra")
+    "es", "está", "esta", "son", "sea", "desde", "mientras",
+    // verbos de asignación: sustituyen a la flecha ←, así que se pintan igual
+    "empieza", "empiezan", "pasa", "pasan", "sumar", "restar", "llamarlo",
+    "llamarla", "guardar", "guarda", "marcar",
+    "starts", "start", "becomes", "become", "add", "subtract", "call", "mark", "holds",
     // inglés
     "function", "if", "else", "elif", "for", "while", "repeat", "times", "return",
     "each", "in", "of", "is", "not", "and", "or", "do", "until", "break", "continue",
     "from", "to", "then",
   ]);
   const LITERALS = new Set([
-    "nulo", "verdadero", "falso", "vacía", "vacío", "vacia", "vacio",
-    "null", "true", "false", "empty",
+    "nulo", "verdadero", "falso", "vacía", "vacío", "vacia", "vacio", "infinito",
+    "null", "true", "false", "empty", "infinity",
   ]);
 
   // Divide una línea en tokens {text, cls} sin usar innerHTML (evita inyección).
@@ -258,10 +266,10 @@
       const c = line[i];
       // comentario hasta fin de línea
       if (c === "/" && line[i + 1] === "/") { push(line.slice(i), "tok-com"); break; }
-      // cadena "..."
-      if (c === '"') {
+      // cadena "..." o '...'
+      if (c === '"' || c === "'") {
         let j = i + 1;
-        while (j < line.length && line[j] !== '"') j++;
+        while (j < line.length && line[j] !== c) j++;
         push(line.slice(i, Math.min(j + 1, line.length)), "tok-str");
         i = j + 1; continue;
       }

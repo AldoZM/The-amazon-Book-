@@ -2,6 +2,33 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  const C = VIS.code([
+    ["fn",         "funcion exist(board, palabra):",                 "function exist(board, word):"],
+    ["porCelda",   "  para cada celda (r, c) del tablero:",          "  for each cell (r, c) of the board:"],
+    ["siDfs",      "    si dfs(r, c, 0):",                           "    if dfs(r, c, 0):"],
+    ["hallada",    "      retornar verdadero",                       "      return true"],
+    ["noHallada",  "  retornar falso",                               "  return false"],
+    ["",           "",                                               ""],
+    ["dfsFn",      "funcion dfs(r, c, i):        // ¿encaja palabra[i..] empezando en (r, c)?",
+                   "function dfs(r, c, i):       // does word[i..] fit starting at (r, c)?"],
+    ["finPalabra", "  si i llegó al final de palabra:",              "  if i reached the end of word:"],
+    ["retFin",     "    retornar verdadero",                         "    return true"],
+    ["fuera",      "  si (r, c) cae fuera del tablero:",             "  if (r, c) falls outside the board:"],
+    ["retFuera",   "    retornar falso",                             "    return false"],
+    ["otraLetra",  "  si board[r][c] no es palabra[i]:",             "  if board[r][c] is not word[i]:"],
+    ["retOtra",    "    retornar falso",                             "    return false"],
+    ["guarda",     "  guardar la letra de (r, c)",                   "  save the letter at (r, c)"],
+    ["ocupa",      "  marcar (r, c) como ocupada",                   "  mark (r, c) as taken"],
+    ["porVecina",  "  para cada vecina de (r, c):",                  "  for each neighbor of (r, c):"],
+    ["bajaVecina", "    si dfs(vecina, i + 1):",                     "    if dfs(neighbor, i + 1):"],
+    ["retVecina",  "      retornar verdadero",                       "      return true"],
+    ["devuelve",   "  devolver su letra a (r, c)   // deshacer: backtracking",
+                   "  give (r, c) its letter back  // undo: backtracking"],
+    ["retFalso",   "  retornar falso",                               "  return false"],
+  ]);
+  const A = C.L;
+
   P["79"] = {
     num: 79, slug: "word-search", title: "Word Search",
     difficulty: "M", block: "grafos", tags: ["backtracking", "DFS", "grid"],
@@ -12,38 +39,7 @@
       { cls: "path", label: L("letras ya emparejadas", "letters matched so far") },
       { cls: "current", label: L("probando esta celda", "testing this cell") },
     ],
-    code: {
-      es: [
-        "funcion exist(board, palabra):",
-        "  para cada celda (r,c):",
-        "    si dfs(r,c,0): retornar verdadero",
-        "  retornar falso",
-        "",
-        "funcion dfs(r,c,i):",
-        "  si i == longitud(palabra): retornar verdadero",
-        "  si fuera de límites o board[r][c] != palabra[i]:",
-        "    retornar falso",
-        "  guardar letra; board[r][c] ← '#'   // ocupar",
-        "  para cada vecina: si dfs(vecina, i+1): return true",
-        "  board[r][c] ← letra    // deshacer (backtrack)",
-        "  retornar falso",
-      ],
-      en: [
-        "function exist(board, word):",
-        "  for each cell (r,c):",
-        "    if dfs(r,c,0): return true",
-        "  return false",
-        "",
-        "function dfs(r,c,i):",
-        "  if i == length(word): return true",
-        "  if out of bounds or board[r][c] != word[i]:",
-        "    return false",
-        "  save letter; board[r][c] ← '#'   // occupy",
-        "  for each neighbor: if dfs(neighbor, i+1): return true",
-        "  board[r][c] ← letter   // undo (backtrack)",
-        "  return false",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("ABCCED (existe)", "ABCCED (exists)"), input: { board: [
         ["A","B","C","E"],
@@ -84,17 +80,25 @@
 
       function dfs(r, c, i) {
         if (found) return true;
-        cur = [r, c];
         if (i === word.length) return true;
-        if (r < 0 || r >= m || c < 0 || c >= n || board[r][c] !== word[i]) {
+        // Los dos motivos de fallo van por separado: enseñan cosas distintas.
+        if (r < 0 || r >= m || c < 0 || c >= n) {
+          cur = null;
+          snap(L(`(${r},${c}) se sale del tablero. Retrocedemos.`,
+                 `(${r},${c}) falls off the board. Backtrack.`), [A.fuera, A.retFuera]);
+          return false;
+        }
+        cur = [r, c];
+        if (board[r][c] !== word[i]) {
           snap(L(`(${r},${c}) no coincide con '${word[i]}'. Retrocedemos.`,
-                 `(${r},${c}) doesn't match '${word[i]}'. Backtrack.`), [7, 8]);
+                 `(${r},${c}) doesn't match '${word[i]}'. Backtrack.`), [A.otraLetra, A.retOtra]);
           return false;
         }
         path.add(r + "," + c);
         matched = i + 1;
         snap(L(`'${word[i]}' encaja en (${r},${c}). Buscamos '${word[i+1] || "(fin)"}' en las vecinas.`,
-               `'${word[i]}' fits at (${r},${c}). We look for '${word[i+1] || "(end)"}' in the neighbors.`), [6, 9]);
+               `'${word[i]}' fits at (${r},${c}). We look for '${word[i+1] || "(end)"}' in the neighbors.`),
+             [A.guarda, A.ocupa, A.porVecina]);
         const save = board[r][c];
         board[r][c] = "#";
         for (const [dr, dc] of dirs) {
@@ -105,12 +109,12 @@
         matched = i;
         cur = [r, c];
         snap(L(`Ninguna vecina continúa la palabra. Deshacemos (${r},${c}).`,
-               `No neighbor continues the word. Undo (${r},${c}).`), 12);
+               `No neighbor continues the word. Undo (${r},${c}).`), [A.devuelve, A.retFalso]);
         return false;
       }
 
       snap(L(`Buscamos "${word}". Probamos como inicio cada celda.`,
-             `We search "${word}". We try each cell as a start.`), [0, 1]);
+             `We search "${word}". We try each cell as a start.`), [A.fn, A.porCelda]);
       outer:
       for (let r = 0; r < m; r++)
         for (let c = 0; c < n; c++) {
@@ -120,9 +124,9 @@
         }
       cur = null;
       if (found) snap(L(`¡Palabra "${word}" encontrada! Respuesta <b>verdadero</b>.`,
-                       `Word "${word}" found! Answer <b>true</b>.`), 2);
+                       `Word "${word}" found! Answer <b>true</b>.`), [A.siDfs, A.hallada]);
       else snap(L(`Agotamos todos los inicios sin formar "${word}". Respuesta <b>falso</b>.`,
-                 `We exhausted every start without forming "${word}". Answer <b>false</b>.`), 3);
+                 `We exhausted every start without forming "${word}". Answer <b>false</b>.`), A.noHallada);
       return steps;
     },
   };

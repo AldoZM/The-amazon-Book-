@@ -18,6 +18,10 @@
   --naranja:   #db6d28;
   --cian:      #39c5cf;
   --radius:    10px;
+  /* Lado de celda de cuadrícula: 42px en monitor, se encoge con el ancho de
+     pantalla hasta 28px en móvil. Sin media query: 9vw solo supera 42 en
+     pantallas anchas, donde el clamp lo tope. */
+  --cell: clamp(28px, 9vw, 42px);
   --mono: "Cascadia Code", "Fira Code", Consolas, "SFMono-Regular", Menlo, monospace;
   --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -193,6 +197,9 @@ a:hover { text-decoration: underline; }
   gap: 28px;
   align-items: flex-start;
   justify-content: center;
+  /* Red de seguridad: una cuadrícula muy ancha desborda dentro del panel en
+     vez de romper el ancho de la página. */
+  overflow-x: auto;
 }
 
 /* Grid */
@@ -201,15 +208,15 @@ a:hover { text-decoration: underline; }
   gap: 4px;
 }
 .cell {
-  width: 42px;
-  height: 42px;
+  width: var(--cell);
+  height: var(--cell);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
   font-family: var(--mono);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: clamp(.72rem, 3.4vw, 1rem);
   background: var(--bg-3);
   border: 1px solid var(--border);
   transition: background .2s, border-color .2s, transform .2s, color .2s;
@@ -371,3 +378,41 @@ pre.code .tok-com { color: #6a737d; font-style: italic; }/* comentarios */
 .legend { display: flex; gap: 14px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--border); }
 .legend .lg { display: flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--muted); }
 .legend .sw { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); }
+
+/* ============================================================================
+   MÓVIL — teléfono en vertical (≤ 600px)
+   El workspace ya se apila en una columna a 980px; aquí se ajustan márgenes,
+   tamaños de toque y densidad para pantalla estrecha.
+   ============================================================================ */
+@media (max-width: 600px) {
+  .topbar { padding: 10px 14px; gap: 10px; flex-wrap: wrap; }
+  .topbar .brand { font-size: .95rem; }
+
+  .hero { padding: 26px 16px 14px; }
+  .hero h1 { font-size: 1.5rem; }
+  .filters { padding-left: 16px; padding-right: 16px; }
+  .block-section { padding-left: 16px; padding-right: 16px; }
+  .cards { grid-template-columns: 1fr; }
+
+  .problem-head { padding: 16px 16px 0; }
+  .problem-head h1 { font-size: 1.25rem; }
+
+  .workspace { padding: 14px 14px 40px; gap: 14px; }
+  .stage-wrap { gap: 14px; }
+  .stage { padding: 16px 12px; gap: 18px; min-height: 240px; }
+
+  /* El panel de código no debe comerse la pantalla; scroll dentro de él. */
+  .code-panel { max-height: 60vh; }
+  pre.code { font-size: .78rem; }
+
+  .narration { font-size: .9rem; min-height: 48px; }
+
+  /* Objetivos de toque más grandes y el slider de velocidad en su propia fila. */
+  .controls { gap: 6px; padding: 10px 12px; }
+  .controls button { padding: 10px 14px; font-size: .92rem; min-height: 42px; }
+  .controls .grow { display: none; }
+  .controls .speed { width: 100%; justify-content: space-between; }
+
+  .case-select { padding: 10px 12px; }
+  .case-select select { flex: 1; min-height: 40px; }
+}

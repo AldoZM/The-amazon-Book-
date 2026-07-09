@@ -2,6 +2,34 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",          "funcion orangesRotting(grid):",                     "function orangesRotting(grid):"],
+    ["cola",        "  cola empieza con todas las naranjas podridas dentro",              "  queue starts with all the rotten oranges inside"],
+    ["frescas",     "  frescas pasa a ser cuántas naranjas frescas hay",          "  fresh becomes how many fresh oranges there are"],
+    ["sinFrescas",  "  si no hay ninguna naranja fresca:",               "  if there is no fresh orange:"],
+    ["cero",        "    retornar 0",                                    "    return 0"],
+    ["minutos0",    "  minutos empieza en 0",                                     "  minutes starts at 0"],
+    ["mientras",    "  mientras la cola no esté vacía y queden frescas:", "  while the queue is not empty and fresh ones remain:"],
+    ["capa",        "    capa pasa a ser cuántas podridas hay ahora en la cola",  "    layer becomes how many rotten are in the queue now"],
+    ["repite",      "    repetir capa veces:",                           "    repeat layer times:"],
+    ["saca",        "      sacar la primera de la cola y llamarla (r, c)",        "      take the first one out of the queue and call it (r, c)"],
+    ["porVecina",   "      para cada vecina (arriba, abajo, izquierda, derecha):",
+                    "      for each neighbor (up, down, left, right):"],
+    ["esFresca",    "        si la vecina es una naranja fresca:",       "        if the neighbor is a fresh orange:"],
+    ["pudre",       "          marcar la vecina como podrida",           "          mark the neighbor as rotten"],
+    ["restaFresca", "          restar 1 a frescas",                   "          subtract 1 from fresh"],
+    ["encola",      "          meter la vecina en la cola",              "          push the neighbor into the queue"],
+    ["avanzaMin",   "    sumar 1 a minutos                   // acaba de pasar un minuto",
+                    "    add 1 to minutes                     // one minute has just passed"],
+    ["ningunaFresca", "  si no queda ninguna naranja fresca:",           "  if no fresh orange remains:"],
+    ["retMinutos",  "    retornar minutos",                              "    return minutes"],
+    ["menosUno",    "  retornar -1                          // quedan frescas que nadie alcanza",
+                    "  return -1                            // fresh ones nobody can reach remain"],
+  ]);
+  const A = C.L;
+
   P["994"] = {
     num: 994, slug: "rotting-oranges", title: "Rotting Oranges",
     difficulty: "M", block: "grafos", tags: ["BFS", "grid", "multifuente"],
@@ -14,42 +42,7 @@
       { cls: "rotten", label: L("podrida (2)", "rotten (2)") },
       { cls: "current", label: L("pudriéndose ahora", "rotting now") },
     ],
-    code: {
-      es: [
-        "funcion orangesRotting(grid):",
-        "  cola ← todas las podridas (2)",
-        "  frescas ← número de frescas (1)",
-        "  si frescas == 0: retornar 0",
-        "  minutos ← 0",
-        "  mientras cola no vacía y frescas > 0:",
-        "    capa ← tamaño de la cola",
-        "    repetir capa veces:",
-        "      (r,c) ← sacar de la cola",
-        "      para cada vecina (arriba/abajo/izq/der):",
-        "        si vecina es fresca (1):",
-        "          pudrir (1→2); frescas ← frescas - 1",
-        "          meter vecina en la cola",
-        "    minutos ← minutos + 1",
-        "  retornar (frescas==0) ? minutos : -1",
-      ],
-      en: [
-        "function orangesRotting(grid):",
-        "  queue ← all rotten (2)",
-        "  fresh ← number of fresh (1)",
-        "  if fresh == 0: return 0",
-        "  minutes ← 0",
-        "  while queue not empty and fresh > 0:",
-        "    layer ← queue size",
-        "    repeat layer times:",
-        "      (r,c) ← pop from queue",
-        "      for each neighbor (up/down/left/right):",
-        "        if neighbor is fresh (1):",
-        "          rot it (1→2); fresh ← fresh - 1",
-        "          push neighbor into queue",
-        "    minutes ← minutes + 1",
-        "  return (fresh==0) ? minutes : -1",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("4 minutos (3×3)", "4 minutes (3×3)"), input: [[2,1,1],[1,1,0],[0,1,1]] },
       { name: L("Imposible (-1)", "Impossible (-1)"), input: [[2,1,1],[0,1,1],[1,0,1]] },
@@ -84,11 +77,11 @@
           else if (grid[r][c] === 1) frescas++;
         }
       snap(L(`Metemos las ${q.length} podridas a la cola y contamos ${frescas} frescas.`,
-             `Push the ${q.length} rotten into the queue and count ${frescas} fresh.`), [1, 2]);
+             `Push the ${q.length} rotten into the queue and count ${frescas} fresh.`), [A.cola, A.frescas]);
 
       if (frescas === 0) {
         snap(L("No hay frescas: nada que pudrir. Respuesta <b>0</b>.",
-               "No fresh oranges: nothing to rot. Answer <b>0</b>."), 3);
+               "No fresh oranges: nothing to rot. Answer <b>0</b>."), [A.sinFrescas, A.cero]);
         return steps;
       }
 
@@ -97,7 +90,7 @@
         for (let i = 0; i < capa; i++) {
           const [r, c] = q.shift();
           snap(L(`Procesamos la podrida (${r},${c}) de esta capa.`,
-                 `Process the rotten (${r},${c}) in this layer.`), 8, [[r, c]]);
+                 `Process the rotten (${r},${c}) in this layer.`), A.saca, [[r, c]]);
           for (const [dr, dc] of dirs) {
             const nr = r + dr, nc = c + dc;
             if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
@@ -106,18 +99,19 @@
             frescas--;
             q.push([nr, nc]);
             snap(L(`Se pudre (${nr},${nc}): 1→2. Quedan ${frescas} frescas. Entra a la cola.`,
-                   `Rots (${nr},${nc}): 1→2. ${frescas} fresh left. It enters the queue.`), [10, 11, 12], [[nr, nc]]);
+                   `Rots (${nr},${nc}): 1→2. ${frescas} fresh left. It enters the queue.`),
+                 [A.esFresca, A.pudre, A.restaFresca, A.encola], [[nr, nc]]);
           }
         }
         minutos++;
         snap(L(`Terminó el minuto <b>${minutos}</b>. La cola guarda la siguiente onda.`,
-               `Minute <b>${minutos}</b> done. The queue holds the next wave.`), 13);
+               `Minute <b>${minutos}</b> done. The queue holds the next wave.`), A.avanzaMin);
       }
 
       if (frescas === 0) snap(L(`Todo podrido en <b>${minutos}</b> minutos.`,
-                               `All rotten in <b>${minutos}</b> minutes.`), 14);
+                               `All rotten in <b>${minutos}</b> minutes.`), [A.ningunaFresca, A.retMinutos]);
       else snap(L(`Quedaron ${frescas} frescas aisladas: imposible, respuesta <b>-1</b>.`,
-                 `${frescas} isolated fresh remain: impossible, answer <b>-1</b>.`), 14);
+                 `${frescas} isolated fresh remain: impossible, answer <b>-1</b>.`), A.menosUno);
       return steps;
     },
   };

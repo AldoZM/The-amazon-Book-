@@ -2,6 +2,29 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",         "funcion rightSideView(root):",                 "function rightSideView(root):"],
+    ["esNulo",     "  si root es nulo:",                           "  if root is null:"],
+    ["retVacia",   "    retornar una lista vacía",                 "    return an empty list"],
+    ["salida0",    "  salida empieza vacía",                       "  output starts empty"],
+    ["cola0",      "  cola empieza con root dentro",                              "  queue starts with root inside"],
+    ["mientras",   "  mientras la cola no esté vacía:",            "  while the queue is not empty:"],
+    ["tam",        "    tam pasa a ser cuántos nodos hay en la cola  // son todo un nivel",
+                   "    size becomes how many nodes are in the queue  // they are one whole level"],
+    ["porNodo",    "    para cada uno de esos tam nodos:",         "    for each of those size nodes:"],
+    ["saca",       "      sacar el primero de la cola y llamarlo nodo",     "      take the first one out of the queue and call it node"],
+    ["esUltimo",   "      si nodo es el último del nivel:",        "      if node is the last of the level:"],
+    ["anota",      "        añadir nodo.val a salida",             "        append node.val to output"],
+    ["hayIzq",     "      si nodo tiene hijo izquierdo:",          "      if node has a left child:"],
+    ["encolaIzq",  "        encolar nodo.izq",                     "        enqueue node.left"],
+    ["hayDer",     "      si nodo tiene hijo derecho:",            "      if node has a right child:"],
+    ["encolaDer",  "        encolar nodo.der",                     "        enqueue node.right"],
+    ["retorna",    "  retornar salida",                            "  return output"],
+  ]);
+  const A = C.L;
+
   P["199"] = {
     num: 199, slug: "right-side-view", title: "Binary Tree Right Side View",
     difficulty: "M", block: "arboles", tags: ["BFS", "niveles"],
@@ -14,34 +37,7 @@
       { cls: "path", label: L("visible (derecha)", "visible (right)") },
       { cls: "done", label: L("procesado", "processed") },
     ],
-    code: {
-      es: [
-        "funcion rightSideView(root):",
-        "  si root es nulo: retornar []",
-        "  resp ← []; cola ← [root]",
-        "  mientras cola no vacía:",
-        "    tam ← tamaño de la cola",
-        "    para i de 0 a tam-1:",
-        "      nodo ← sacar de la cola",
-        "      si i == tam-1: resp.añadir(nodo.val)",
-        "      si nodo.izq: encolar izq",
-        "      si nodo.der: encolar der",
-        "  retornar resp",
-      ],
-      en: [
-        "function rightSideView(root):",
-        "  if root is null: return []",
-        "  ans ← []; queue ← [root]",
-        "  while queue not empty:",
-        "    size ← queue size",
-        "    for i from 0 to size-1:",
-        "      node ← pop from queue",
-        "      if i == size-1: ans.append(node.val)",
-        "      if node.left: enqueue left",
-        "      if node.right: enqueue right",
-        "  return ans",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("[1,2,3,null,5,null,4]", "[1,2,3,null,5,null,4]"), input: [1,2,3,null,5,null,4] },
       { name: L("[1,2,3,4]", "[1,2,3,4]"), input: [1,2,3,4] },
@@ -51,7 +47,11 @@
     build(input) {
       const root = VIS.treeFromArray(input);
       const steps = [];
-      if (!root) { steps.push({ line: 1, note: L("Árbol vacío: respuesta [].", "Empty tree: answer [].") }); return steps; }
+      if (!root) {
+        steps.push({ line: [A.esNulo, A.retVacia],
+          note: L("Árbol vacío: respuesta [].", "Empty tree: answer [].") });
+        return steps;
+      }
 
       const layout = VIS.binaryLayout(root);
       const state = {};
@@ -70,18 +70,20 @@
 
       let cola = [root];
       state[root.id] = "frontier";
-      snap(L("Metemos la raíz a la cola.", "Push the root into the queue."), [2], cola);
+      snap(L("Metemos la raíz a la cola.", "Push the root into the queue."), [A.cola0], cola);
 
       while (cola.length) {
         const tam = cola.length;
         snap(L(`Nivel con ${tam} nodo(s). El último que saquemos será visible desde la derecha.`,
-               `Level with ${tam} node(s). The last one we pop is visible from the right.`), 4, cola);
+               `Level with ${tam} node(s). The last one we pop is visible from the right.`),
+             [A.tam, A.porNodo], cola);
         for (let i = 0; i < tam; i++) {
           const nodo = cola.shift();
           state[nodo.id] = "current";
           const esUltimo = i === tam - 1;
           snap(L(`Sacamos ${nodo.val}${esUltimo ? " (último del nivel → visible)" : ""}.`,
-                 `Pop ${nodo.val}${esUltimo ? " (last of the level → visible)" : ""}.`), [6, 7], cola);
+                 `Pop ${nodo.val}${esUltimo ? " (last of the level → visible)" : ""}.`),
+               esUltimo ? [A.saca, A.esUltimo, A.anota] : [A.saca, A.esUltimo], cola);
           if (esUltimo) { resp.push(nodo.val); state[nodo.id] = "path"; }
           else state[nodo.id] = "done";
           if (nodo.left) { cola.push(nodo.left); state[nodo.left.id] = "frontier"; }
@@ -89,7 +91,7 @@
         }
       }
       snap(L(`Vista desde la derecha: [${resp.join(", ")}].`,
-             `Right side view: [${resp.join(", ")}].`), 10, []);
+             `Right side view: [${resp.join(", ")}].`), A.retorna, []);
       return steps;
     },
   };

@@ -2,6 +2,27 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",        "funcion serialize(root):",                      "function serialize(root):"],
+    ["esNulo",    "  si root es nulo:",                            "  if root is null:"],
+    ["retMarca",  "    retornar \"#\"",                            "    return \"#\""],
+    ["cola0",     "  cola empieza con root dentro",                               "  queue starts with root inside"],
+    ["salida0",   "  salida empieza vacía",                        "  output starts empty"],
+    ["mientras",  "  mientras la cola no esté vacía:",             "  while the queue is not empty:"],
+    ["saca",      "    sacar el primero de la cola y llamarlo nodo",        "    take the first one out of the queue and call it node"],
+    ["hijoNulo",  "    si nodo es nulo:",                          "    if node is null:"],
+    ["marca",     "      añadir \"#\" a salida     // aquí no había hijo",
+                  "      append \"#\" to output    // there was no child here"],
+    ["continua",  "      continuar",                               "      continue"],
+    ["anota",     "    añadir nodo.val a salida",                  "    append node.val to output"],
+    ["encolaIzq", "    encolar nodo.izq",                          "    enqueue node.left"],
+    ["encolaDer", "    encolar nodo.der",                          "    enqueue node.right"],
+    ["retorna",   "  retornar salida unida por comas",             "  return output joined by commas"],
+  ]);
+  const A = C.L;
+
   P["297"] = {
     num: 297, slug: "serialize-deserialize", title: "Serialize and Deserialize Binary Tree",
     difficulty: "H", block: "arboles", tags: ["BFS", "diseño"],
@@ -12,30 +33,7 @@
       { cls: "current", label: L("nodo actual", "current node") },
       { cls: "done", label: L("serializado", "serialized") },
     ],
-    code: {
-      es: [
-        "funcion serialize(root):",
-        "  si root nulo: retornar \"#\"",
-        "  cola ← [root];  salida ← []",
-        "  mientras cola no vacía:",
-        "    nodo ← sacar de la cola",
-        "    si nodo es nulo: salida += \"#\"; seguir",
-        "    salida += nodo.val",
-        "    encolar nodo.izq;  encolar nodo.der",
-        "  retornar unir(salida, \",\")",
-      ],
-      en: [
-        "function serialize(root):",
-        "  if root null: return \"#\"",
-        "  queue ← [root];  output ← []",
-        "  while queue not empty:",
-        "    node ← pop from queue",
-        "    if node is null: output += \"#\"; continue",
-        "    output += node.val",
-        "    enqueue node.left;  enqueue node.right",
-        "  return join(output, \",\")",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("[1,2,3,null,null,4,5]", "[1,2,3,null,null,4,5]"), input: [1,2,3,null,null,4,5] },
       { name: L("[1,2,3]", "[1,2,3]"), input: [1,2,3] },
@@ -44,7 +42,11 @@
     build(input) {
       const root = VIS.treeFromArray(input);
       const steps = [];
-      if (!root) { steps.push({ line: 1, note: L("Árbol vacío → \"#\".", "Empty tree → \"#\".") }); return steps; }
+      if (!root) {
+        steps.push({ line: [A.esNulo, A.retMarca],
+          note: L("Árbol vacío → \"#\".", "Empty tree → \"#\".") });
+        return steps;
+      }
       const layout = VIS.binaryLayout(root);
       const state = {};
       const salida = [];
@@ -58,19 +60,23 @@
 
       const cola = [root];
       snap(L("BFS: metemos la raíz. Los hijos nulos se marcan con '#'.",
-             "BFS: push the root. Null children are marked with '#'."), [2], cola);
+             "BFS: push the root. Null children are marked with '#'."), [A.cola0, A.salida0], cola);
       while (cola.length) {
         const nodo = cola.shift();
-        if (!nodo) { salida.push("#"); snap(L("Hijo nulo → añadimos '#'.", "Null child → append '#'."), 5, cola); continue; }
+        if (!nodo) {
+          salida.push("#");
+          snap(L("Hijo nulo → añadimos '#'.", "Null child → append '#'."), [A.hijoNulo, A.marca], cola);
+          continue;
+        }
         state[nodo.id] = "current";
         salida.push(String(nodo.val));
         snap(L(`Serializamos ${nodo.val} y encolamos sus dos hijos.`,
-               `Serialize ${nodo.val} and enqueue its two children.`), [6, 7], cola);
+               `Serialize ${nodo.val} and enqueue its two children.`), [A.anota, A.encolaIzq, A.encolaDer], cola);
         cola.push(nodo.left); cola.push(nodo.right);
         state[nodo.id] = "done";
       }
       snap(L(`Cadena final: <b>${salida.join(",")}</b>. Deserializar la lee en el mismo orden BFS.`,
-             `Final string: <b>${salida.join(",")}</b>. Deserializing reads it in the same BFS order.`), 8, []);
+             `Final string: <b>${salida.join(",")}</b>. Deserializing reads it in the same BFS order.`), A.retorna, []);
       return steps;
     },
   };

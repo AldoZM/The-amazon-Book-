@@ -109,6 +109,32 @@
     return code[VIS.lang] || code.es || code.en || [];
   };
 
+  /* Construye el pseudocódigo a partir de filas [ancla, español, inglés].
+     Devuelve { es, en, L }: los dos arrays que espera pickCode, más `L`, un
+     mapa ancla → índice de línea.
+
+     Los pasos de la animación resaltan líneas por `step.line`. Escribir ahí el
+     número a mano es frágil: insertar una línea desplaza en silencio todos los
+     índices posteriores y el resaltado se desalinea sin error visible. Con
+     anclas, `build()` dice L.hundir en vez de 12 y el pseudocódigo se puede
+     reescribir libremente.
+
+     El ancla "" (o null) marca líneas sin destino: separadores en blanco.
+     Si se omite el inglés, se reutiliza el español (líneas simbólicas).       */
+  VIS.code = function (rows) {
+    const es = [], en = [], L = Object.create(null);
+    rows.forEach((row, i) => {
+      const id = row[0], lineEs = row[1], lineEn = row[2];
+      es.push(lineEs);
+      en.push(lineEn == null ? lineEs : lineEn);
+      if (id) {
+        if (id in L) throw new Error('VIS.code: ancla duplicada "' + id + '"');
+        L[id] = i;
+      }
+    });
+    return { es, en, L };
+  };
+
   VIS.setLang = function (l) {
     VIS.lang = l;
     try { localStorage.setItem("repvisual-lang", l); } catch (e) {}

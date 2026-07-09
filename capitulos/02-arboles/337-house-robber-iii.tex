@@ -32,7 +32,7 @@ trabajo es que cada casa devuelva \textbf{las dos respuestas a la vez}, en lugar
 de una sola. En C++ usamos un \texttt{std::pair<int, int>} (una parejita de dos
 números) con la forma \texttt{\{max\_SIN\_robar, max\_ROBANDO\}}.
 \begin{enumerate}
-    \item Recorremos el árbol de abajo hacia arriba (recorrido en \emph{postorden}: primero los hijos, al final el padre), lo que garantiza que cuando decidimos en una casa ya tenemos las dos respuestas de sus hijos.
+    \item Recorremos el árbol de abajo hacia arriba (recorrido en \emph{post-order}: primero los hijos, al final el padre), lo que garantiza que cuando decidimos en una casa ya tenemos las dos respuestas de sus hijos.
     \item Para calcular \texttt{max\_ROBANDO} de una casa: su dinero más el \texttt{max\_SIN\_robar} de cada hijo (porque si robas, los hijos quedan prohibidos).
     \item Para calcular \texttt{max\_SIN\_robar}: de cada hijo tomamos lo mejor entre sus dos opciones y lo sumamos.
     \item La respuesta final es la mejor de las dos opciones de la raíz.

@@ -2,6 +2,25 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",        "funcion updateMatrix(mat):",                        "function updateMatrix(mat):"],
+    ["distInit",  "  dist[celda] empieza en infinito, para toda celda",         "  dist[cell] starts at infinity, for every cell"],
+    ["colaInit",  "  cola empieza vacía",                                    "  queue starts empty"],
+    ["porCero",   "  para cada celda que vale 0:",                     "  for each cell whose value is 0:"],
+    ["esFuente",  "    dist de esa celda empieza en 0",                         "    dist of that cell starts at 0"],
+    ["mete",      "    meterla en la cola",                            "    push it into the queue"],
+    ["mientras",  "  mientras la cola no está vacía:",                 "  while the queue is not empty:"],
+    ["saca",      "    sacar la primera de la cola y llamarla (r, c)",           "    take the first one out of the queue and call it (r, c)"],
+    ["porVecina", "    para cada vecina de (r, c):",                   "    for each neighbor of (r, c):"],
+    ["mejora",    "      si dist[vecina] > dist[r][c] + 1:",           "      if dist[neighbor] > dist[r][c] + 1:"],
+    ["asigna",    "        dist[vecina] pasa a ser dist[r][c] + 1",             "        dist[neighbor] becomes dist[r][c] + 1"],
+    ["encola",    "        meter la vecina en la cola",                "        push the neighbor into the queue"],
+    ["retorna",   "  retornar dist",                                   "  return dist"],
+  ]);
+  const A = C.L;
+
   P["542"] = {
     num: 542, slug: "01-matrix", title: "01 Matrix",
     difficulty: "M", block: "grafos", tags: ["BFS", "grid", "multifuente"],
@@ -14,34 +33,7 @@
       { cls: "visited", label: L("distancia asignada", "distance assigned") },
       { cls: "current", label: L("celda actual", "current cell") },
     ],
-    code: {
-      es: [
-        "funcion updateMatrix(mat):",
-        "  dist ← ∞ en todo; cola ← vacía",
-        "  para cada celda con mat==0:",
-        "    dist ← 0; meter en la cola",
-        "  mientras cola no vacía:",
-        "    (r,c) ← sacar de la cola",
-        "    para cada vecina:",
-        "      si dist[vecina] > dist[r][c] + 1:",
-        "        dist[vecina] ← dist[r][c] + 1",
-        "        meter vecina en la cola",
-        "  retornar dist",
-      ],
-      en: [
-        "function updateMatrix(mat):",
-        "  dist ← ∞ everywhere; queue ← empty",
-        "  for each cell with mat==0:",
-        "    dist ← 0; push into queue",
-        "  while queue not empty:",
-        "    (r,c) ← pop from queue",
-        "    for each neighbor:",
-        "      if dist[neighbor] > dist[r][c] + 1:",
-        "        dist[neighbor] ← dist[r][c] + 1",
-        "        push neighbor into queue",
-        "  return dist",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("Ejemplo clásico", "Classic example"), input: [[0,0,0],[0,1,0],[1,1,1]] },
       { name: L("Un solo cero", "A single zero"), input: [[1,1,1],[1,0,1],[1,1,1]] },
@@ -74,13 +66,14 @@
         for (let c = 0; c < n; c++)
           if (input[r][c] === 0) q.push([r, c]);
       snap(L(`Todos los 0 son fuentes (dist 0) y entran a la cola: ${q.length}.`,
-             `All zeros are sources (dist 0) and enter the queue: ${q.length}.`), [2, 3]);
+             `All zeros are sources (dist 0) and enter the queue: ${q.length}.`),
+           [A.porCero, A.esFuente, A.mete]);
 
       while (q.length) {
         const [r, c] = q.shift();
         cur = [r, c];
         snap(L(`Sacamos (${r},${c}) con dist ${dist[r][c]}. Revisamos vecinas.`,
-               `Pop (${r},${c}) with dist ${dist[r][c]}. Check its neighbors.`), 5);
+               `Pop (${r},${c}) with dist ${dist[r][c]}. Check its neighbors.`), A.saca);
         for (const [dr, dc] of dirs) {
           const nr = r + dr, nc = c + dc;
           if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
@@ -89,13 +82,14 @@
             q.push([nr, nc]);
             cur = [nr, nc];
             snap(L(`(${nr},${nc}) recibe dist ${dist[nr][nc]} y entra a la cola.`,
-                   `(${nr},${nc}) gets dist ${dist[nr][nc]} and enters the queue.`), [7, 8, 9]);
+                   `(${nr},${nc}) gets dist ${dist[nr][nc]} and enters the queue.`),
+                 [A.mejora, A.asigna, A.encola]);
           }
         }
       }
       cur = null;
       snap(L("Cola vacía: toda celda tiene su distancia mínima. Listo.",
-             "Queue empty: every cell has its minimum distance. Done."), 10);
+             "Queue empty: every cell has its minimum distance. Done."), A.retorna);
       return steps;
     },
   };

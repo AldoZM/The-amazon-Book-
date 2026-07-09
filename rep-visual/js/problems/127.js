@@ -2,6 +2,29 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",        "funcion ladderLength(begin, end, lista):",         "function ladderLength(begin, end, list):"],
+    ["dicc",      "  dicc pasa a ser el conjunto de palabras de lista",        "  dict becomes the set of words in list"],
+    ["sinFin",    "  si end no está en dicc:",                        "  if end is not in dict:"],
+    ["retCero",   "    retornar 0",                                   "    return 0"],
+    ["cola",      "  cola empieza con el par (begin, 1 paso) dentro",        "  queue starts with the pair (begin, 1 step) inside"],
+    ["visto",     "  visto empieza con begin dentro",     "  seen starts with begin inside"],
+    ["mientras",  "  mientras la cola no esté vacía:",                "  while the queue is not empty:"],
+    ["saca",      "    sacar (palabra, pasos) del frente de la cola", "    take (word, steps) from the front of the queue"],
+    ["esFin",     "    si palabra es end:",                           "    if word is end:"],
+    ["retPasos",  "      retornar pasos",                             "      return steps"],
+    ["porVecina", "    para cada vecina de palabra:      // vecina: cambia exactamente una letra",
+                  "    for each neighbor of word:        // neighbor: exactly one letter differs"],
+    ["valida",    "      si vecina está en dicc y no ha sido vista:", "      if neighbor is in dict and has not been seen:"],
+    ["marca",     "        marcar vecina como vista",                 "        mark neighbor as seen"],
+    ["encola",    "        encolar (vecina, pasos + 1)",              "        enqueue (neighbor, steps + 1)"],
+    ["cero",      "  retornar 0                          // la cola se vació sin llegar a end",
+                  "  return 0                            // the queue emptied without reaching end"],
+  ]);
+  const A = C.L;
+
   P["127"] = {
     num: 127, slug: "word-ladder", title: "Word Ladder",
     difficulty: "H", block: "grafos", tags: ["BFS", "grafo implícito"],
@@ -12,32 +35,7 @@
       { cls: "current", label: L("palabra actual", "current word") },
       { cls: "done", label: L("ya visitada", "already visited") },
     ],
-    code: {
-      es: [
-        "funcion ladderLength(begin, end, lista):",
-        "  dicc ← conjunto(lista)",
-        "  si end no en dicc: retornar 0",
-        "  cola ← [(begin, 1)]; visto ← {begin}",
-        "  mientras cola no vacía:",
-        "    (palabra, pasos) ← sacar de la cola",
-        "    si palabra == end: retornar pasos",
-        "    para cada vecina (cambia 1 letra) en dicc:",
-        "      si no vista: marcar y encolar (vecina, pasos+1)",
-        "  retornar 0",
-      ],
-      en: [
-        "function ladderLength(begin, end, list):",
-        "  dict ← set(list)",
-        "  if end not in dict: return 0",
-        "  queue ← [(begin, 1)]; seen ← {begin}",
-        "  while queue not empty:",
-        "    (word, steps) ← pop from queue",
-        "    if word == end: return steps",
-        "    for each neighbor (change 1 letter) in dict:",
-        "      if not seen: mark and enqueue (neighbor, steps+1)",
-        "  return 0",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("hit → cog (5)", "hit → cog (5)"), input: { begin: "hit", end: "cog", words: ["hot","dot","dog","lot","log","cog"] } },
       { name: L("hit → cog sin puente (0)", "hit → cog no bridge (0)"), input: { begin: "hit", end: "cog", words: ["hot","dot","dog","lot","log"] } },
@@ -61,16 +59,17 @@
       };
 
       if (!dicc.has(input.end)) { snap(L(`"${input.end}" no está en el diccionario. Respuesta 0.`,
-                                        `"${input.end}" is not in the dictionary. Answer 0.`), 2); return steps; }
+                                        `"${input.end}" is not in the dictionary. Answer 0.`), [A.sinFin, A.retCero]); return steps; }
       snap(L(`Arrancamos BFS desde "${input.begin}" con 1 paso.`,
-             `Start BFS from "${input.begin}" with 1 step.`), 3);
+             `Start BFS from "${input.begin}" with 1 step.`), [A.cola, A.visto]);
 
       while (cola.length) {
         const [palabra, pasos] = cola.shift();
         if (palabra === input.end) { snap(L(`Llegamos a "${input.end}" en <b>${pasos}</b> pasos.`,
-                                           `Reached "${input.end}" in <b>${pasos}</b> steps.`), 6, palabra, pasos); return steps; }
+                                           `Reached "${input.end}" in <b>${pasos}</b> steps.`),
+                                         [A.esFin, A.retPasos], palabra, pasos); return steps; }
         snap(L(`Procesamos "${palabra}" (${pasos}). Probamos cambiar cada letra.`,
-               `Process "${palabra}" (${pasos}). We try changing each letter.`), [5, 7], palabra, pasos);
+               `Process "${palabra}" (${pasos}). We try changing each letter.`), [A.saca, A.porVecina], palabra, pasos);
         const arr = palabra.split("");
         for (let i = 0; i < arr.length; i++) {
           const orig = arr[i];
@@ -82,14 +81,15 @@
               visto.add(cand);
               cola.push([cand, pasos + 1]);
               snap(L(`"${palabra}" → "${cand}" (cambia posición ${i}). A la cola con ${pasos + 1}.`,
-                     `"${palabra}" → "${cand}" (change position ${i}). Enqueue with ${pasos + 1}.`), 8, palabra, pasos);
+                     `"${palabra}" → "${cand}" (change position ${i}). Enqueue with ${pasos + 1}.`),
+                   [A.valida, A.marca, A.encola], palabra, pasos);
             }
           }
           arr[i] = orig;
         }
       }
       snap(L("Cola vacía sin llegar al final. Respuesta 0.",
-             "Queue empty without reaching the end. Answer 0."), 9);
+             "Queue empty without reaching the end. Answer 0."), A.cero);
       return steps;
     },
   };

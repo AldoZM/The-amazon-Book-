@@ -19,7 +19,7 @@ paso), así que bastaba avanzar por capas con BFS. Aquí cada conexión tarda
 distinto, y avanzar por capas ya no sirve: el amigo que descubres primero no
 siempre es al que el chisme le llega antes en tiempo real. Para eso usamos el
 algoritmo de \textbf{Dijkstra}: en vez de una fila normal, usamos una
-\emph{cola de prioridad} (o \emph{min-heap}), que es como una fila mágica que
+\emph{min-heap} (o cola de prioridad), que es como una fila mágica que
 siempre deja pasar primero al amigo que se va a enterar más temprano.
 
 \begin{center}
@@ -42,7 +42,7 @@ principio nadie sabe nada, así que todos empiezan en ``infinito'' (un número
 gigante que significa ``todavía no se entera''), salvo el amigo \texttt{k},
 que arranca en $0$ porque él ya lo sabe.
 \begin{enumerate}
-  \item Metemos a \texttt{k} en la fila mágica (el min-heap) con tiempo $0$.
+  \item Metemos a \texttt{k} en el min-heap con tiempo $0$.
   \item Sacamos de la fila al amigo con el menor tiempo pendiente. Si el
         tiempo con el que sale ya está viejo (porque mientras tanto
         encontramos una forma más rápida de que se enterara), lo ignoramos.
@@ -71,7 +71,7 @@ entera el más lento.
 
 \paragraph{¿Qué significa esa complejidad?} $V$ es el número de amigos
 (nodos) y $E$ el número de conexiones (aristas). $O(E \log V)$ significa que
-revisamos cada conexión y, cada vez que metemos algo en la fila mágica,
+revisamos cada conexión y, cada vez que metemos algo en el min-heap,
 mantenerla ordenada cuesta un poquito ($\log V$, que crece muy despacio). En
 pocas palabras: es casi tan rápido como mirar todas las conexiones una vez,
 con un pequeño costo extra por tener la fila siempre ordenada.
@@ -80,7 +80,7 @@ con un pequeño costo extra por tener la fila siempre ordenada.
 de Dijkstra con cola de prioridad. Suelen usarlo para ver si entiendes
 \emph{por qué} el algoritmo necesita que los tiempos no sean negativos
 (conviene mencionarlo aunque no te lo pregunten). Otro punto que evalúan: cómo
-manejas las entradas ``viejas'' del heap. Como en la cola de prioridad de C++
+manejas las entradas ``viejas'' del min-heap. Como en la cola de prioridad de C++
 no hay una forma barata de bajarle el valor a algo que ya metiste, simplemente
 metemos duplicados y, al sacarlos, descartamos los que ya no coinciden con
 \texttt{dist}. Casos raros: un solo amigo (\texttt{k} se entera en tiempo

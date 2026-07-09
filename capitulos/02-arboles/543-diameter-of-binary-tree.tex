@@ -7,7 +7,7 @@ En este problema se nos pide encontrar la longitud del camino más largo entre d
 
 Mucha gente cree que ese paseo tan largo siempre pasa por el jefe de hasta arriba, pero no es cierto: podría estar escondido en una rama muy profunda y ni siquiera tocar la raíz. El truco para verlo bien es este: todo paseo entre dos nodos sube desde uno hasta cierto ``punto de encuentro'' (un antepasado común) y desde ahí baja hacia el otro. Parados en ese punto de encuentro, el paseo más largo mide \emph{lo que baja por la rama izquierda} más \emph{lo que baja por la rama derecha}.
 
-\paragraph{Cómo lo resuelve el código, paso a paso.} Recorremos el árbol de abajo hacia arriba (a esto se le llama recorrido en \emph{postorden}: primero visitamos a los hijos y solo al final al padre). Que una función se llame a sí misma para bajar por las ramas se llama \emph{recursión}; piénsalo como preguntarle a tus subordinados y que ellos le pregunten a los suyos, hasta llegar a los de más abajo, y que las respuestas vayan subiendo.
+\paragraph{Cómo lo resuelve el código, paso a paso.} Recorremos el árbol de abajo hacia arriba (a esto se le llama recorrido en \emph{post-order}: primero visitamos a los hijos y solo al final al padre). Que una función se llame a sí misma para bajar por las ramas se llama \emph{recursión}; piénsalo como preguntarle a tus subordinados y que ellos le pregunten a los suyos, hasta llegar a los de más abajo, y que las respuestas vayan subiendo.
 
 \begin{enumerate}
   \item Para cada nodo le preguntamos a su rama izquierda y a su rama derecha: ``¿qué tan hondo llegas?'' (esa profundidad es la \emph{altura} de la rama).

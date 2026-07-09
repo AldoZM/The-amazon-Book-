@@ -2,6 +2,29 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",        "funcion pacificAtlantic(alturas):",                     "function pacificAtlantic(heights):"],
+    ["pacInit",   "  ninguna celda alcanza todavía el Pacífico",           "  no cell reaches the Pacific yet"],
+    ["atlInit",   "  ninguna celda alcanza todavía el Atlántico",          "  no cell reaches the Atlantic yet"],
+    ["bordeP",    "  para cada celda del borde de arriba o del izquierdo:", "  for each cell on the top or left border:"],
+    ["subeP",     "    dfs(pacifico, celda)",                              "    dfs(pacific, cell)"],
+    ["bordeA",    "  para cada celda del borde de abajo o del derecho:",   "  for each cell on the bottom or right border:"],
+    ["subeA",     "    dfs(atlantico, celda)",                             "    dfs(atlantic, cell)"],
+    ["resp",      "  resp pasa a ser las celdas que alcanzan el Pacífico y también el Atlántico",
+                  "  ans becomes the cells that reach the Pacific and also the Atlantic"],
+    ["retorna",   "  retornar resp",                                       "  return ans"],
+    ["",          "",                                                      ""],
+    ["dfsFn",     "funcion dfs(alcanza, r, c):",                           "function dfs(reaches, r, c):"],
+    ["marca",     "  marcar (r, c) como alcanzada por ese océano",         "  mark (r, c) as reached by that ocean"],
+    ["porVecina", "  para cada vecina de (r, c):",                         "  for each neighbor of (r, c):"],
+    ["subeAgua",  "    si la vecina no está marcada y su altura es igual o mayor:",
+                  "    if the neighbor is not marked and its height is equal or greater:"],
+    ["baja",      "      dfs(alcanza, vecina)",                            "      dfs(reaches, neighbor)"],
+  ]);
+  const A = C.L;
+
   P["417"] = {
     num: 417, slug: "pacific-atlantic", title: "Pacific Atlantic Water Flow",
     difficulty: "M", block: "grafos", tags: ["DFS", "grid", "dos pasadas"],
@@ -14,34 +37,7 @@
       { cls: "current", label: L("celda actual", "current cell") },
       { cls: "path", label: L("llega a ambos", "reaches both") },
     ],
-    code: {
-      es: [
-        "funcion pacificAtlantic(h):",
-        "  pac, atl ← matrices de falso",
-        "  desde bordes Pacífico (arriba/izq): dfs(pac)",
-        "  desde bordes Atlántico (abajo/der): dfs(atl)",
-        "  resp ← celdas con pac Y atl",
-        "  retornar resp",
-        "",
-        "funcion dfs(reach, r, c):",
-        "  reach[r][c] ← verdadero",
-        "  para cada vecina con altura >= h[r][c]:",
-        "    si no marcada: dfs(reach, vecina)",
-      ],
-      en: [
-        "function pacificAtlantic(h):",
-        "  pac, atl ← matrices of false",
-        "  from Pacific borders (top/left): dfs(pac)",
-        "  from Atlantic borders (bottom/right): dfs(atl)",
-        "  ans ← cells with pac AND atl",
-        "  return ans",
-        "",
-        "function dfs(reach, r, c):",
-        "  reach[r][c] ← true",
-        "  for each neighbor with height >= h[r][c]:",
-        "    if not marked: dfs(reach, neighbor)",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("Ejemplo 5×5", "Example 5×5"), input: [
         [1,2,2,3,5],
@@ -84,7 +80,8 @@
         reach[r][c] = true;
         cur = [r, c];
         snap(L(`(${r},${c}) alcanza el ${phase === "pac" ? "Pacífico" : "Atlántico"}. Subimos a vecinas más altas o iguales.`,
-               `(${r},${c}) reaches the ${phase === "pac" ? "Pacific" : "Atlantic"}. We climb to higher-or-equal neighbors.`), [8, 9]);
+               `(${r},${c}) reaches the ${phase === "pac" ? "Pacific" : "Atlantic"}. We climb to higher-or-equal neighbors.`),
+             [A.marca, A.porVecina]);
         for (const [dr, dc] of dirs) {
           const nr = r + dr, nc = c + dc;
           if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;
@@ -95,14 +92,14 @@
 
       phase = "pac";
       snap(L("Pasada 1: agua del Pacífico entra por el borde superior e izquierdo.",
-             "Pass 1: Pacific water enters through the top and left borders."), 2);
+             "Pass 1: Pacific water enters through the top and left borders."), [A.bordeP, A.subeP]);
       for (let i = 0; i < m; i++) if (!pac[i][0]) dfs(pac, i, 0);
       for (let j = 0; j < n; j++) if (!pac[0][j]) dfs(pac, 0, j);
 
       phase = "atl";
       cur = null;
       snap(L("Pasada 2: agua del Atlántico entra por el borde inferior y derecho.",
-             "Pass 2: Atlantic water enters through the bottom and right borders."), 3);
+             "Pass 2: Atlantic water enters through the bottom and right borders."), [A.bordeA, A.subeA]);
       for (let i = 0; i < m; i++) if (!atl[i][n-1]) dfs(atl, i, n - 1);
       for (let j = 0; j < n; j++) if (!atl[m-1][j]) dfs(atl, m - 1, j);
 
@@ -112,7 +109,8 @@
         for (let c = 0; c < n; c++)
           if (pac[r][c] && atl[r][c]) resp.push(`(${r},${c})`);
       snap(L(`Celdas que llegan a ambos océanos (resaltadas): ${resp.length}. ` + resp.join(" "),
-             `Cells reaching both oceans (highlighted): ${resp.length}. ` + resp.join(" ")), [4, 5], true);
+             `Cells reaching both oceans (highlighted): ${resp.length}. ` + resp.join(" ")),
+           [A.resp, A.retorna], true);
       return steps;
     },
   };

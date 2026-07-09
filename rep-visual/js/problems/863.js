@@ -2,6 +2,33 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",        "funcion distanceK(root, target, k):",             "function distanceK(root, target, k):"],
+    ["padres",    "  padres pasa a ser recorrer el árbol con DFS anotando el padre de cada nodo",
+                  "  parents becomes walk the tree with DFS noting each node's parent"],
+    ["cola",      "  cola empieza con target dentro",       "  queue starts with target inside"],
+    ["visto",     "  visto empieza con target dentro",   "  seen starts with target inside"],
+    ["dist0",     "  dist empieza en 0",                                      "  dist starts at 0"],
+    ["mientras",  "  mientras la cola no esté vacía:",               "  while the queue is not empty:"],
+    ["esK",       "    si dist = k:",                                "    if dist = k:"],
+    ["retVals",   "      retornar los valores de la cola",           "      return the values in the queue"],
+    ["siguiente", "    siguiente empieza vacío",                     "    next starts empty"],
+    ["porNodo",   "    para cada nodo de la cola:",                  "    for each node in the queue:"],
+    ["vecinos",   "      vecinos son su hijo izquierdo, su hijo derecho y su padre",
+                  "      neighbors are its left child, its right child and its parent"],
+    ["porVecino", "      para cada vecino que exista:",              "      for each neighbor that exists:"],
+    ["noVisto",   "        si el vecino no ha sido visto:",          "        if the neighbor has not been seen:"],
+    ["marca",     "          marcar el vecino como visto",           "          mark the neighbor as seen"],
+    ["encola",    "          añadir el vecino a siguiente",          "          add the neighbor to next"],
+    ["sube",      "    sumar 1 a dist",                             "    add 1 to dist"],
+    ["avanza",    "    cola pasa a ser siguiente",                            "    queue becomes next"],
+    ["vacio",     "  retornar la lista vacía   // el árbol no llega tan lejos",
+                  "  return the empty list     // the tree does not reach that far"],
+  ]);
+  const A = C.L;
+
   P["863"] = {
     num: 863, slug: "all-nodes-distance-k", title: "All Nodes Distance K in Binary Tree",
     difficulty: "M", block: "arboles", tags: ["BFS", "grafo"],
@@ -14,32 +41,7 @@
       { cls: "done", label: L("visitado", "visited") },
       { cls: "path", label: L("a distancia K", "at distance K") },
     ],
-    code: {
-      es: [
-        "funcion distanceK(root, target, k):",
-        "  padres[] ← DFS que guarda el padre de cada nodo",
-        "  cola ← [target]; visto ← {target}; dist ← 0",
-        "  mientras cola no vacía:",
-        "    si dist == k: retornar valores en la cola",
-        "    por cada nodo del nivel:",
-        "      vecinos = {izq, der, padre}",
-        "      si vecino no visto: marcar y encolar",
-        "    dist += 1",
-        "  retornar []   // no hay suficientes niveles",
-      ],
-      en: [
-        "function distanceK(root, target, k):",
-        "  parents[] ← DFS storing each node's parent",
-        "  queue ← [target]; seen ← {target}; dist ← 0",
-        "  while queue not empty:",
-        "    if dist == k: return values in the queue",
-        "    for each node of the level:",
-        "      neighbors = {left, right, parent}",
-        "      if neighbor unseen: mark and enqueue",
-        "    dist += 1",
-        "  return []   // not enough levels",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("target=5, k=2", "target=5, k=2"), input: { tree: [3,5,1,6,2,0,8,null,null,7,4], target: 5, k: 2 } },
       { name: L("target=3, k=1", "target=3, k=1"), input: { tree: [3,5,1,6,2,0,8], target: 3, k: 1 } },
@@ -65,12 +67,14 @@
 
       let cola = [targetNode]; const visto = new Set([targetNode.id]); let dist = 0;
       snap(L(`Objetivo ${input.target}. BFS por anillos; buscamos distancia ${input.k}.`,
-             `Target ${input.target}. Ring BFS; we look for distance ${input.k}.`), 2, cola, dist);
+             `Target ${input.target}. Ring BFS; we look for distance ${input.k}.`),
+           [A.cola, A.visto, A.dist0], cola, dist);
       while (cola.length) {
         if (dist === input.k) {
           cola.forEach((nd) => (state[nd.id] = "path"));
           snap(L(`Distancia ${dist} = K. Nodos: [${cola.map((n) => n.val).join(", ")}].`,
-                 `Distance ${dist} = K. Nodes: [${cola.map((n) => n.val).join(", ")}].`), 4, cola, dist);
+                 `Distance ${dist} = K. Nodes: [${cola.map((n) => n.val).join(", ")}].`),
+               [A.esK, A.retVals], cola, dist);
           return steps;
         }
         const sig = [];
@@ -85,10 +89,11 @@
         dist++;
         cola = sig;
         snap(L(`Avanzamos un anillo. dist = ${dist}. Frontera: [${cola.map((n) => n.val).join(", ")}].`,
-               `Advance one ring. dist = ${dist}. Frontier: [${cola.map((n) => n.val).join(", ")}].`), [8], cola, dist);
+               `Advance one ring. dist = ${dist}. Frontier: [${cola.map((n) => n.val).join(", ")}].`),
+             [A.sube, A.avanza], cola, dist);
       }
       snap(L(`No hay nodos a distancia ${input.k}. Respuesta [].`,
-             `No nodes at distance ${input.k}. Answer [].`), 9, [], dist);
+             `No nodes at distance ${input.k}. Answer [].`), A.vacio, [], dist);
       return steps;
     },
   };

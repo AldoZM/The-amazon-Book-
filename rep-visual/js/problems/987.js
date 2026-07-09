@@ -2,6 +2,28 @@
 (function () {
   const P = window.PROBLEMS || (window.PROBLEMS = {});
   const L = (es, en) => ({ es, en });
+
+  // Pseudocódigo con anclas: build() resalta líneas por nombre, no por número.
+  const C = VIS.code([
+    ["fn",        "funcion verticalTraversal(root):",                     "function verticalTraversal(root):"],
+    ["cola",      "  cola empieza con la terna (root, fila 0, columna 0) dentro", "  queue starts with the triple (root, row 0, column 0) inside"],
+    ["mapa",      "  mapa guarda, para cada columna, una lista de pares (fila, valor)",
+                  "  map holds, for each column, a list of pairs (row, value)"],
+    ["mientras",  "  mientras la cola no esté vacía:",                    "  while the queue is not empty:"],
+    ["saca",      "    sacar (nodo, fila, col) del frente de la cola",    "    take (node, row, col) from the front of the queue"],
+    ["anota",     "    añadir el par (fila, valor de nodo) a mapa[col]",  "    add the pair (row, value of node) to map[col]"],
+    ["hayIzq",    "    si nodo tiene hijo izquierdo:",                    "    if node has a left child:"],
+    ["encolaIzq", "      encolar (hijo izquierdo, fila + 1, col - 1)",    "      enqueue (left child, row + 1, col - 1)"],
+    ["hayDer",    "    si nodo tiene hijo derecho:",                      "    if node has a right child:"],
+    ["encolaDer", "      encolar (hijo derecho, fila + 1, col + 1)",      "      enqueue (right child, row + 1, col + 1)"],
+    ["porCol",    "  para cada columna, de la menor a la mayor:",         "  for each column, from smallest to largest:"],
+    ["ordena",    "    ordenar su lista por fila y, si dos empatan, por valor",
+                  "    sort its list by row and, if two tie, by value"],
+    ["vuelca",    "    volcar los valores ya ordenados",                  "    dump the sorted values"],
+    ["retorna",   "  retornar las columnas en orden",                     "  return the columns in order"],
+  ]);
+  const A = C.L;
+
   P["987"] = {
     num: 987, slug: "vertical-order", title: "Vertical Order Traversal of a Binary Tree",
     difficulty: "H", block: "arboles", tags: ["BFS", "coordenadas"],
@@ -12,34 +34,7 @@
       { cls: "current", label: L("nodo actual", "current node") },
       { cls: "done", label: L("asignado", "assigned") },
     ],
-    code: {
-      es: [
-        "funcion verticalOrder(root):",
-        "  cola ← [(root, fila=0, col=0)]",
-        "  mapa[col] ← lista de (fila, valor)",
-        "  mientras cola no vacía:",
-        "    (nodo, fila, col) ← sacar",
-        "    mapa[col] += (fila, nodo.val)",
-        "    encolar (izq, fila+1, col-1)",
-        "    encolar (der, fila+1, col+1)",
-        "  por cada col (de menor a mayor):",
-        "    ordenar por (fila, valor) y volcar",
-        "  retornar columnas en orden",
-      ],
-      en: [
-        "function verticalOrder(root):",
-        "  queue ← [(root, row=0, col=0)]",
-        "  map[col] ← list of (row, value)",
-        "  while queue not empty:",
-        "    (node, row, col) ← pop",
-        "    map[col] += (row, node.val)",
-        "    enqueue (left, row+1, col-1)",
-        "    enqueue (right, row+1, col+1)",
-        "  for each col (low to high):",
-        "    sort by (row, value) and dump",
-        "  return columns in order",
-      ],
-    },
+    code: C,
     cases: [
       { name: L("[3,9,20,null,null,15,7]", "[3,9,20,null,null,15,7]"), input: [3,9,20,null,null,15,7] },
       { name: L("[1,2,3,4,5,6,7]", "[1,2,3,4,5,6,7]"), input: [1,2,3,4,5,6,7] },
@@ -48,7 +43,7 @@
     build(input) {
       const root = VIS.treeFromArray(input);
       const steps = [];
-      if (!root) { steps.push({ line: 1, note: L("Árbol vacío: [].", "Empty tree: [].") }); return steps; }
+      if (!root) { steps.push({ line: A.retorna, note: L("Árbol vacío: [].", "Empty tree: [].") }); return steps; }
       const layout = VIS.binaryLayout(root);
       const state = {};
       const mapa = {};
@@ -65,19 +60,19 @@
         list: { label: L("Columnas", "Columns"), items: colList() } });
 
       const cola = [{ node: root, fila: 0, col: 0 }];
-      snap(L("Encolamos la raíz con fila 0, columna 0.", "Enqueue the root with row 0, column 0."), [1, 2], cola);
+      snap(L("Encolamos la raíz con fila 0, columna 0.", "Enqueue the root with row 0, column 0."), [A.cola, A.mapa], cola);
       while (cola.length) {
         const { node, fila, col } = cola.shift();
         state[node.id] = "current";
         (mapa[col] = mapa[col] || []).push([fila, node.val]);
         snap(L(`${node.val} va a la columna ${col} (fila ${fila}).`,
-               `${node.val} goes to column ${col} (row ${fila}).`), 5, cola);
+               `${node.val} goes to column ${col} (row ${fila}).`), [A.saca, A.anota], cola);
         if (node.left) cola.push({ node: node.left, fila: fila + 1, col: col - 1 });
         if (node.right) cola.push({ node: node.right, fila: fila + 1, col: col + 1 });
         state[node.id] = "done";
       }
       snap(L(`Columnas de izquierda a derecha: ${colList().join("  ")}.`,
-             `Columns left to right: ${colList().join("  ")}.`), [9, 10], []);
+             `Columns left to right: ${colList().join("  ")}.`), [A.porCol, A.ordena, A.vuelca, A.retorna], []);
       return steps;
     },
   };
