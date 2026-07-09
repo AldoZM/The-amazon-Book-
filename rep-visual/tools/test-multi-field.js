@@ -85,6 +85,19 @@ const problema = {
     parse(state) {
       const ns = numeros(state.lista);
       if (!ns.length) return { ok: false, field: "lista", error: { es: "vacía", en: "empty" } };
+      // Estricto a propósito: si `elegido` ya no está entre los números de la
+      // lista, es un valor huérfano y hay que rechazarlo, no convertirlo a
+      // ciegas. Esto es lo que hace que el test note si syncSelects() corrió
+      // antes o después de parse().
+      if (!ns.includes(String(state.elegido))) {
+        return {
+          ok: false, field: "elegido",
+          error: {
+            es: `"${state.elegido}" ya no está en la lista.`,
+            en: `"${state.elegido}" is no longer in the list.`,
+          },
+        };
+      }
       return { ok: true, input: { lista: ns.map(Number), elegido: Number(state.elegido) } };
     },
     previewSpec(input) { return VIS.preview.tree([input.elegido], { es: "a", en: "a" }); },
@@ -134,7 +147,15 @@ texto().oninput();
 eq("las opciones se recalculan", opciones(), ["1", "2"]);
 eq("el valor huérfano cae al primero", Engine.editState.elegido, "1");
 eq("y el desplegable lo refleja", sel().value, "1");
+/* Esto fija el orden syncSelects() -> parse() dentro de refreshPreview():
+   como la reconciliación ya corrigió editState antes de llamar a parse(),
+   éste ve un valor que SÍ está en la lista y no hay error. Si el orden se
+   invirtiera, parse() vería el "3" huérfano, el parse estricto de arriba
+   devolvería ok:false con field:"elegido", Ejecutar quedaría deshabilitado
+   y el desplegable se marcaría inválido: las tres aserciones siguientes
+   fallarían.                                                              */
 ok("Ejecutar sigue habilitado", run.disabled === false);
+ok("el desplegable no se marca inválido", !sel().classes.has("invalid"));
 
 /* Un valor que sigue existiendo NO se toca. */
 sel().value = "2";
