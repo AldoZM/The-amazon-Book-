@@ -341,6 +341,7 @@ Los ocho problemas de árbol parsean **exactamente el mismo** texto. El parser v
 - Produces:
   - `VIS.parse.treeArray(text: string, maxNodes: number): {ok: true, arr: (number|null)[]} | {ok: false, error: {es,en}}`
   - `VIS.preview.tree(arr: (number|null)[], label: {es,en}): {type: "tree", label, r: 18, nodes, edges}`
+  - `VIS.treeEditor(arranque: string, hint: {es,en}): editor` — fábrica que devuelve el descriptor completo de un problema de árbol. Los ocho comparten `parse` y `previewSpec`; solo cambian el árbol de partida y la instrucción.
 
 - [ ] **Step 1: Escribir el test que falla**
 
@@ -422,6 +423,21 @@ eq("4 aristas", spec.edges.length, 4);
 ok("los nodos traen x, y, label", spec.nodes.every((n) => typeof n.x === "number" && typeof n.y === "number" && n.label != null));
 ok("VIS.renderers sabe pintar ese type", typeof VIS.renderers[spec.type] === "function");
 eq("un solo nodo: 1 nodo, 0 aristas", [VIS.preview.tree([7], {es:"a",en:"a"}).nodes.length, VIS.preview.tree([7], {es:"a",en:"a"}).edges.length], [1, 0]);
+
+/* ------------------------------------------------- la fábrica de editores */
+const hint = { es: "instrucción", en: "hint" };
+const ed = VIS.treeEditor("[1,2,3]", hint);
+eq("la fábrica devuelve kind text", ed.kind, "text");
+eq("un solo campo, llamado tree", ed.fields.map((f) => f.id), ["tree"]);
+eq("initial() trae el árbol de partida", ed.initial(), { tree: "[1,2,3]" });
+eq("el hint es el que se le pasó", ed.hint, hint);
+eq("parse acepta el árbol de partida", ed.parse(ed.initial()).ok, true);
+eq("parse devuelve el arreglo, no el texto", ed.parse(ed.initial()).input, [1, 2, 3]);
+eq("parse rechaza el corchete sin cerrar", ed.parse({ tree: "[1,2" }).ok, false);
+eq("y señala el campo tree", ed.parse({ tree: "[1,2" }).field, "tree");
+eq("previewSpec devuelve un árbol", ed.previewSpec([1, 2, 3]).type, "tree");
+ok("dos editores no comparten estado",
+   VIS.treeEditor("[9]", hint).initial().tree === "[9]" && ed.initial().tree === "[1,2,3]");
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
 process.exit(fails ? 1 : 0);
@@ -505,6 +521,34 @@ Crear `rep-visual/js/editors.js`:
       type: "tree", label, r: 18,
       nodes: layout.nodes.map((n) => ({ id: n.id, label: n.label, x: n.x, y: n.y, cls: "" })),
       edges: layout.edges,
+    };
+  };
+
+  const ETIQUETA_ARBOL = { es: "Árbol", en: "Tree" };
+  const MAX_NODOS = 31;   // más allá, el dibujo deja de caber
+
+  /* Descriptor completo de un problema de árbol. Los ocho reciben el mismo
+     arreglo de LeetCode: comparten `parse` y `previewSpec`, y solo cambian el
+     árbol de partida y la instrucción. Escribirlo ocho veces sería copiarlo
+     ocho veces.                                                              */
+  VIS.treeEditor = function (arranque, hint) {
+    return {
+      kind: "text",
+      fields: [
+        {
+          id: "tree",
+          label: ETIQUETA_ARBOL,
+          placeholder: { es: "[1,2,3,null,4]", en: "[1,2,3,null,4]" },
+        },
+      ],
+      initial() { return { tree: arranque }; },
+      parse(state) {
+        const r = VIS.parse.treeArray(state.tree, MAX_NODOS);
+        if (!r.ok) return { ok: false, field: "tree", error: r.error };
+        return { ok: true, input: r.arr };
+      },
+      previewSpec(arr) { return VIS.preview.tree(arr, ETIQUETA_ARBOL); },
+      hint,
     };
   };
 })();
@@ -1122,14 +1166,14 @@ git commit -m "Editor de texto con varios campos, vista previa en vivo y errores
 
 ### Task 5: Los ocho problemas de árbol
 
-Los ocho reciben el mismo arreglo de LeetCode y comparten `parse` y `previewSpec` a través de `VIS.parse.treeArray` y `VIS.preview.tree`. Solo cambian el árbol de partida y la instrucción.
+Los ocho reciben el mismo arreglo de LeetCode. Todos usan la fábrica `VIS.treeEditor(arranque, hint)`: una línea por problema. Solo cambian el árbol de partida y la instrucción.
 
 **Files:**
-- Modify: `rep-visual/js/problems/{98,103,124,199,297,337,543,987}.js`
+- Modify: `rep-visual/js/problems/{98,103,124,199,297,337,543,987}.js` — una línea `editor:` en cada uno
 - Modify: `rep-visual/tools/test-editors.js`
 
 **Interfaces:**
-- Consumes: `VIS.parse.treeArray(text, maxNodes)`, `VIS.preview.tree(arr, label)` (Task 3); `kind: "text"` (Task 4).
+- Consumes: `VIS.treeEditor(arranque, hint)` (Task 3); `kind: "text"` (Task 4).
 - Produces: `PROBLEMS[n].editor` con `kind: "text"` y un solo campo `tree`, para los ocho.
 
 - [ ] **Step 1: Escribir el test que falla**
@@ -1180,6 +1224,14 @@ console.log("\n── Árboles (un arreglo de LeetCode) ──");
   ok("543 acepta una cadena escrita a mano", cadena.ok === true);
   const st = P["543"].build(cadena.input);
   ok("543 sobre la cadena da diámetro 3", /3/.test(st[st.length - 1].note.es));
+
+  // Salen todos de la misma fábrica, pero cada uno con su propio estado: si
+  // compartieran el objeto, escribir en un problema cambiaría el de al lado.
+  const a = P["98"].editor, b = P["543"].editor;
+  ok("cada problema tiene su propio descriptor", a !== b);
+  ok("y su propio árbol de partida", a.initial().tree !== b.initial().tree);
+  ok("los ocho comparten el mismo parse (viene de la fábrica)",
+     Object.keys(ARBOLES).every((n) => typeof P[n].editor.parse === "function"));
 }
 ```
 
@@ -1193,53 +1245,83 @@ Esperado: FALLA con `TypeError: Cannot read properties of undefined (reading 'ki
 
 - [ ] **Step 3: Escribir los ocho editores**
 
-El descriptor es el mismo en los ocho: solo cambian el árbol de partida y las dos
-líneas del `hint`. **Éste es el de `103.js`, completo y literal**, insertado entre
-el cierre de `cases: [ ... ],` y `build(input) {`:
+Cada problema usa la fábrica `VIS.treeEditor(arranque, hint)` de la Task 3. En
+cada archivo, insertar entre el cierre de `cases: [ ... ],` y `build(input) {` la
+línea que le corresponde. **Éste es el de `103.js`, completo y literal**:
 
 ```js
     // Modo interactivo: escribe el árbol en la notación de LeetCode (por
     // niveles, con null para los huecos) y se dibuja mientras escribes.
-    editor: {
-      kind: "text",
-      fields: [
-        {
-          id: "tree",
-          label: { es: "Árbol", en: "Tree" },
-          placeholder: { es: "[1,2,3,null,4]", en: "[1,2,3,null,4]" },
-        },
-      ],
-      initial() { return { tree: "[3,9,20,null,null,15,7]" }; },
-      parse(state) {
-        const r = VIS.parse.treeArray(state.tree, 31);
-        if (!r.ok) return { ok: false, field: "tree", error: r.error };
-        return { ok: true, input: r.arr };
-      },
-      previewSpec(arr) {
-        return VIS.preview.tree(arr, { es: "Árbol", en: "Tree" });
-      },
-      hint: {
-        es: "Escribe el árbol por niveles, con null para los huecos, y míralo recorrer en zigzag. Luego pulsa Ejecutar.",
-        en: "Type the tree level by level, with null for the gaps, and watch the zigzag traversal. Then press Run.",
-      },
-    },
+    editor: VIS.treeEditor("[3,9,20,null,null,15,7]", {
+      es: "Escribe el árbol por niveles, con null para los huecos, y míralo recorrer en zigzag. Luego pulsa Ejecutar.",
+      en: "Type the tree level by level, with null for the gaps, and watch the zigzag traversal. Then press Run.",
+    }),
 
 ```
 
-Los otros siete son idénticos salvo la cadena de `initial()` y las dos del `hint`.
-Copia el bloque de arriba en cada archivo y cambia **solo** esas tres cadenas por
-las de la tabla (`103` ya está hecho):
+Los otros siete son la misma línea con otros dos argumentos. El comentario de
+arriba se copia tal cual en los ocho. Argumentos exactos:
 
-| Archivo | `ARRANQUE` | `HINT_ES` | `HINT_EN` |
-|---|---|---|---|
-| `98.js` | `[2,1,3]` | `Escribe un árbol y comprueba si es un BST. Prueba [5,1,4,null,null,3,6], que no lo es. Luego pulsa Ejecutar.` | `Type a tree and check whether it is a BST. Try [5,1,4,null,null,3,6], which is not. Then press Run.` |
-| `103.js` | `[3,9,20,null,null,15,7]` | `Escribe el árbol por niveles, con null para los huecos, y míralo recorrer en zigzag. Luego pulsa Ejecutar.` | `Type the tree level by level, with null for the gaps, and watch the zigzag traversal. Then press Run.` |
-| `124.js` | `[1,2,3]` | `Escribe un árbol y busca el camino de suma máxima. Prueba [-10,9,20,null,null,15,7]. Luego pulsa Ejecutar.` | `Type a tree and find the maximum path sum. Try [-10,9,20,null,null,15,7]. Then press Run.` |
-| `199.js` | `[1,2,3,null,5,null,4]` | `Escribe el árbol y mira qué nodos se ven desde la derecha. Luego pulsa Ejecutar.` | `Type the tree and see which nodes are visible from the right. Then press Run.` |
-| `297.js` | `[1,2,3,null,null,4,5]` | `Escribe el árbol y míralo convertirse en una cadena de texto. Luego pulsa Ejecutar.` | `Type the tree and watch it turn into a string. Then press Run.` |
-| `337.js` | `[3,2,3,null,3,null,1]` | `Escribe el árbol de casas y busca el botín máximo sin robar dos casas vecinas. Luego pulsa Ejecutar.` | `Type the tree of houses and find the maximum loot without robbing two adjacent houses. Then press Run.` |
-| `543.js` | `[1,2,3,4,5]` | `Escribe el árbol y mide su diámetro: el camino más largo entre dos nodos. Luego pulsa Ejecutar.` | `Type the tree and measure its diameter: the longest path between two nodes. Then press Run.` |
-| `987.js` | `[3,9,20,null,null,15,7]` | `Escribe el árbol y míralo recorrer por columnas, de izquierda a derecha. Luego pulsa Ejecutar.` | `Type the tree and watch the column-by-column traversal, left to right. Then press Run.` |
+`98.js`
+```js
+    editor: VIS.treeEditor("[2,1,3]", {
+      es: "Escribe un árbol y comprueba si es un BST. Prueba [5,1,4,null,null,3,6], que no lo es. Luego pulsa Ejecutar.",
+      en: "Type a tree and check whether it is a BST. Try [5,1,4,null,null,3,6], which is not. Then press Run.",
+    }),
+```
+
+`124.js`
+```js
+    editor: VIS.treeEditor("[1,2,3]", {
+      es: "Escribe un árbol y busca el camino de suma máxima. Prueba [-10,9,20,null,null,15,7]. Luego pulsa Ejecutar.",
+      en: "Type a tree and find the maximum path sum. Try [-10,9,20,null,null,15,7]. Then press Run.",
+    }),
+```
+
+`199.js`
+```js
+    editor: VIS.treeEditor("[1,2,3,null,5,null,4]", {
+      es: "Escribe el árbol y mira qué nodos se ven desde la derecha. Luego pulsa Ejecutar.",
+      en: "Type the tree and see which nodes are visible from the right. Then press Run.",
+    }),
+```
+
+`297.js`
+```js
+    editor: VIS.treeEditor("[1,2,3,null,null,4,5]", {
+      es: "Escribe el árbol y míralo convertirse en una cadena de texto. Luego pulsa Ejecutar.",
+      en: "Type the tree and watch it turn into a string. Then press Run.",
+    }),
+```
+
+`337.js`
+```js
+    editor: VIS.treeEditor("[3,2,3,null,3,null,1]", {
+      es: "Escribe el árbol de casas y busca el botín máximo sin robar dos casas vecinas. Luego pulsa Ejecutar.",
+      en: "Type the tree of houses and find the maximum loot without robbing two adjacent houses. Then press Run.",
+    }),
+```
+
+`543.js`
+```js
+    editor: VIS.treeEditor("[1,2,3,4,5]", {
+      es: "Escribe el árbol y mide su diámetro: el camino más largo entre dos nodos. Luego pulsa Ejecutar.",
+      en: "Type the tree and measure its diameter: the longest path between two nodes. Then press Run.",
+    }),
+```
+
+`987.js`
+```js
+    editor: VIS.treeEditor("[3,9,20,null,null,15,7]", {
+      es: "Escribe el árbol y míralo recorrer por columnas, de izquierda a derecha. Luego pulsa Ejecutar.",
+      en: "Type the tree and watch the column-by-column traversal, left to right. Then press Run.",
+    }),
+```
+
+**Ojo con el orden de carga:** `VIS.treeEditor` se invoca al cargar el módulo del
+problema, así que `js/editors.js` tiene que estar cargado antes. En el navegador
+lo garantiza el `<script>` de la Task 3; en los tests, la lista de archivos que
+carga el `vm`.
 
 - [ ] **Step 4: Ejecutar y verificar que pasa**
 
