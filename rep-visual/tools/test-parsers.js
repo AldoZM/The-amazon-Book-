@@ -132,6 +132,17 @@ ok("campo(): etiqueta bilingüe", typeof campo.label.es === "string" && typeof c
 ok("campo(): marcador de posición bilingüe", typeof campo.placeholder.es === "string");
 ok("campo() devuelve un objeto nuevo cada vez", VIS.arbol.campo() !== campo);
 
+// El comentario promete objetos nuevos en cada llamada: mutar el label o el
+// placeholder de una llamada no debe filtrarse a otra.
+const campoMutable = VIS.arbol.campo();
+campoMutable.label.es = "MUTADO";
+ok("mutar campo().label no afecta a otra llamada", VIS.arbol.campo().label.es !== "MUTADO");
+campoMutable.placeholder.es = "MUTADO";
+ok("mutar campo().placeholder no afecta a otra llamada", VIS.arbol.campo().placeholder.es !== "MUTADO");
+
+ok("dos treeEditor no comparten el label del campo",
+   VIS.treeEditor("[1]", hint).fields[0].label !== VIS.treeEditor("[2]", hint).fields[0].label);
+
 const bien = VIS.arbol.parseCon({ tree: "[1,2,3]", p: "2", q: "3" }, ["p", "q"]);
 eq("parseCon(): ok", bien.ok, true);
 eq("parseCon(): devuelve el árbol parseado", bien.input.tree, [1, 2, 3]);
@@ -147,6 +158,13 @@ ok("parseCon(): con mensaje bilingüe", typeof roto.error.es === "string" && typ
 const dieciseis = "[" + Array.from({ length: 16 }, (_, i) => i + 1).join(",") + "]";
 eq("parseCon(): aplica el límite de nodos del módulo", VIS.arbol.parseCon({ tree: dieciseis }, []).ok, false);
 ok("parseCon(): y el mensaje nombra el máximo", /15/.test(VIS.arbol.parseCon({ tree: dieciseis }, []).error.es));
+
+// Un campo nombrado que no está en state no debe colarse como NaN silencioso.
+const faltante = VIS.arbol.parseCon({ tree: "[1,2,3]" }, ["p"]);
+eq("parseCon(): campo numérico ausente, ok:false", faltante.ok, false);
+eq("parseCon(): y señala el campo culpable", faltante.field, "p");
+ok("parseCon(): el mensaje nombra el campo p",
+   /p/.test(faltante.error.es) && /p/.test(faltante.error.en));
 
 /* ------------------------------------- vista previa con nodos resaltados */
 const sinResaltar = VIS.preview.tree([1, 2, 3], { es: "a", en: "a" });

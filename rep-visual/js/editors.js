@@ -148,11 +148,13 @@
   };
 
   /* El campo de texto del árbol es idéntico en los tres editores que lo usan.
-     Se devuelve un objeto nuevo en cada llamada: si se compartiera, mutar el
-     campo de un problema cambiaría el de los otros.                          */
+     Se devuelve un objeto nuevo en cada llamada, incluidos `label` y
+     `placeholder`: si se compartieran, mutar el campo de un problema
+     cambiaría el de los otros.                                              */
   VIS.arbol.campo = function () {
     return {
-      id: "tree", type: "text", label: ETIQUETA_ARBOL,
+      id: "tree", type: "text",
+      label: { es: ETIQUETA_ARBOL.es, en: ETIQUETA_ARBOL.en },
       placeholder: { es: "[1,2,3,null,4]", en: "[1,2,3,null,4]" },
     };
   };
@@ -161,12 +163,25 @@
 
      Existe para que el límite de nodos y el manejo del error del árbol vivan en
      un solo sitio: 236 y 1644 tenían un `parse` idéntico carácter a carácter, y
-     863 solo cambiaba los nombres de sus dos parámetros.                      */
+     863 solo cambiaba los nombres de sus dos parámetros.
+
+     Si un campo nombrado no está en `state` (o no es un número), se rechaza
+     con un error que nombra el campo culpable: dejarlo pasar produciría un
+     NaN silencioso que llega hasta build() sin ningún mensaje.               */
   VIS.arbol.parseCon = function (state, numericos) {
     const r = VIS.parse.treeArray(state.tree, MAX_NODOS);
     if (!r.ok) return { ok: false, field: "tree", error: r.error };
     const input = { tree: r.arr };
-    (numericos || []).forEach((id) => { input[id] = Number(state[id]); });
+    for (const id of numericos || []) {
+      const n = Number(state[id]);
+      if (Number.isNaN(n)) {
+        return { ok: false, field: id, error: {
+          es: `"${id}" tiene que ser un número.`,
+          en: `"${id}" must be a number.`,
+        } };
+      }
+      input[id] = n;
+    }
     return { ok: true, input };
   };
 
@@ -177,13 +192,7 @@
   VIS.treeEditor = function (arranque, hint) {
     return {
       kind: "text",
-      fields: [
-        {
-          id: "tree",
-          label: ETIQUETA_ARBOL,
-          placeholder: { es: "[1,2,3,null,4]", en: "[1,2,3,null,4]" },
-        },
-      ],
+      fields: [VIS.arbol.campo()],
       initial() { return { tree: arranque }; },
       parse(state) {
         const r = VIS.parse.treeArray(state.tree, MAX_NODOS);
