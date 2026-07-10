@@ -53,6 +53,30 @@
       { name: L("Inválido: abc,ab", "Invalid: abc,ab"), input: ["abc","ab"] },
     ],
 
+    editor: {
+      kind: "text",
+      fields: [
+        { id: "words", type: "text", label: L("words:", "words:"), placeholder: L("ej. [\"wrt\",\"wrf\"]", "ex. [\"wrt\",\"wrf\"]") }
+      ],
+      initial() {
+        return { words: '["wrt","wrf","er","ett","rftt"]' };
+      },
+      parse(state) {
+        const w = VIS.parse.stringArray(state.words, 15);
+        if (!w.ok) return { ok: false, field: "words", error: w.error };
+        for (const word of w.arr) {
+          if (!/^[a-zA-Z]+$/.test(word)) {
+            return { ok: false, field: "words", error: L(`La palabra "${word}" contiene caracteres inválidos.`, `Word "${word}" contains invalid characters.`) };
+          }
+        }
+        return { ok: true, input: w.arr };
+      },
+      previewSpec(input) {
+        return { type: "list", label: L("Palabras del diccionario", "Dictionary words"), items: input.map((w) => ({ v: w, cls: "" })) };
+      },
+      hint: L("Solo letras sin espacios.", "Only letters without spaces.")
+    },
+
     build(input) {
       const words = input;
       const chars = Array.from(new Set(words.join("").split(""))).sort();

@@ -217,5 +217,20 @@ if (WE.ok) eq("weightedEdgeList(): devuelve aristas", WE.edges, [[2,1,1],[2,3,1]
 const WEbad = VIS.parse.weightedEdgeList ? VIS.parse.weightedEdgeList("[[2,1]]", 5) : {ok:true};
 eq("weightedEdgeList(): error si no tiene 3 elementos", WEbad.ok, false);
 
+console.log("\n── Fase 5 (stringArray) ──");
+const SA = VIS.parse.stringArray ? VIS.parse.stringArray('["hot", "dot", "dog"]', 10) : {ok:false};
+eq("stringArray(): parsea formato correcto", SA.ok, true);
+if (SA.ok) eq("stringArray(): devuelve los strings", SA.arr, ["hot", "dot", "dog"]);
+
+const SA2 = VIS.parse.stringArray ? VIS.parse.stringArray("['hot', 'dot']", 10) : {ok:false};
+eq("stringArray(): comillas simples", SA2.ok, true);
+if (SA2.ok) eq("stringArray(): devuelve sin comillas simples", SA2.arr, ["hot", "dot"]);
+
+const SAbad1 = VIS.parse.stringArray ? VIS.parse.stringArray('["hot",', 10) : {ok:true};
+eq("stringArray(): corchete sin cerrar", SAbad1.ok, false);
+
+const SAbad2 = VIS.parse.stringArray ? VIS.parse.stringArray('["1","2","3"]', 2) : {ok:true};
+eq("stringArray(): límite excedido", SAbad2.ok, false);
+
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
 process.exit(fails ? 1 : 0);

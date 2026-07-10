@@ -36,6 +36,25 @@
       { name: L("[0,3,7,2,5,8,4,6,0,1] → 9", "[0,3,7,2,5,8,4,6,0,1] → 9"), input: [0,3,7,2,5,8,4,6,0,1] },
     ],
 
+    editor: {
+      kind: "text",
+      fields: [
+        { id: "nums", type: "text", label: L("nums:", "nums:"), placeholder: L("ej. [100,4,200,1,3,2]", "ex. [100,4,200,1,3,2]") }
+      ],
+      initial() {
+        return { nums: "[100,4,200,1,3,2]" };
+      },
+      parse(state) {
+        const n = VIS.parse.numberArray(state.nums, 15);
+        if (!n.ok) return { ok: false, field: "nums", error: n.error };
+        return { ok: true, input: n.arr };
+      },
+      previewSpec(input) {
+        return { type: "list", label: L("Números", "Numbers"), items: input.map((v) => ({ v, cls: "" })) };
+      },
+      hint: L("Ingresa un arreglo de números enteros.", "Enter an array of integers.")
+    },
+
     build(input) {
       const conj = new Set(input);
       const orden = Array.from(conj).sort((a, b) => a - b);

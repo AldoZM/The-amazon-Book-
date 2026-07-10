@@ -136,6 +136,35 @@
     return { ok: true, arr };
   };
 
+  VIS.parse.stringArray = function (text, maxItems) {
+    let s = String(text == null ? "" : text).trim();
+    if (!s) return err("Escribe un arreglo de palabras, ej: [\"hot\",\"dot\"].", "Type a word array, ex: [\"hot\",\"dot\"].");
+    
+    const abre = s.startsWith("["), cierra = s.endsWith("]");
+    if (abre !== cierra) {
+      return abre ? err("Falta cerrar el corchete.", "The bracket is not closed.")
+                  : err("Falta abrir el corchete.", "The bracket is not opened.");
+    }
+    if (abre) s = s.slice(1, -1).trim();
+    if (!s) return { ok: true, arr: [] };
+
+    const partes = s.split(",");
+    const arr = [];
+    for (const bruto of partes) {
+      let t = bruto.trim();
+      if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+        t = t.slice(1, -1);
+      }
+      arr.push(t);
+    }
+    
+    if (arr.length > maxItems) {
+      return err(`Demasiadas palabras: ${arr.length}. El límite es ${maxItems}.`, `Too many words: ${arr.length}. The limit is ${maxItems}.`);
+    }
+    
+    return { ok: true, arr };
+  };
+
   VIS.parse.weightedEdgeList = function (text, maxNodos) {
     let s = String(text == null ? "" : text).trim();
     if (!s) return err("Escribe aristas con peso, ej: [[0,1,100]].", "Type weighted edges, ex: [[0,1,100]].");

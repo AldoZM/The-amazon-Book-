@@ -41,6 +41,53 @@
       { name: L("hit → cog sin puente (0)", "hit → cog no bridge (0)"), input: { begin: "hit", end: "cog", words: ["hot","dot","dog","lot","log"] } },
     ],
 
+    editor: {
+      kind: "text",
+      fields: [
+        { id: "begin", type: "text", label: L("beginWord:", "beginWord:"), placeholder: L("ej. hit", "ex. hit") },
+        { id: "end", type: "text", label: L("endWord:", "endWord:"), placeholder: L("ej. cog", "ex. cog") },
+        { id: "words", type: "text", label: L("wordList:", "wordList:"), placeholder: L("ej. [\"hot\",\"dot\"]", "ex. [\"hot\",\"dot\"]") }
+      ],
+      initial() {
+        return { begin: "hit", end: "cog", words: '["hot","dot","dog","lot","log","cog"]' };
+      },
+      parse(state) {
+        const b = (state.begin || "").trim();
+        const e = (state.end || "").trim();
+        if (!b) return { ok: false, field: "begin", error: L("Falta beginWord.", "Missing beginWord.") };
+        if (!e) return { ok: false, field: "end", error: L("Falta endWord.", "Missing endWord.") };
+        if (b.length !== e.length) return { ok: false, field: "end", error: L("endWord debe tener la misma longitud.", "endWord must have the same length.") };
+        
+        const w = VIS.parse.stringArray(state.words, 15);
+        if (!w.ok) return { ok: false, field: "words", error: w.error };
+        for (const word of w.arr) {
+          if (word.length !== b.length) return { ok: false, field: "words", error: L(`La palabra "${word}" tiene longitud distinta.`, `Word "${word}" has different length.`) };
+        }
+        
+        return { ok: true, input: { begin: b, end: e, words: w.arr } };
+      },
+      previewSpec(input) {
+        const nodes = [];
+        const edges = [];
+        const allWords = Array.from(new Set([input.begin, ...input.words]));
+        const pos = VIS.circleLayout(allWords.length, 160, 150, Math.min(120, 40 + allWords.length * 14));
+        allWords.forEach((w, i) => {
+          nodes.push({ id: w, label: w, x: pos[i][0], y: pos[i][1], cls: w === input.begin ? "current" : (w === input.end ? "target" : "") });
+        });
+        for (let i = 0; i < allWords.length; i++) {
+          for (let j = i + 1; j < allWords.length; j++) {
+            let diff = 0;
+            for (let k = 0; k < allWords[i].length; k++) {
+              if (allWords[i][k] !== allWords[j][k]) diff++;
+            }
+            if (diff === 1) edges.push({ from: allWords[i], to: allWords[j], directed: false });
+          }
+        }
+        return { type: "graph", label: L("Grafo implícito (difieren en 1 letra)", "Implicit graph (differ by 1 letter)"), r: 18, nodes, edges };
+      },
+      hint: L("Las palabras deben tener la misma longitud.", "Words must have the same length.")
+    },
+
     build(input) {
       const dicc = new Set(input.words);
       const steps = [];

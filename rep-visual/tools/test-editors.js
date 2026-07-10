@@ -39,7 +39,7 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
-const NUMS = ["79", "98", "103", "105", "124", "133", "199", "200", "207", "210", "236", "261", "297", "323", "337", "417",
+const NUMS = ["79", "98", "103", "105", "124", "126", "127", "128", "133", "199", "200", "207", "210", "236", "261", "269", "297", "323", "337", "417",
               "542", "543", "547", "695", "743", "787", "863", "987", "994", "1091", "1192", "1644"];
 for (const f of ["js/i18n.js", "js/renderers.js", "js/editors.js"])
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), "utf8"), sandbox, { filename: f });
@@ -523,6 +523,34 @@ console.log("\n── Fase 4b (105, 743, 787) ──");
   const e787 = P["787"].editor;
   const m787 = e787.parse({ flights: "[[0,1,100]]", n: "3", src: "5", dst: "2", K: "0" });
   eq("787: rechaza src fuera de rango", m787.ok, false);
+}
+
+/* ------------------------------------------------- Fase 5 */
+console.log("\n── Fase 5 (126, 127, 269, 128) ──");
+{
+  if (P["126"] && P["126"].editor) {
+    const e126 = P["126"].editor;
+    const m126 = e126.parse({ begin: "hit", end: "cog", words: '["hot", "dot", "to"]' });
+    eq("126: rechaza longitud diferente en words", m126.ok, false);
+  }
+  
+  if (P["127"] && P["127"].editor) {
+    const e127 = P["127"].editor;
+    const m127 = e127.parse({ begin: "hit", end: "c", words: '["hot", "dot"]' });
+    eq("127: señala end si tiene distinta longitud que begin", m127.field, "end");
+  }
+
+  if (P["269"] && P["269"].editor) {
+    const e269 = P["269"].editor;
+    const m269 = e269.parse({ words: '["wrt", "wrf", "w t"]' });
+    eq("269: rechaza palabras con espacios u otros caracteres", m269.ok, false);
+  }
+
+  if (P["128"] && P["128"].editor) {
+    const e128 = P["128"].editor;
+    const m128 = e128.parse({ nums: '[100, 4, a]' });
+    eq("128: rechaza arreglo numérico mal formado", m128.ok, false);
+  }
 }
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
