@@ -181,5 +181,26 @@ ok("VIS.renderers sabe pintarlo", typeof VIS.renderers[conResaltado.type] === "f
 const conFantasma = VIS.preview.tree([1, 2, 3], { es: "a", en: "a" }, [2, 99]);
 eq("un resaltado inexistente no rompe", conFantasma.nodes.filter((n) => n.cls === "target").length, 1);
 
+/* ------------------------------------------------- parsers de grafos */
+console.log("\n── Parsers de Grafos ──");
+
+// edgeList
+const EL = VIS.parse.edgeList("[[0,1],[1,2]]", 3);
+eq("edgeList(): parsea formato correcto", EL.ok, true);
+eq("edgeList(): devuelve las aristas", EL.edges, [[0,1], [1,2]]);
+eq("edgeList(): devuelve n basado en maxNodo + 1", EL.n, 3);
+eq("edgeList(): rechaza si un nodo supera maxNodos", VIS.parse.edgeList("[[0,5]]", 5).ok, false);
+eq("edgeList(): mensaje especifica el nodo infractor", /5/.test(VIS.parse.edgeList("[[0,5]]", 5).error.es), true);
+
+// prereqList (igual a edgeList pero devuelve formato {n, prereqs})
+const PL = VIS.parse.prereqList("[[1,0]]", 5);
+eq("prereqList(): parsea y devuelve prereqs", PL.ok, true);
+eq("prereqList(): la llave es prereqs", PL.prereqs, [[1,0]]);
+
+// adjList (1-indexed por Leetcode en 133, pero aquí devolvemos 0-indexed tal cual lo pide la fábrica visual o lo usamos 1-indexed? Leetcode 133 usa 1-indexed: [[2,4],[1,3],[2,4],[1,3]]. Nuestro parser lo mapea a la forma requerida).
+const AL = VIS.parse.adjList("[[2,4],[1,3],[2,4],[1,3]]", 10);
+eq("adjList(): parsea formato correcto", AL.ok, true);
+eq("adjList(): adj es un array de arrays", AL.adj, [[2,4], [1,3], [2,4], [1,3]]);
+
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
 process.exit(fails ? 1 : 0);

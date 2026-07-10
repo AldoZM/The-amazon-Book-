@@ -55,6 +55,54 @@
     return { ok: true, arr };
   };
 
+  VIS.parse.edgeList = function (text, maxNodos) {
+    let s = String(text == null ? "" : text).trim();
+    if (!s) return err("Escribe aristas, ej: [[0,1]].", "Type edges, ex: [[0,1]].");
+    let arr;
+    try { arr = JSON.parse(s); }
+    catch (e) { return err("Sintaxis inválida. Verifica corchetes.", "Invalid syntax. Check brackets."); }
+    if (!Array.isArray(arr)) return err("Debe ser una lista de listas.", "Must be a list of lists.");
+    
+    let maxFound = -1;
+    for (const edge of arr) {
+      if (!Array.isArray(edge) || edge.length !== 2) return err("Cada arista debe tener 2 nodos.", "Each edge must have 2 nodes.");
+      for (const node of edge) {
+        if (!Number.isInteger(node) || node < 0) return err(`Nodo inválido: ${node}.`, `Invalid node: ${node}.`);
+        if (node >= maxNodos) return err(`El nodo ${node} supera el límite de ${maxNodos - 1}.`, `Node ${node} exceeds the limit of ${maxNodos - 1}.`);
+        if (node > maxFound) maxFound = node;
+      }
+    }
+    return { ok: true, edges: arr, n: Math.max(0, maxFound + 1) };
+  };
+
+  VIS.parse.prereqList = function (text, maxNodos) {
+    const res = VIS.parse.edgeList(text, maxNodos);
+    if (!res.ok) return res;
+    return { ok: true, prereqs: res.edges, n: res.n };
+  };
+
+  VIS.parse.adjList = function (text, maxNodos) {
+    let s = String(text == null ? "" : text).trim();
+    if (!s) return err("Escribe adyacencias, ej: [[2,4],[1,3]].", "Type adjacencies, ex: [[2,4],[1,3]].");
+    let arr;
+    try { arr = JSON.parse(s); }
+    catch (e) { return err("Sintaxis inválida. Verifica corchetes.", "Invalid syntax. Check brackets."); }
+    if (!Array.isArray(arr)) return err("Debe ser una lista de listas.", "Must be a list of lists.");
+    
+    let n = arr.length;
+    if (n > maxNodos) return err(`Demasiados nodos: ${n}. Caben ${maxNodos}.`, `Too many nodes: ${n}. The limit is ${maxNodos}.`);
+    
+    for (const edge of arr) {
+      if (!Array.isArray(edge)) return err("Debe ser una lista de listas.", "Must be a list of lists.");
+      for (const node of edge) {
+        if (!Number.isInteger(node) || node < 1) return err(`Nodo inválido: ${node}.`, `Invalid node: ${node}.`);
+        // En LeetCode 133, los nodos van de 1 a n
+        if (node > n) return err(`El nodo ${node} no existe, hay ${n}.`, `Node ${node} does not exist, there are ${n}.`);
+      }
+    }
+    return { ok: true, adj: arr, n: n };
+  };
+
   /* Vista previa de un árbol, con los mismos ayudantes que usa build().
      `resaltados` es opcional: los nodos cuyo valor esté en la lista se pintan
      con la clase `target`, la misma que usa build() para marcar lo buscado.
