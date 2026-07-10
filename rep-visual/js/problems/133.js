@@ -34,9 +34,19 @@
     ],
     code: C,
     cases: [
-      { name: L("4 nodos en ciclo", "4 nodes in a cycle"), input: { n: 4, adj: [[1,3],[0,2],[1,3],[0,2]] } },
-      { name: L("Triángulo", "Triangle"), input: { n: 3, adj: [[1,2],[0,2],[0,1]] } },
+      { name: L("Cuadrado (4 nodos)", "Square (4 nodes)"), input: { n: 4, adj: [[1,3],[0,2],[1,3],[0,2]] } },
+      { name: L("Un solo nodo", "Single node"), input: { n: 1, adj: [[]] } },
+      { name: L("Grafo vacío", "Empty graph"), input: { n: 0, adj: [] } },
     ],
+
+    editor: VIS.graphEditor({
+      id: 133,
+      maxNodos: 15,
+      directed: false,
+      defaultInput: "[[2,4],[1,3],[2,4],[1,3]]",
+      parser: VIS.parse.adjList,
+      hint: L("Adyacencias (1-indexed), ej: [[2,4]]", "Adjacencies (1-indexed), ex: [[2,4]]")
+    }),
 
     build(input) {
       const n = input.n, adj = input.adj;
@@ -54,6 +64,11 @@
           edges },
         list: { label: L("Nodos clonados", "Cloned nodes"), items: Array.from(copia).sort((a, b) => a - b) },
         vars: [{ k: L("aristas clon", "clone edges"), v: clonAristas.length }] });
+
+      if (n === 0) {
+        snap(L("El grafo está vacío, no hay nada que clonar.", "The graph is empty, nothing to clone."), [A.esNulo, A.retNulo]);
+        return steps;
+      }
 
       const cola = [0];
       copia.add(0);

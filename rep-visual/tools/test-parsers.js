@@ -197,10 +197,10 @@ const PL = VIS.parse.prereqList("[[1,0]]", 5);
 eq("prereqList(): parsea y devuelve prereqs", PL.ok, true);
 eq("prereqList(): la llave es prereqs", PL.prereqs, [[1,0]]);
 
-// adjList (1-indexed por Leetcode en 133, pero aquí devolvemos 0-indexed tal cual lo pide la fábrica visual o lo usamos 1-indexed? Leetcode 133 usa 1-indexed: [[2,4],[1,3],[2,4],[1,3]]. Nuestro parser lo mapea a la forma requerida).
+// adjList (1-indexed por Leetcode en 133, pero lo mapeamos internamente a 0-indexed)
 const AL = VIS.parse.adjList("[[2,4],[1,3],[2,4],[1,3]]", 10);
 eq("adjList(): parsea formato correcto", AL.ok, true);
-eq("adjList(): adj es un array de arrays", AL.adj, [[2,4], [1,3], [2,4], [1,3]]);
+eq("adjList(): adj mapea a 0-indexed internamente", AL.adj, [[1,3], [0,2], [1,3], [0,2]]);
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
 process.exit(fails ? 1 : 0);

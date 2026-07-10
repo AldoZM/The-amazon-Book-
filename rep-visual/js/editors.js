@@ -92,15 +92,18 @@
     let n = arr.length;
     if (n > maxNodos) return err(`Demasiados nodos: ${n}. Caben ${maxNodos}.`, `Too many nodes: ${n}. The limit is ${maxNodos}.`);
     
+    const adj0 = [];
     for (const edge of arr) {
       if (!Array.isArray(edge)) return err("Debe ser una lista de listas.", "Must be a list of lists.");
+      const vec0 = [];
       for (const node of edge) {
         if (!Number.isInteger(node) || node < 1) return err(`Nodo inválido: ${node}.`, `Invalid node: ${node}.`);
-        // En LeetCode 133, los nodos van de 1 a n
         if (node > n) return err(`El nodo ${node} no existe, hay ${n}.`, `Node ${node} does not exist, there are ${n}.`);
+        vec0.push(node - 1);
       }
+      adj0.push(vec0);
     }
-    return { ok: true, adj: arr, n: n };
+    return { ok: true, adj: adj0, n: n };
   };
 
   /* Vista previa de un grafo general.
@@ -111,7 +114,9 @@
     const pos = VIS.circleLayout(n, 150, 150, 100);
     const nodes = [];
     for (let i = 0; i < n; i++) {
-      nodes.push({ id: i, label: String(i), x: pos[i][0], y: pos[i][1], cls: "" });
+      // Si usamos adjList (LeetCode 133), las etiquetas suelen ser 1-indexed.
+      const lbl = input.adj ? String(i + 1) : String(i);
+      nodes.push({ id: i, label: lbl, x: pos[i][0], y: pos[i][1], cls: "" });
     }
 
     const edges = [];
@@ -124,16 +129,11 @@
         edges.push({ from: e[1], to: e[0], directed: input.directed });
       });
     } else if (input.adj) {
-      input.adj.forEach((vecinos, i) => {
-        const u = i + 1;
+      input.adj.forEach((vecinos, u) => {
         vecinos.forEach(v => {
           if (u < v) edges.push({ from: u, to: v, directed: false });
         });
       });
-      for (let i = 0; i < n; i++) {
-        nodes[i].id = i + 1;
-        nodes[i].label = String(i + 1);
-      }
     }
 
     return {

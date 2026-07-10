@@ -41,10 +41,19 @@
     ],
     code: C,
     cases: [
-      { name: L("Árbol válido", "Valid tree"), input: { n: 5, edges: [[0,1],[0,2],[0,3],[1,4]] } },
-      { name: L("Con ciclo", "With cycle"), input: { n: 4, edges: [[0,1],[1,2],[2,0],[2,3]] } },
-      { name: L("Desconectado", "Disconnected"), input: { n: 4, edges: [[0,1],[2,3]] } },
+      { name: L("Árbol válido (n=5)", "Valid tree (n=5)"), input: { n: 5, edges: [[0,1],[0,2],[0,3],[1,4]] } },
+      { name: L("Con ciclo (falso)", "With cycle (false)"), input: { n: 5, edges: [[0,1],[1,2],[2,3],[1,3],[1,4]] } },
+      { name: L("Desconectado (falso)", "Disconnected (false)"), input: { n: 4, edges: [[0,1],[2,3]] } },
     ],
+
+    editor: VIS.graphEditor({
+      id: 261,
+      maxNodos: 15,
+      directed: false,
+      defaultInput: "[[0,1],[0,2],[0,3],[1,4]]",
+      parser: VIS.parse.edgeList,
+      hint: L("Ej: [[0,1]] (arista 0-1)", "Ex: [[0,1]] (edge 0-1)")
+    }),
 
     build(input) {
       const n = input.n, edges = input.edges;

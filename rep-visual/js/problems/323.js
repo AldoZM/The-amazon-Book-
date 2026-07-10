@@ -38,9 +38,18 @@
     code: C,
     cases: [
       { name: L("2 componentes", "2 components"), input: { n: 5, edges: [[0,1],[1,2],[3,4]] } },
-      { name: L("1 componente", "1 component"), input: { n: 4, edges: [[0,1],[1,2],[2,3]] } },
-      { name: L("Arista redundante", "Redundant edge"), input: { n: 3, edges: [[0,1],[1,2],[0,2]] } },
+      { name: L("Con ciclo", "With cycle"), input: { n: 5, edges: [[0,1],[1,2],[2,0],[3,4]] } },
+      { name: L("Sin aristas", "No edges"), input: { n: 3, edges: [] } },
     ],
+
+    editor: VIS.graphEditor({
+      id: 323,
+      maxNodos: 15,
+      directed: false,
+      defaultInput: "[[0,1],[1,2],[3,4]]",
+      parser: VIS.parse.edgeList,
+      hint: L("Ej: [[0,1]] (arista 0-1)", "Ex: [[0,1]] (edge 0-1)")
+    }),
 
     build(input) {
       const n = input.n, edges = input.edges;

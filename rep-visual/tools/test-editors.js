@@ -39,8 +39,8 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
-const NUMS = ["79", "98", "103", "124", "199", "200", "236", "297", "337", "417",
-              "542", "543", "547", "695", "863", "987", "994", "1091", "1644"];
+const NUMS = ["79", "98", "103", "124", "133", "199", "200", "207", "210", "236", "261", "297", "323", "337", "417",
+              "542", "543", "547", "695", "863", "987", "994", "1091", "1192", "1644"];
 for (const f of ["js/i18n.js", "js/renderers.js", "js/editors.js"])
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), "utf8"), sandbox, { filename: f });
 for (const n of NUMS)

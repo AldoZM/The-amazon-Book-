@@ -46,9 +46,18 @@
     ],
     code: C,
     cases: [
-      { name: L("4 nodos, 1 puente", "4 nodes, 1 bridge"), input: { n: 4, edges: [[0,1],[1,2],[2,0],[1,3]] } },
-      { name: L("Cadena (todos puentes)", "Chain (all bridges)"), input: { n: 4, edges: [[0,1],[1,2],[2,3]] } },
+      { name: L("Triángulo con rama (1-3)", "Triangle with branch (1-3)"), input: { n: 4, edges: [[0,1],[1,2],[2,0],[1,3]] } },
+      { name: L("Dos triángulos unidos", "Two triangles joined"), input: { n: 6, edges: [[0,1],[1,2],[2,0],[2,3],[3,4],[4,5],[5,3]] } },
     ],
+
+    editor: VIS.graphEditor({
+      id: 1192,
+      maxNodos: 15,
+      directed: false,
+      defaultInput: "[[0,1],[1,2],[2,0],[1,3]]",
+      parser: VIS.parse.edgeList,
+      hint: L("Ej: [[0,1]] (conexión 0-1)", "Ex: [[0,1]] (connection 0-1)")
+    }),
 
     build(input) {
       const n = input.n, edges = input.edges;

@@ -44,6 +44,15 @@
       { name: L("Con ciclo → []", "With cycle → []"), input: { n: 2, prereqs: [[0,1],[1,0]] } },
     ],
 
+    editor: VIS.graphEditor({
+      id: 210,
+      maxNodos: 15,
+      directed: true,
+      defaultInput: "[[1,0],[2,0],[3,1],[3,2]]",
+      parser: VIS.parse.prereqList,
+      hint: L("Ej: [[1,0]] (para el 1, toma el 0)", "Ex: [[1,0]] (to take 1, take 0)")
+    }),
+
     build(input) {
       const n = input.n, prereqs = input.prereqs;
       const adj = Array.from({ length: n }, () => []);
