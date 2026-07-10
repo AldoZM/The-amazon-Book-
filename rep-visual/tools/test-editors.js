@@ -39,8 +39,8 @@ const sandbox = {
 sandbox.window = sandbox;
 vm.createContext(sandbox);
 
-const NUMS = ["79", "98", "103", "124", "133", "199", "200", "207", "210", "236", "261", "297", "323", "337", "417",
-              "542", "543", "547", "695", "863", "987", "994", "1091", "1192", "1644"];
+const NUMS = ["79", "98", "103", "105", "124", "133", "199", "200", "207", "210", "236", "261", "297", "323", "337", "417",
+              "542", "543", "547", "695", "743", "787", "863", "987", "994", "1091", "1192", "1644"];
 for (const f of ["js/i18n.js", "js/renderers.js", "js/editors.js"])
   vm.runInContext(fs.readFileSync(path.join(ROOT, f), "utf8"), sandbox, { filename: f });
 for (const n of NUMS)
@@ -497,6 +497,32 @@ console.log("\n── VIS.graphEditor (campo graph) ──");
   const spec = ed.previewSpec(bien.input);
   eq("previewSpec es un grafo", spec.type, "graph");
   ok("VIS.renderers sabe pintarlo", typeof sandbox.VIS.renderers[spec.type] === "function");
+}
+
+/* ------------------------------------------------- Fase 4b */
+console.log("\n── Fase 4b (105, 743, 787) ──");
+{
+  // 105
+  const e105 = P["105"].editor;
+  const maloLong = e105.parse({ pre: "[1,2,3]", ino: "[1,2]" });
+  eq("105: rechaza longitudes distintas", maloLong.ok, false);
+  eq("105: señala ino", maloLong.field, "ino");
+  
+  const maloElem = e105.parse({ pre: "[1,2,3]", ino: "[1,2,4]" });
+  eq("105: rechaza elementos distintos", maloElem.ok, false);
+  
+  const maloDup = e105.parse({ pre: "[1,1,2]", ino: "[1,1,2]" });
+  eq("105: rechaza duplicados", maloDup.ok, false);
+  
+  // 743
+  const e743 = P["743"].editor;
+  const m743 = e743.parse({ times: "[[2,5,1]]", n: "4", k: "2" });
+  eq("743: rechaza nodo fuera de rango", m743.ok, false);
+  
+  // 787
+  const e787 = P["787"].editor;
+  const m787 = e787.parse({ flights: "[[0,1,100]]", n: "3", src: "5", dst: "2", K: "0" });
+  eq("787: rechaza src fuera de rango", m787.ok, false);
 }
 
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");

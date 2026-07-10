@@ -202,5 +202,20 @@ const AL = VIS.parse.adjList("[[2,4],[1,3],[2,4],[1,3]]", 10);
 eq("adjList(): parsea formato correcto", AL.ok, true);
 eq("adjList(): adj mapea a 0-indexed internamente", AL.adj, [[1,3], [0,2], [1,3], [0,2]]);
 
+console.log("\n── Parsers adicionales (Fase 4b) ──");
+// numberArray
+const NA = VIS.parse.numberArray ? VIS.parse.numberArray("[3,9,20,15,7]", 10) : {ok:false};
+eq("numberArray(): parsea formato correcto", NA.ok, true);
+if (NA.ok) eq("numberArray(): devuelve los números", NA.arr, [3, 9, 20, 15, 7]);
+const NAbad = VIS.parse.numberArray ? VIS.parse.numberArray("[1,a,3]", 10) : {ok:true};
+eq("numberArray(): error de parseo", NAbad.ok, false);
+
+// weightedEdgeList
+const WE = VIS.parse.weightedEdgeList ? VIS.parse.weightedEdgeList("[[2,1,1],[2,3,1]]", 5) : {ok:false};
+eq("weightedEdgeList(): parsea formato correcto", WE.ok, true);
+if (WE.ok) eq("weightedEdgeList(): devuelve aristas", WE.edges, [[2,1,1],[2,3,1]]);
+const WEbad = VIS.parse.weightedEdgeList ? VIS.parse.weightedEdgeList("[[2,1]]", 5) : {ok:true};
+eq("weightedEdgeList(): error si no tiene 3 elementos", WEbad.ok, false);
+
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
 process.exit(fails ? 1 : 0);

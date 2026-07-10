@@ -43,6 +43,43 @@
       { name: L("Inalcanzable (-1)", "Unreachable (-1)"), input: { n: 3, k: 1, times: [[1,2,1]] } },
     ],
 
+    editor: {
+      kind: "text",
+      fields: [
+        { id: "times", type: "text", label: { es: "Aristas (origen, destino, peso)", en: "Edges (source, target, weight)" }, placeholder: { es: "[[2,1,1],[2,3,1],[3,4,1]]", en: "[[2,1,1],[2,3,1],[3,4,1]]" } },
+        { id: "n", type: "text", label: { es: "Nodos (n)", en: "Nodes (n)" }, placeholder: { es: "4", en: "4" } },
+        { id: "k", type: "text", label: { es: "Origen (k)", en: "Source (k)" }, placeholder: { es: "2", en: "2" } }
+      ],
+      initial() { return { times: "[[2,1,1],[2,3,1],[3,4,1]]", n: "4", k: "2" }; },
+      parse(state) {
+        const n = parseInt(state.n, 10);
+        if (Number.isNaN(n) || n < 1 || n > 15) return { ok: false, field: "n", error: { es: "n debe ser un número entre 1 y 15.", en: "n must be a number between 1 and 15." } };
+        
+        const k = parseInt(state.k, 10);
+        if (Number.isNaN(k) || k < 1 || k > n) return { ok: false, field: "k", error: { es: `k debe ser un número entre 1 y ${n}.`, en: `k must be a number between 1 and ${n}.` } };
+        
+        const r = VIS.parse.weightedEdgeList(state.times, n);
+        if (!r.ok) return { ok: false, field: "times", error: r.error };
+        for (const [u, v, w] of r.edges) {
+          if (u < 1 || u > n || v < 1 || v > n) {
+            return { ok: false, field: "times", error: { es: `Los nodos deben estar entre 1 y ${n}.`, en: `Nodes must be between 1 and ${n}.` } };
+          }
+        }
+        return { ok: true, input: { times: r.edges, n, k } };
+      },
+      previewSpec(input) {
+        const n = input.n;
+        const pos = VIS.circleLayout(n, 150, 150, 100);
+        const nodes = Array.from({ length: n }, (_, i) => {
+          const id = i + 1;
+          return { id, label: String(id), x: pos[i][0], y: pos[i][1], cls: id === input.k ? "current" : "" };
+        });
+        const edges = input.times.map(([u, v, w]) => ({ from: u, to: v, directed: true, label: String(w) }));
+        return { type: "graph", label: { es: "Grafo", en: "Graph" }, r: 18, nodes, edges };
+      },
+      hint: { es: "Los nodos van de 1 a n.", en: "Nodes range from 1 to n." }
+    },
+
     build(input) {
       const n = input.n, k = input.k, times = input.times;
       const INF = Infinity;

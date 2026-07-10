@@ -106,6 +106,59 @@
     return { ok: true, adj: adj0, n: n };
   };
 
+  VIS.parse.numberArray = function (text, maxNodes) {
+    let s = String(text == null ? "" : text).trim();
+    if (!s) return err("Escribe un arreglo de números, ej: [1,2,3].", "Type a number array, ex: [1,2,3].");
+    
+    const abre = s.startsWith("["), cierra = s.endsWith("]");
+    if (abre !== cierra) {
+      return abre ? err("Falta cerrar el corchete.", "The bracket is not closed.")
+                  : err("Falta abrir el corchete.", "The bracket is not opened.");
+    }
+    if (abre) s = s.slice(1, -1).trim();
+    if (!s) return { ok: true, arr: [] };
+
+    const partes = s.split(",");
+    const arr = [];
+    for (const bruto of partes) {
+      const t = bruto.trim();
+      if (t === "") return err("Hay una coma de más.", "There is one comma too many.");
+      if (!/^-?\d+$/.test(t)) {
+        return err(`"${t}" no es un número.`, `"${t}" is not a number.`);
+      }
+      arr.push(parseInt(t, 10));
+    }
+    
+    if (arr.length > maxNodes) {
+      return err(`Demasiados números: ${arr.length}. El límite es ${maxNodes}.`, `Too many numbers: ${arr.length}. The limit is ${maxNodes}.`);
+    }
+    
+    return { ok: true, arr };
+  };
+
+  VIS.parse.weightedEdgeList = function (text, maxNodos) {
+    let s = String(text == null ? "" : text).trim();
+    if (!s) return err("Escribe aristas con peso, ej: [[0,1,100]].", "Type weighted edges, ex: [[0,1,100]].");
+    let arr;
+    try { arr = JSON.parse(s); }
+    catch (e) { return err("Sintaxis inválida. Verifica corchetes.", "Invalid syntax. Check brackets."); }
+    if (!Array.isArray(arr)) return err("Debe ser una lista de listas.", "Must be a list of lists.");
+    
+    for (const edge of arr) {
+      if (!Array.isArray(edge) || edge.length !== 3) {
+        return err("Cada arista debe tener 3 números: [origen, destino, peso].", "Each edge must have 3 numbers: [source, target, weight].");
+      }
+      for (let i = 0; i < 2; i++) {
+        const node = edge[i];
+        if (!Number.isInteger(node) || node < 0) return err(`Nodo inválido: ${node}.`, `Invalid node: ${node}.`);
+        if (node > maxNodos) return err(`El nodo ${node} supera el límite.`, `Node ${node} exceeds the limit.`);
+      }
+      const weight = edge[2];
+      if (!Number.isInteger(weight)) return err(`Peso inválido: ${weight}.`, `Invalid weight: ${weight}.`);
+    }
+    return { ok: true, edges: arr };
+  };
+
   /* Vista previa de un grafo general.
      input: {n, edges, prereqs, adj, directed} */
   VIS.preview.graph = function (input, label) {

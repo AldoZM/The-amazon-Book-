@@ -44,6 +44,46 @@
         flights: [[0,1,100],[1,2,100],[0,2,500]] } },
     ],
 
+    editor: {
+      kind: "text",
+      fields: [
+        { id: "flights", type: "text", label: { es: "Vuelos (origen, destino, precio)", en: "Flights (src, dst, price)" }, placeholder: { es: "[[0,1,100],[1,2,100],[0,2,500]]", en: "[[0,1,100],[1,2,100],[0,2,500]]" } },
+        { id: "n", type: "text", label: { es: "Nodos (n)", en: "Nodes (n)" }, placeholder: { es: "3", en: "3" } },
+        { id: "src", type: "text", label: { es: "Origen (src)", en: "Source (src)" }, placeholder: { es: "0", en: "0" } },
+        { id: "dst", type: "text", label: { es: "Destino (dst)", en: "Destination (dst)" }, placeholder: { es: "2", en: "2" } },
+        { id: "K", type: "text", label: { es: "Escalas (K)", en: "Stops (K)" }, placeholder: { es: "0", en: "0" } }
+      ],
+      initial() { return { flights: "[[0,1,100],[1,2,100],[0,2,500]]", n: "3", src: "0", dst: "2", K: "0" }; },
+      parse(state) {
+        const n = parseInt(state.n, 10);
+        if (Number.isNaN(n) || n < 1 || n > 15) return { ok: false, field: "n", error: { es: "n debe ser un número entre 1 y 15.", en: "n must be a number between 1 and 15." } };
+        
+        const src = parseInt(state.src, 10);
+        if (Number.isNaN(src) || src < 0 || src >= n) return { ok: false, field: "src", error: { es: `src debe estar entre 0 y ${n-1}.`, en: `src must be between 0 and ${n-1}.` } };
+        
+        const dst = parseInt(state.dst, 10);
+        if (Number.isNaN(dst) || dst < 0 || dst >= n) return { ok: false, field: "dst", error: { es: `dst debe estar entre 0 y ${n-1}.`, en: `dst must be between 0 and ${n-1}.` } };
+        
+        const K = parseInt(state.K, 10);
+        if (Number.isNaN(K) || K < 0 || K > n) return { ok: false, field: "K", error: { es: `K debe ser un número válido.`, en: `K must be a valid number.` } };
+        
+        const r = VIS.parse.weightedEdgeList(state.flights, n - 1);
+        if (!r.ok) return { ok: false, field: "flights", error: r.error };
+        
+        return { ok: true, input: { flights: r.edges, n, src, dst, K } };
+      },
+      previewSpec(input) {
+        const n = input.n;
+        const pos = VIS.circleLayout(n, 150, 150, 100);
+        const nodes = Array.from({ length: n }, (_, i) => {
+          return { id: i, label: String(i), x: pos[i][0], y: pos[i][1], cls: (i === input.src || i === input.dst) ? "current" : "" };
+        });
+        const edges = input.flights.map(([u, v, p]) => ({ from: u, to: v, directed: true, label: String(p) }));
+        return { type: "graph", label: { es: "Vuelos", en: "Flights" }, r: 18, nodes, edges };
+      },
+      hint: { es: "Los nodos van de 0 a n-1.", en: "Nodes range from 0 to n-1." }
+    },
+
     build(input) {
       const { n, src, dst, K, flights } = input;
       const INF = Infinity;

@@ -36,6 +36,63 @@
       { name: L("pre=[1,2,3] in=[2,1,3]", "pre=[1,2,3] in=[2,1,3]"), input: { pre: [1,2,3], ino: [2,1,3] } },
     ],
 
+    editor: {
+      kind: "text",
+      fields: [
+        { id: "pre", type: "text", label: { es: "Preorder", en: "Preorder" }, placeholder: { es: "[3,9,20,15,7]", en: "[3,9,20,15,7]" } },
+        { id: "ino", type: "text", label: { es: "Inorder", en: "Inorder" }, placeholder: { es: "[9,3,15,20,7]", en: "[9,3,15,20,7]" } }
+      ],
+      initial() { return { pre: "[3,9,20,15,7]", ino: "[9,3,15,20,7]" }; },
+      parse(state) {
+        const p = VIS.parse.numberArray(state.pre, 15);
+        if (!p.ok) return { ok: false, field: "pre", error: p.error };
+        const i = VIS.parse.numberArray(state.ino, 15);
+        if (!i.ok) return { ok: false, field: "ino", error: i.error };
+        
+        if (p.arr.length !== i.arr.length) {
+          return { ok: false, field: "ino", error: { es: "Ambos arreglos deben tener la misma longitud.", en: "Both arrays must have the same length." } };
+        }
+        
+        const sortP = p.arr.slice().sort((a,b) => a-b);
+        const sortI = i.arr.slice().sort((a,b) => a-b);
+        for (let j = 0; j < sortP.length; j++) {
+          if (sortP[j] !== sortI[j]) {
+            return { ok: false, field: "ino", error: { es: "Los arreglos deben tener los mismos elementos.", en: "The arrays must have the same elements." } };
+          }
+          if (j > 0 && sortP[j] === sortP[j-1]) {
+            return { ok: false, field: "pre", error: { es: "No puede haber elementos duplicados.", en: "There cannot be duplicate elements." } };
+          }
+        }
+        
+        return { ok: true, input: { pre: p.arr, ino: i.arr } };
+      },
+      previewSpec(input) {
+        const { pre, ino } = input;
+        const n = pre.length;
+        let idc = 0;
+        function make(preLo, preHi, inLo, inHi) {
+          if (preLo > preHi) return null;
+          const val = pre[preLo];
+          const node = { id: idc++, val, left: null, right: null };
+          let k = inLo; while (k <= inHi && ino[k] !== val) k++;
+          if (k > inHi) return null; // En un input válido siempre se encuentra, pero por si acaso
+          const leftSize = k - inLo;
+          node.left = make(preLo + 1, preLo + leftSize, inLo, k - 1);
+          node.right = make(preLo + leftSize + 1, preHi, k + 1, inHi);
+          return node;
+        }
+        const root = make(0, n - 1, 0, n - 1);
+        if (!root) return { type: "tree", label: { es: "Árbol", en: "Tree" }, r: 18, nodes: [], edges: [] };
+        const layout = VIS.binaryLayout(root);
+        return {
+          type: "tree", label: { es: "Árbol", en: "Tree" }, r: 18,
+          nodes: layout.nodes.map(nd => ({ id: nd.id, label: nd.label, x: nd.x, y: nd.y, cls: "" })),
+          edges: layout.edges
+        };
+      },
+      hint: { es: "Asegúrate de que ambos arreglos tengan los mismos elementos (sin duplicados).", en: "Ensure both arrays have the same elements (no duplicates)." }
+    },
+
     build(input) {
       const pre = input.pre, ino = input.ino, n = pre.length;
       const events = [];
