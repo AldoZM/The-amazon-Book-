@@ -1,27 +1,37 @@
 ================================================================================
  THE AMAZON BOOK — CONTEXTO DEL PROYECTO
  Archivo de continuidad entre sesiones. Leer esto primero al retomar.
- Última actualización: 2026-07-05
+ Última actualización: 2026-07-09
 ================================================================================
+
+Si eres una IA que retoma este trabajo: lee este archivo completo antes de
+tocar nada. Las secciones 11 a 15 son tus instrucciones. La sección 12 dice
+exactamente qué hacer y cómo. La sección 15 es la lista de reglas que NO
+puedes romper.
 
 --------------------------------------------------------------------------------
  1. QUÉ ES EL PROYECTO
 --------------------------------------------------------------------------------
 
-"The Amazon Book" es un libro en LaTeX que reúne ejercicios de LeetCode
-frecuentes en entrevistas de Amazon, resueltos en C++ y explicados en español
-para todo público.
+"The Amazon Book" son DOS cosas que viven en el mismo repositorio:
 
-Rasgo distintivo: cada encabezado de problema en el PDF es un ENLACE
-`vscode://file/...` que, al hacer clic, abre el archivo `.cpp` correspondiente
-en Visual Studio Code (donde el código es compilable y trae casos de prueba).
+  (A) EL LIBRO. Un libro en LaTeX que reúne ejercicios de LeetCode frecuentes
+      en entrevistas de Amazon, resueltos en C++ y explicados en español para
+      todo público. Cada encabezado de problema en el PDF es un enlace
+      `vscode://file/...` que abre el `.cpp` correspondiente en VS Code.
+
+  (B) EL VISUALIZADOR (`rep-visual/`). Un sitio web en JavaScript puro que
+      anima cada algoritmo paso a paso, con pseudocódigo sincronizado y
+      narración bilingüe. Se publica solo en GitHub Pages.
 
 Autor: Aldo Zetina.
-Ubicación: D:\Codigo Abierto\AmazonEjercicios
-Repositorio: git local (SIN remoto en GitHub todavía).
+Ubicación: D:\Codigo Abierto\The-amazon-Book-
+Repositorio: https://github.com/AldoZM/The-amazon-Book-   (rama `main`)
+Sitio en vivo: la rama `main` se despliega sola a GitHub Pages en cada push,
+vía `.github/workflows/deploy-pages.yml` (`path: .`). Un push publica.
 
 --------------------------------------------------------------------------------
- 2. ARQUITECTURA Y DECISIONES DE DISEÑO
+ 2. ARQUITECTURA DEL LIBRO — DECISIONES DE DISEÑO
 --------------------------------------------------------------------------------
 
 - FUENTE ÚNICA DE VERDAD: el código C++ vive SOLO en `src/`. El libro NO
@@ -34,7 +44,6 @@ Repositorio: git local (SIN remoto en GitHub todavía).
   funcionan en cualquier máquina.
     * Espacios en la ruta (ej. "Codigo Abierto") se codifican como `%20`.
     * El `%` se escribe `\%` en LaTeX (si no, LaTeX lo trata como comentario).
-    * Resultado: `\def\repopath{D:/Codigo\%20Abierto/AmazonEjercicios}`.
 
 - `paths.tex` es GENERADO y está en `.gitignore` (es específico por máquina).
   `paths.tex.example` sí se versiona como referencia.
@@ -49,37 +58,85 @@ Repositorio: git local (SIN remoto en GitHub todavía).
   `assert` para casos de prueba, y un comentario-cabecera con explicación +
   diagrama ASCII. Compila con `g++ -std=c++17`.
 
---------------------------------------------------------------------------------
- 3. STACK TÉCNICO
---------------------------------------------------------------------------------
-
-- XeLaTeX (MiKTeX) + latexmk.
-- Paquetes: fontspec, polyglossia (spanish), amssymb, xcolor, hyperref,
-  listings, geometry.
-- C++17, compilador g++ 16.1.0 (WinLibs UCRT).
-- PowerShell para build.ps1.
+- TERMINOLOGÍA. Los nombres de algoritmos van en inglés con su sigla, la
+  primera vez que aparecen en un capítulo y solo esa vez:
+  "Breadth-First Search (BFS)", "Depth-First Search (DFS)". Después, la sigla
+  sola. Para la estructura de datos:
+    * `cuadrícula`  cuando es una rejilla de celdas (200, 695, 1091, 79).
+    * `matriz`      cuando es una matriz de adyacencia (417, 547).
+    * `tablero`     solo en 127, donde la metáfora del juego de mesa aplica.
 
 --------------------------------------------------------------------------------
- 4. TOOLCHAIN — NOTAS CRÍTICAS (leer antes de compilar)
+ 3. ARQUITECTURA DEL VISUALIZADOR (rep-visual/)
+--------------------------------------------------------------------------------
+
+JavaScript puro. SIN build, SIN dependencias, SIN framework. Los scripts se
+cargan con `<script>` en `problem.html`. Todo cuelga de `window.VIS`.
+
+CONTRATO DEL MOTOR:
+  problem.build(input) -> steps[]
+  cada paso es { line, note, grid|graph|tree|queue|list|vars, stage }
+  `line` es el índice de la línea de pseudocódigo que se resalta.
+
+ANCLAS SIMBÓLICAS (importante):
+  `VIS.code([[ancla, es, en], ...]) -> { es, en, L }`
+  `build()` usa `A.miAncla` en vez de números de línea mágicos. Un ancla que no
+  existe LANZA al cargar. Antes, un índice malo fallaba EN SILENCIO: la línea
+  simplemente no se resaltaba y nadie se enteraba. Así vivió el bug de 1192.
+
+MODO INTERACTIVO:
+  `problem.editor` es un descriptor. `Engine.mode` es `"edit"` o `"play"`.
+  Dos familias:
+    kind "grid" -> el usuario dibuja con clics. `editor.cycle(grid,r,c)->grid`.
+    kind "text" -> `fields[]`, cada uno `type: "text"` o `type: "select"`.
+                   Un solo `parse(state)` que devuelve
+                   `{ok:true, input}` o `{ok:false, field, error:{es,en}}`.
+                   `previewSpec(input)` dibuja la vista previa en vivo.
+
+INVARIANTES DEL MOTOR (romperlos causa bugs sutiles; hay tests que los fijan):
+  * `Engine.refreshPreview()` es el ÚNICO sitio que toca `#btn-run.disabled`.
+  * `Engine.syncSelects()` reconcilia los `<select>` ANTES de `parse()`.
+    Si se invierte, 863 recibe un nodo que ya no está en el árbol y su
+    `build()` LANZA una excepción. No es cosmético.
+  * `Engine.locked()` protege `next/prev/play/toggle/reset`. La guarda va en
+    las ACCIONES, no en los botones: un botón deshabilitado no bloquea el
+    teclado ni el gesto de deslizar en el móvil.
+  * `this.editState == null`, nunca `!this.editState` (`""` y `{}` son válidos).
+  * `refreshPreview()` NO recrea los `<input type=text>`: mataría el cursor.
+    Solo repinta los `<select>`.
+
+--------------------------------------------------------------------------------
+ 4. STACK TÉCNICO
+--------------------------------------------------------------------------------
+
+- Libro: XeLaTeX (MiKTeX) + latexmk. Paquetes: fontspec, polyglossia (spanish),
+  amssymb, xcolor, hyperref, listings, geometry.
+- Código: C++17, g++ 16.1.0 (WinLibs UCRT).
+- Visualizador: JavaScript ES6 sin transpilar, SVG, CSS con variables.
+- Tests del visualizador: Node + módulo `vm` + un DOM falso. Sin runner.
+- Build del libro: PowerShell (build.ps1), pero latexmk se corre en Git Bash.
+
+--------------------------------------------------------------------------------
+ 5. TOOLCHAIN — NOTAS CRÍTICAS (leer antes de compilar)
 --------------------------------------------------------------------------------
 
 COMPILAR EL LIBRO:
   latexmk FALLA en PowerShell -> MiKTeX no encuentra 'perl'.
   Solución: compilar desde GIT BASH (ahí sí hay /usr/bin/perl):
-    cd "D:/Codigo Abierto/AmazonEjercicios"
+    cd "D:/Codigo Abierto/The-amazon-Book-"
     latexmk -xelatex -interaction=nonstopmode -halt-on-error main.tex
-  (Antes de compilar, `paths.tex` debe existir; lo genera build.ps1. Si ya
-   existe, no hace falta regenerarlo salvo que cambie la ruta del repo.)
+  (Antes de compilar, `paths.tex` debe existir; lo genera build.ps1.)
 
-  build.ps1 sí genera paths.tex correctamente aunque luego falle latexmk;
-  se puede correr build.ps1 para regenerar paths.tex y después compilar en bash.
+COMPILADOR C++ (g++) NO está en el PATH global. En git bash, exportar antes:
+  export PATH="/c/Users/aldo-/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin:$PATH"
+  g++ -std=c++17 "src/01-grafos/<archivo>.cpp" -o "src/01-grafos/out" && "src/01-grafos/out"
 
-COMPILADOR C++ (g++) NO está en el PATH global. Ruta completa:
-  C:\Users\aldo-\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin
-  En git bash, exportar antes de usar:
-    export PATH="/c/Users/aldo-/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64/bin:$PATH"
-  Compilar y correr un .cpp:
-    g++ -std=c++17 "src/01-grafos/<archivo>.cpp" -o "src/01-grafos/out" && "src/01-grafos/out"
+VER EL VISUALIZADOR EN LOCAL:
+  cd "D:/Codigo Abierto/The-amazon-Book-/rep-visual"
+  python -m http.server 8000 --bind 127.0.0.1
+  Abrir: http://127.0.0.1:8000/problem.html?p=236
+  NUNCA usar `--bind 0.0.0.0`: expone el repo entero a la red local. El propio
+  entorno de la IA lo bloquea, y con razón.
 
 VERIFICAR enlaces vscode:// en el PDF (los streams van comprimidos, grep normal
 no los ve). Script Python de verificación:
@@ -97,130 +154,280 @@ no los ve). Script Python de verificación:
     "
 
 --------------------------------------------------------------------------------
- 5. ESTRUCTURA DE ARCHIVOS
+ 6. ESTRUCTURA DE ARCHIVOS
 --------------------------------------------------------------------------------
 
-  main.tex                         Documento raíz (book). Incluye capítulos.
-  preambulo.tex                    Paquetes, colores, estilo de listado C++.
-  macros.tex                       Macros \problema y \complejidad.
-  paths.tex                        (generado, gitignored) define \repopath.
-  paths.tex.example                Plantilla de referencia versionada.
-  build.ps1                        Genera paths.tex + compila (usar bash p/latexmk).
-  .gitignore                       Ignora *.aux *.log *.pdf *.xdv paths.tex bins.
+  main.tex, preambulo.tex, macros.tex, build.ps1, paths.tex.example
+  capitulos/<bloque>/<num>-<slug>.tex      Un capítulo por problema.
+  capitulos/99-ruta.tex                    Índice de los 60+ problemas objetivo.
+  src/<bloque>/<num>-<slug>.cpp            La solución compilable.
 
-  capitulos/
-    00-intro.tex                   Introducción (cómo compilar, propósito).
-    01-grafos/
-      200-number-of-islands.tex    Capítulo del problema 200.
-      994-rotting-oranges.tex      Capítulo del problema 994.
-    99-ruta.tex                    Índice/ruta de los 60+ problemas objetivo.
+  rep-visual/
+    index.html            Portada con la lista de problemas.
+    problem.html          El visualizador. Recibe ?p=<num>.
+    css/styles.css        Tema oscuro. `--cell: clamp(28px, 9vw, 42px)`.
+    js/i18n.js            Traducciones + `VIS.code()` (anclas simbólicas).
+    js/renderers.js       Pinta grid, graph, tree, queue, list. `gridEditor`.
+    js/editors.js         Parsers y vistas previas PURAS. Sin DOM, sin estado.
+    js/engine.js          El motor: pasos, reproducción, modo edición.
+    js/problems/<num>.js  Un archivo por problema: enunciado, code, build, editor.
+    tools/                Los siete tests + utilidades. Ver sección 7.
+    GeminiSimulacion/     Prototipos .tsx de referencia. NO se cargan ni compilan.
 
-  src/
-    01-grafos/
-      200-number-of-islands.cpp    Solución DFS ("hundir"). Tests pasan.
-      994-rotting-oranges.cpp      Solución BFS multi-fuente. Tests pasan.
-      out.exe / out                Binarios (gitignored).
-
-  docs/superpowers/
-    specs/2026-07-05-amazon-book-design.md   Diseño inicial.
-    plans/2026-07-05-the-amazon-book.md      Plan de implementación (6 tasks).
-  .superpowers/sdd/progress.md               Progreso task-by-task.
+  docs/superpowers/specs/    Los diseños aprobados, uno por fase.
+  docs/superpowers/plans/    Los planes de implementación.
+  .superpowers/sdd/progress.md   El registro task-por-task. Leerlo al retomar.
 
 --------------------------------------------------------------------------------
- 6. LO QUE YA SE HIZO (COMPLETO)
+ 7. LOS TESTS — CÓMO SE CORREN Y QUÉ CUBREN
 --------------------------------------------------------------------------------
 
-Plan "entrega1-grafos" — las 6 tasks COMPLETAS y verificadas:
+Desde `rep-visual/`. Todos deben terminar en "Todo correcto":
 
-  Task 1  Andamiaje del libro + build.ps1 + macros/enlaces.   commit 4e8299a
-          (+ fixes URI: 53804de espacios %20, 374d0bc escape del %)
-  Task 2  src/01-grafos/200-number-of-islands.cpp (tests OK). commit 393dc7a
-  Task 3  Capítulo 200 en el libro + enlace verificado.        commit 764e93e
-  Task 4  src/01-grafos/994-rotting-oranges.cpp (tests OK).    commit a1e0f7a
-  Task 5  Capítulo 994 en el libro + enlace verificado.        commit 6797a74
-  Task 6  Capítulo "Ruta de problemas" (índice 60+) +amssymb.  commit 4d19a1f
+  node tools/validate-code.js       <- corre TODOS los build() de TODOS los casos
+  node tools/test-parsers.js
+  node tools/test-editors.js
+  node tools/test-multi-field.js
+  node tools/test-word-flow.js
+  node tools/test-editor-1091.js
+  node tools/test-grid-editor.js
+  node tools/test-interactive-flow.js
 
-Estado verificado:
-  - main.pdf: 11 páginas, compila limpio, sin errores.
-  - Ambos .cpp compilan con g++ -std=c++17 y sus tests (assert) pasan.
-  - Ambos enlaces vscode:// presentes y correctos en el PDF:
-      vscode://file/D:/Codigo%20Abierto/AmazonEjercicios/src/01-grafos/200-number-of-islands.cpp
-      vscode://file/D:/Codigo%20Abierto/AmazonEjercicios/src/01-grafos/994-rotting-oranges.cpp
-  - Árbol git limpio.
+`validate-code.js` es la red de seguridad: comprueba que `code.es` y `code.en`
+tengan el mismo número de líneas, que todo `step.line` esté dentro del rango,
+que ningún paso venga sin `line`, y avisa de líneas muertas. Debe imprimir
+`32 correctos · 0 con errores`. Fue lo que cazó el bug de 1192.
 
-Los dos problemas resueltos sirven de MOLDE para el resto:
-  - 200 Number of Islands: patrón DFS sobre cuadrícula, "hundir" tierra visitada.
-  - 994 Rotting Oranges: patrón BFS multi-fuente por niveles (minutos).
-
---------------------------------------------------------------------------------
- 7. LO QUE SE ESTÁ VIENDO AHORA
---------------------------------------------------------------------------------
-
-Nada en progreso a medias. Plan entrega1 cerrado. Punto de decisión: elegir el
-siguiente problema del Bloque 1 (Grafos) a implementar, o abrir otro bloque.
-
---------------------------------------------------------------------------------
- 8. LO QUE FALTA (FUTURO) — RUTA DE PROBLEMAS
---------------------------------------------------------------------------------
-
-Cada problema nuevo = repetir el patrón:
-  a) Crear src/<bloque>/<num>-<slug>.cpp (clase Solution + main con asserts +
-     cabecera explicada con diagrama ASCII). Compilar y correr: tests deben pasar.
-  b) Crear capitulos/<bloque>/<num>-<slug>.tex usando \problema{...} +
-     intuición + diagrama + \lstinputlisting + \complejidad + notas Amazon.
-  c) Agregar \include en main.tex bajo el capítulo correspondiente.
-  d) Compilar (bash), verificar enlace vscode:// en PDF.
-  e) Commit en español, SIN firma ni Co-Authored-By de IA.
-  f) Marcar con \checkmark en capitulos/99-ruta.tex.
-
-BLOQUE 1 — Grafos (faltan 15; 695/542/1091 ya HECHOS el 2026-07-05):
-  417 Pacific Atlantic, 79 Word Search, 207 Course Schedule,
-  210 Course Schedule II, 269 Alien Dictionary, 127 Word Ladder,
-  126 Word Ladder II, 261 Graph Valid Tree, 323 Connected Components,
-  128 Longest Consecutive, 547 Number of Provinces, 743 Network Delay Time,
-  787 Cheapest Flights K Stops, 133 Clone Graph, 1192 Critical Connections.
-
-BLOQUE 2 — Árboles:
-  236 LCA, 1644 LCA II, 103 Zigzag Level Order, 199 Right Side View,
-  987 Vertical Order, 124 Max Path Sum, 543 Diameter, 863 Distance K,
-  98 Validate BST, 105 Build Tree Pre+In, 337 House Robber III,
-  297 Serialize/Deserialize.
-
-BLOQUE 3 — Intervalos:
-  56 Merge Intervals, 253 Meeting Rooms II, 2402 Meeting Rooms III,
-  1094 Car Pooling.
-
-BLOQUE 4 — Heaps / Top-K:
-  215 Kth Largest, 347 Top K Frequent, 973 K Closest Points, 295 Find Median,
-  23 Merge k Sorted Lists, 621 Task Scheduler.
-
-BLOQUE 5 — Design:
-  146 LRU Cache, 348 Design Tic-Tac-Toe, 642 Search Autocomplete.
-
-BLOQUE 6 — Sliding Window / Stack:
-  3 Longest Substring, 76 Minimum Window, 42 Trapping Rain Water,
-  84 Largest Rectangle, 394 Decode String.
-
-BLOQUE 7 — DP:
-  322 Coin Change, 139 Word Break, 55 Jump Game,
-  5 Longest Palindromic Substring.
+REGLA DE ORO PARA LOS TESTS DE ESTE PROYECTO:
+  Un test que pasa no prueba nada hasta que lo has visto FALLAR. En este
+  repositorio, tres suites verdes resultaron ser vacías al sabotearlas a
+  propósito. Antes de dar por bueno un test nuevo: rompe el código que dice
+  proteger y confirma que el test falla. Si no falla, el test no sirve.
+  Ejemplos reales de este repo:
+    - Un editor numérico para 200 no lanza: cuenta CERO islas, en silencio.
+    - Un `parse` que devuelve texto crudo no lanza: 98 responde "no es BST".
+    - Invertir `syncSelects` y `parse` no rompía ningún test, y sí rompe 863.
+  Por eso `test-editors.js` afirma sobre la ÚLTIMA NOTA de `build()`, no sobre
+  que existan pasos.
 
 --------------------------------------------------------------------------------
- 9. CONVENCIONES DEL AUTOR (respetar siempre)
+ 8. LO QUE YA SE HIZO (COMPLETO Y VERIFICADO)
 --------------------------------------------------------------------------------
 
-- Prosa del libro en ESPAÑOL; comentarios del código en español.
+EL LIBRO
+  - 32 problemas con capítulo .tex + .cpp compilable con tests que pasan.
+  - Terminología unificada (sección 2): nombres en inglés con sigla, y
+    cuadrícula/matriz/tablero según corresponda.
+  - Las glosas de DFS/BFS se redujeron de 9 repeticiones a 3 (200, 994, 103).
+
+EL VISUALIZADOR
+  - Pseudocódigo reescrito para que lo entienda cualquiera: sin símbolos, con
+    palabras. Se eliminaron todas las flechas en favor de verbos
+    ("empieza en", "pasa a valer", "guarda").
+  - Anclas simbólicas: ningún `build()` usa números de línea mágicos.
+  - Adaptación a móvil: rejillas con `clamp()`, SVG con `viewBox`, gesto de
+    deslizar para avanzar y retroceder.
+  - Modo interactivo en 19 de los 32 problemas (sección 10).
+
+TRES BUGS REALES CORREGIDOS
+  - 1192: `snap(..., 14)` sobre un arreglo de 14 líneas. Resaltaba la nada.
+  - 1091: el caso "Bloqueado (-1)" en realidad devolvía 2. La diagonal es
+    legal en 8 direcciones y ambas esquinas estaban libres. Rejilla sustituida.
+  - 787: `dist = tmp` DENTRO del bucle de relajación aliasaba los dos
+    arreglos, así que una relajación leía valores de su propia ronda. Daba
+    $300 (2 escalas) en vez de $600 con K=1. No bastaba con borrar la línea,
+    porque `snap` pintaba `dist`; se separó una variable `view`. Verificado
+    contra una implementación de referencia y 300 grafos aleatorios.
+
+--------------------------------------------------------------------------------
+ 9. ESTADO EXACTO AL 2026-07-09
+--------------------------------------------------------------------------------
+
+  Rama: main.  Árbol de trabajo: limpio.
+  Los 7 tests pasan.  validate-code.js: 32 correctos · 0 con errores.
+
+  HAY 8 COMMITS SIN PUSHEAR. `origin/main` está en `a1bbb27`.
+  Nada de lo hecho en la fase de 236/1644/863 está publicado todavía.
+
+    11cd700  Modo interactivo en 236, 1644 y 863
+    fbcad46  test: fijar el orden syncSelects -> parse en test-multi-field
+    617c2a4  Campo select con opciones dependientes y reconciliación
+    2733c0e  Corrige fuga de label/placeholder y NaN silencioso en parseCon
+    3f482d8  Ayudantes de árbol y vista previa con nodos resaltados
+    4fcaccb  Plan: factoriza VIS.arbol.campo y parseCon
+    f2c0db7  Plan: modo interactivo en 236, 1644 y 863
+    ed6f722  Spec: modo interactivo en 236, 1644 y 863
+
+--------------------------------------------------------------------------------
+ 10. MODO INTERACTIVO — QUIÉN LO TIENE Y QUIÉN NO
+--------------------------------------------------------------------------------
+
+CON MODO INTERACTIVO (19):
+  Cuadrícula, se dibuja con clics (7):
+    200, 695, 1091, 417, 547, 542, 994
+  Árbol, se escribe en notación de LeetCode "[3,9,20,null,null,15,7]" (8):
+    103, 124, 199, 297, 337, 543, 98, 987
+  Texto con parámetros (4):
+    79   (tablero fijo, se escribe la PALABRA)
+    236, 1644, 863   (se escribe el árbol y se eligen los parámetros)
+
+SIN MODO INTERACTIVO — LOS 13 QUE FALTAN:
+
+  Fase 3 — Grafos (6). Necesitan `VIS.parse.edgeList` + `VIS.preview.graph`.
+    207   Course Schedule            entrada { n, prereqs }  dirigido
+    210   Course Schedule II         entrada { n, prereqs }  dirigido
+    261   Graph Valid Tree           entrada { n, edges }    no dirigido
+    323   Connected Components       entrada { n, edges }    no dirigido
+    1192  Critical Connections       entrada { n, edges }    no dirigido
+    133   Clone Graph                entrada { n, adj }      listas de adyacencia
+
+  Fase 4b — Los que no son un solo árbol (3).
+    105   Construct Binary Tree      DOS arreglos (preorder + inorder)
+    743   Network Delay Time         grafo dirigido CON PESOS + nodo origen
+    787   Cheapest Flights K Stops   grafo dirigido con pesos + src + dst + K
+
+  Fase 5 — Listas de palabras (4).
+    126   Word Ladder II
+    127   Word Ladder
+    269   Alien Dictionary
+    128   Longest Consecutive Sequence
+
+--------------------------------------------------------------------------------
+ 11. LO QUE ESTÁ A MEDIAS AHORA MISMO
+--------------------------------------------------------------------------------
+
+Se estaba ejecutando el plan
+`docs/superpowers/plans/2026-07-09-modo-interactivo-arboles-con-parametros.md`.
+
+  Task 1  Ayudantes de árbol + vista previa.   COMPLETA, revisada, corregida.
+  Task 2  Campo select + reconciliación.       COMPLETA, revisada, corregida.
+  Task 3  Los editores de 236, 1644 y 863.     CÓDIGO ESCRITO Y VERIFICADO
+          funcionalmente (los tres dan el resultado correcto de punta a punta,
+          incluidos el caso "99 no existe" de 1644 y la prevención del crash de
+          863). PERO le falta la revisión de código formal.
+  Task 4  Checklist manual en el navegador.    PENDIENTE. Solo la puede hacer
+          una persona: ningún test dibuja un SVG ni mide un layout.
+
+  Falta también la revisión final de todo el trabajo, y el push.
+
+--------------------------------------------------------------------------------
+ 12. INSTRUCCIONES: QUÉ HACER Y CÓMO, EN ORDEN
+--------------------------------------------------------------------------------
+
+PASO 1 — VERIFICAR QUE TODO SIGUE VERDE
+  cd "D:/Codigo Abierto/The-amazon-Book-/rep-visual"
+  node tools/validate-code.js          -> "32 correctos · 0 con errores"
+  node tools/test-editors.js           -> "Todo correcto"
+  ...y los otros cinco de la sección 7.
+  Si algo falla, PARA y arréglalo antes de seguir. No construyas encima.
+
+PASO 2 — EL CHECKLIST DEL NAVEGADOR (pídeselo a Aldo, no lo puedes hacer tú)
+  Levanta el servidor:
+    python -m http.server 8000 --bind 127.0.0.1
+  Y pide que se compruebe, en `?p=236`, `?p=1644` y `?p=863`:
+    a) Aparecen los tres campos y el árbol se dibuja con los nodos elegidos
+       resaltados.
+    b) Al teclear en el campo del árbol, el cursor NO salta al final.
+    c) En 1644, el desplegable de `q` ofrece "99 (no existe)" como última
+       opción; el de `p` no la ofrece.
+    d) En 863, "Distancia k" ofrece de 0 a 5 con el árbol por defecto.
+    e) Escribir un árbol roto (`[3,5`) pone el campo en rojo, apaga el botón
+       Ejecutar, y NO borra el dibujo anterior.
+
+PASO 3 — PUBLICAR
+  Solo cuando el paso 2 esté conforme:
+    git push origin main
+  Eso dispara GitHub Pages y publica. No hay vuelta atrás elegante.
+
+PASO 4 — LOS 13 QUE FALTAN (sección 10)
+  El orden recomendado es: primero los 6 grafos, luego 743 y 787 (que también
+  son grafos, con pesos), luego 105, y al final las 4 listas.
+
+  Para cada FASE (no para cada problema), sigue este ciclo:
+
+    1. Lee los specs que ya existen en `docs/superpowers/specs/`. Los cuatro
+       anteriores explican por qué el diseño es como es. No lo reinventes.
+    2. Escribe un spec nuevo para la fase, en el mismo formato. Aldo lo aprueba
+       ANTES de escribir código.
+    3. Escribe un plan en `docs/superpowers/plans/`, con los pasos y el código.
+    4. Impleméntalo. Un commit por pieza, en español.
+    5. Corre los ocho comandos del paso 1.
+    6. Sabotea cada test nuevo y confirma que falla (sección 7, regla de oro).
+
+  LO QUE HACE FALTA CONSTRUIR PARA LOS GRAFOS, concretamente:
+    - `VIS.parse.edgeList(texto, maxNodos)` en `js/editors.js`. Función pura.
+      Devuelve `{ok:true, ...}` o `{ok:false, error:{es,en}}`. Nunca lanza.
+      El error debe decir QUÉ está mal ("el nodo 7 no existe, hay 5"), no solo
+      que algo falla: el usuario lo lee mientras escribe.
+    - `VIS.preview.graph(...)` en `js/editors.js`. Función pura, sin DOM.
+    - Un factory `VIS.graphEditor(...)` análogo a `VIS.treeEditor`, porque los
+      seis comparten `parse` y `previewSpec` y solo cambian el grafo de partida
+      y la instrucción. Escribirlo seis veces sería copiarlo seis veces.
+
+  Las tres formas de entrada (`{n,edges}`, `{n,prereqs}`, `{n,adj}`) son
+  distintas de verdad. No las fuerces en un solo parser si eso obliga a un
+  parámetro booleano que cambia el comportamiento.
+
+--------------------------------------------------------------------------------
+ 13. TRAMPAS CONOCIDAS (te van a morder si no las lees)
+--------------------------------------------------------------------------------
+
+- `MAX_NODOS = 15` en `editors.js`. NO es que un árbol mayor no quepa: el SVG
+  lleva `viewBox` y se escala. Lo que se pierde es la letra. Medido en un panel
+  de 620px: 11 nodos -> 10.3px, 15 -> 7.6px, 20 -> 5.7px, 31 -> 3.7px.
+
+- El DOM falso de los tests viene en dos sabores. El permisivo (`qs()` devuelve
+  un nodo para cualquier selector) NO sirve cuando el motor crea campos con
+  `VIS.el()`: hace falta el que cachea ids con
+  `Object.defineProperty(n,"id",{set(v){nodes.set("#"+v,n)}})`.
+
+- Los ocho editores de árbol comparten `VIS.arbol.campo()`. Esa función DEBE
+  devolver objetos nuevos en cada llamada, incluidos `label` y `placeholder`.
+  Si se comparten, mutar el campo de un problema cambia el de los otros. Ya
+  pasó una vez.
+
+- `VIS.arbol.diametro(arr)` NO es la altura. La distancia entre dos nodos puede
+  subir y volver a bajar. En `[3,5,1,6,2,0,8,null,null,7,4]` la altura es 4 y el
+  diámetro 5. Limitar `k` a la altura escondería casos válidos.
+
+- `GeminiSimulacion/` son prototipos de referencia, nada más. De los trece,
+  solo cinco hacen editable la entrada; los otros ocho son animaciones de datos
+  fijos y no aportan nada que el visualizador no haga ya mejor. Está explicado
+  en `GeminiSimulacion/README.md`. No los cargues ni los compiles.
+
+- Un `k` sin resultados NO es un error. 863 responde "No hay nodos a distancia
+  5. Respuesta []." Es un caso didáctico legítimo.
+
+--------------------------------------------------------------------------------
+ 14. DEUDA MENOR ACEPTADA (no urge, pero está anotada)
+--------------------------------------------------------------------------------
+
+- `engine.js` tiene el literal "Error generando pasos: " en español, sin
+  traducir. Viene heredado de `loadCase`.
+- El commit `98db221` lleva prefijo `test:` en inglés. El resto son en español.
+
+--------------------------------------------------------------------------------
+ 15. CONVENCIONES DEL AUTOR (respetar siempre, sin excepción)
+--------------------------------------------------------------------------------
+
+- Prosa del libro en ESPAÑOL. Comentarios del código, en español.
 - Commits en español.
-- NUNCA poner firma ni Co-Authored-By de IA en commits/pushes.
+- NUNCA poner firma, ni `Co-Authored-By`, ni ninguna marca de IA en los commits
+  ni en los pushes. Esto no es negociable.
 - No usar jergas: palabras completas ("para", no "pa").
+- EL ENUNCIADO DE CADA PROBLEMA SE MANTIENE FIEL A LEETCODE. Lo que se
+  simplifica es la explicación del algoritmo y el pseudocódigo, jamás el
+  enunciado.
+- No commitear archivos que haya creado Aldo sin preguntarle antes.
+- No trabajar sobre `main` sin su permiso explícito. Ojo: `main` publica.
 
 --------------------------------------------------------------------------------
- 10. CÓMO RETOMAR EN UNA SESIÓN NUEVA
+ 16. CÓMO RETOMAR EN UNA SESIÓN NUEVA
 --------------------------------------------------------------------------------
 
-  1. Leer este context.txt y .superpowers/sdd/progress.md.
-  2. Verificar estado git:  git log --oneline -10   y   git status -s
-  3. Exportar el PATH de g++ (sección 4) si vas a tocar .cpp.
-  4. Elegir el siguiente problema (sección 8) y seguir el patrón a)-f).
-  5. Compilar el libro desde git bash, no PowerShell.
+  1. Leer este context.txt entero y `.superpowers/sdd/progress.md`.
+  2. Verificar el estado:  git log --oneline -10   y   git status -s
+  3. Correr los ocho comandos de la sección 7. Deben estar todos verdes.
+  4. Ir a la sección 12 y seguir los pasos en orden.
+  5. Compilar el libro desde git bash, nunca desde PowerShell.
 ================================================================================
