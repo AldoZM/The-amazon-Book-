@@ -472,5 +472,32 @@ console.log("\n── Árboles con parámetros ──");
   ok("863: build LANZA con un target inexistente (por eso el desplegable)", lanzo);
 }
 
+/* ------------------------------------------------- VIS.graphEditor (factoría) */
+console.log("\n── VIS.graphEditor (campo graph) ──");
+{
+  const ed = sandbox.VIS.graphEditor({
+    id: 999,
+    maxNodos: 10,
+    directed: false,
+    defaultInput: "[[0,1]]",
+    parser: sandbox.VIS.parse.edgeList
+  });
+  eq("graphEditor: kind es text", ed.kind, "text");
+  eq("graphEditor: un solo campo llamado graph", ed.fields.map((f) => f.id), ["graph"]);
+  eq("graphEditor: initial() trae su grafo de partida", ed.initial(), { graph: "[[0,1]]" });
+  
+  const bien = ed.parse(ed.initial());
+  ok("graphEditor: parse acepta su arranque", bien.ok === true);
+  eq("graphEditor: parse devuelve n y edges", [bien.input.n, bien.input.edges], [2, [[0,1]]]);
+  
+  const malo = ed.parse({ graph: "[[0,1" });
+  eq("graphEditor: parse rechaza el corchete sin cerrar", malo.ok, false);
+  eq("graphEditor: y señala el campo graph", malo.field, "graph");
+  
+  const spec = ed.previewSpec(bien.input);
+  eq("previewSpec es un grafo", spec.type, "graph");
+  ok("VIS.renderers sabe pintarlo", typeof sandbox.VIS.renderers[spec.type] === "function");
+}
+
 console.log(fails ? `\n${fails} fallo(s)` : "\nTodo correcto");
 process.exit(fails ? 1 : 0);

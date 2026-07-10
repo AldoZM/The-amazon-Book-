@@ -103,6 +103,45 @@
     return { ok: true, adj: arr, n: n };
   };
 
+  /* Vista previa de un grafo general.
+     input: {n, edges, prereqs, adj, directed} */
+  VIS.preview.graph = function (input, label) {
+    const n = input.n || 0;
+    // circleLayout(n, cx, cy, R) está en renderers.js
+    const pos = VIS.circleLayout(n, 150, 150, 100);
+    const nodes = [];
+    for (let i = 0; i < n; i++) {
+      nodes.push({ id: i, label: String(i), x: pos[i][0], y: pos[i][1], cls: "" });
+    }
+
+    const edges = [];
+    if (input.edges) {
+      input.edges.forEach(e => {
+        edges.push({ from: e[0], to: e[1], directed: input.directed });
+      });
+    } else if (input.prereqs) {
+      input.prereqs.forEach(e => {
+        edges.push({ from: e[1], to: e[0], directed: input.directed });
+      });
+    } else if (input.adj) {
+      input.adj.forEach((vecinos, i) => {
+        const u = i + 1;
+        vecinos.forEach(v => {
+          if (u < v) edges.push({ from: u, to: v, directed: false });
+        });
+      });
+      for (let i = 0; i < n; i++) {
+        nodes[i].id = i + 1;
+        nodes[i].label = String(i + 1);
+      }
+    }
+
+    return {
+      type: "graph", label, r: 18,
+      nodes, edges
+    };
+  };
+
   /* Vista previa de un árbol, con los mismos ayudantes que usa build().
      `resaltados` es opcional: los nodos cuyo valor esté en la lista se pintan
      con la clase `target`, la misma que usa build() para marcar lo buscado.
@@ -231,6 +270,27 @@
       input[id] = n;
     }
     return { ok: true, input };
+  };
+
+  /* Descriptor completo de un problema de grafo. */
+  VIS.graphEditor = function (opciones) {
+    return {
+      kind: "text",
+      fields: [{ 
+        id: "graph", type: "text",
+        label: { es: "Grafo", en: "Graph" },
+        placeholder: { es: opciones.defaultInput, en: opciones.defaultInput }
+      }],
+      initial() { return { graph: opciones.defaultInput }; },
+      parse(state) {
+        const r = opciones.parser(state.graph, opciones.maxNodos);
+        if (!r.ok) return { ok: false, field: "graph", error: r.error };
+        r.directed = opciones.directed;
+        return { ok: true, input: r };
+      },
+      previewSpec(input) { return VIS.preview.graph(input, { es: "Grafo", en: "Graph" }); },
+      hint: opciones.hint
+    };
   };
 
   /* Descriptor completo de un problema de árbol. Los ocho reciben el mismo
