@@ -1,0 +1,43 @@
+79. Word Search
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Imagina una cuadrícula llena de letras, una en cada casilla, y una palabra que tenemos que encontrar dentro de ella. Podemos empezar en cualquier casilla, y desde ahí vamos avanzando letra por letra de la palabra, siempre moviéndonos a una casilla vecina que esté pegada por arriba, por abajo, por la izquierda o por la derecha, nunca en diagonal. La única regla extra es que, dentro de un mismo intento, no podemos volver a pisar una casilla que ya usamos. Lo que se pide es responder si existe al menos una forma de recorrer la cuadrícula así, letra por letra, que arme la palabra completa de principio a fin.
+
+La idea central
+
+Piensa en esos juegos de sopa de letras donde tienes un lápiz y vas trazando una línea, saltando de una letra a la de al lado, tratando de formar una palabra. Te paras en una letra que coincide con el inicio de la palabra, y desde ahí buscas, entre tus vecinas, cuál tiene la siguiente letra que necesitas. Si la encuentras, avanzas hasta ahí y repites la búsqueda para la letra que sigue. El problema es que a veces te metes por un camino que parecía prometedor y, de repente, ninguna vecina tiene la letra que te falta: ahí no te rindes, sino que regresas al último cruce donde tomaste una decisión y pruebas otro camino distinto. A esa estrategia de avanzar, chocar contra una pared, y regresar a intentar otra ruta se le llama backtracking, que quiere decir literalmente retroceder para probar otra opción. Para no volver a pisar una casilla que ya forma parte del camino actual, la marcamos temporalmente en cuanto la usamos, y en cuanto retrocedemos le devolvemos su letra original, como borrando la marca de lápiz, para que otro camino sí pueda pasar por ahí más adelante.
+
+Cómo funciona el algoritmo, paso a paso
+
+Como no sabemos de antemano en qué casilla empieza la palabra, probamos, una por una, que cada casilla de la cuadrícula sea el punto de partida. Desde cada casilla candidata, lanzamos una búsqueda que intenta completar la palabra entera a partir de ahí.
+
+Esa búsqueda funciona así: llegamos a una casilla y comparamos su letra contra la letra de la palabra que nos toca encontrar en ese momento. Si la casilla se sale de los límites de la cuadrícula, o si su letra no coincide con la que buscamos, este camino no sirve y abandonamos esa rama de inmediato.
+
+Si la letra sí coincide, revisamos si era la última letra que nos faltaba de la palabra. Si lo era, quiere decir que logramos formar la palabra completa, y podemos avisar que sí existe.
+
+Si coincide pero todavía faltan letras por encontrar, marcamos esa casilla como usada, para que ningún otro paso de este mismo camino la vuelva a pisar. Después probamos, una por una, las cuatro casillas vecinas, arriba, abajo, izquierda y derecha, repitiendo exactamente el mismo proceso desde cada una, pero ahora buscando la siguiente letra de la palabra.
+
+Si ninguna de las cuatro vecinas logra completar el resto de la palabra, entonces este camino no lleva a ningún lado. En ese momento le devolvemos a la casilla su letra original, como si nunca la hubiéramos marcado, y regresamos un paso atrás para que se puedan seguir probando otras rutas alternativas.
+
+En cuanto cualquiera de las casillas de partida logra completar la palabra siguiendo este proceso, respondemos que la palabra sí existe en la cuadrícula. Si probamos todas las casillas de partida posibles y ninguna lo logra, entonces la respuesta es que la palabra no existe.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, para cada una de las casillas de la cuadrícula probamos que sea el punto de partida, y desde ahí, por cada letra de la palabra que buscamos, podemos ramificarnos hacia hasta cuatro direcciones distintas. Esas ramificaciones se multiplican letra tras letra, como un árbol que se abre cada vez más, así que el trabajo en el peor de los casos crece proporcional a la cantidad de casillas de la cuadrícula, multiplicado por cuatro elevado a la cantidad de letras que tiene la palabra. En la práctica el algoritmo suele ser mucho más rápido que ese peor caso, porque en cuanto una letra no coincide se abandona esa rama de inmediato.
+
+En cuanto al espacio, la búsqueda se llama a sí misma una vez por cada letra que va emparejando, así que la profundidad máxima de esas llamadas depende solamente de cuántas letras tiene la palabra que buscamos, sin importar qué tan grande sea la cuadrícula.
+
+Errores comunes y tips de entrevista
+
+El error más frecuente es olvidar devolverle a una casilla su letra original después de retroceder. Si dejas la marca puesta, esa casilla queda inutilizada para siempre, incluso para caminos que arrancan desde una casilla de partida completamente distinta, y eso puede hacer que el algoritmo diga que una palabra no existe cuando en realidad sí existía.
+
+Otro error típico es marcar la casilla en el momento equivocado: hay que marcarla justo al entrar, antes de explorar a sus vecinas, y no después. Si la marcas tarde, puedes terminar reutilizando esa misma casilla dos veces dentro de un mismo camino, lo cual rompe la regla del problema.
+
+También conviene aclarar, antes de programar, qué pasa si el entrevistador te pide que no modifiques la cuadrícula original: en ese caso, en lugar de escribir un símbolo especial encima de la letra, puedes llevar una cuadrícula aparte solamente para anotar qué casillas están en uso durante el camino actual.
+
+Vale la pena mencionar en voz alta los casos raros: una palabra de una sola letra, donde basta con que esa letra aparezca en algún lugar de la cuadrícula sin necesidad de ningún vecino; y palabras que, aunque técnicamente estén formadas por letras presentes en la cuadrícula, obligarían a repetir una casilla y por lo tanto deben fallar.
+
+Por último, en una entrevista de Amazon es buena señal explicar por qué probamos cada casilla como posible punto de partida en lugar de adivinar dónde empieza la palabra: como no tenemos ninguna pista de antemano, la única forma de no perdernos ningún caso es intentarlo desde absolutamente todas partes.

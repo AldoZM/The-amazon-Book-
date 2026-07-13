@@ -1,0 +1,47 @@
+# 787. Cheapest Flights Within K Stops
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Imagina un mapa de ciudades conectadas por vuelos. Cada vuelo va en una sola dirección, de una ciudad a otra, y cuesta un precio fijo. Nos dan una ciudad de salida, una ciudad de llegada, y un número máximo de escalas permitidas, es decir, cuántas ciudades intermedias podemos tocar en el camino. Lo que se pide es encontrar el precio más barato para llegar de la ciudad de salida a la de llegada, sin usar más escalas de las permitidas. Si no existe ninguna ruta que respete ese límite de escalas, la respuesta es que resulta imposible.
+
+Es importante notar que usar como máximo un cierto número de escalas equivale a usar como máximo ese número más uno de vuelos, porque cada escala intermedia añade un vuelo más al camino.
+
+## La idea central
+
+Piensa en un boleto de avión con una restricción molesta: puedes hacer como máximo dos escalas, ni una más, aunque exista una ruta más barata con tres. Si conocieras un algoritmo que solo busca el camino más barato sin fijarse en cuántos vuelos usa, correrías el riesgo de que te ofrezca la ruta más económica del mundo, pero con más escalas de las que tu boleto permite. Entonces necesitas otra manera de pensar el problema: en vez de buscar el camino más barato sin restricciones, hay que buscar el camino más barato construyéndolo un vuelo a la vez, y detenerte exactamente cuando llegas al número de vuelos permitido.
+
+La estrategia se parece a ir actualizando, ronda tras ronda, una tabla de precios: en la primera ronda anotas a qué ciudades puedes llegar usando un solo vuelo desde el origen y cuánto cuesta. En la segunda ronda, usando esa tabla de la ronda anterior, anotas a qué ciudades puedes llegar usando como máximo dos vuelos. Repites esto hasta agotar el número de rondas permitido, y el truco es que en cada ronda solo puedes sumar exactamente un vuelo más a lo que ya sabías de la ronda anterior, nunca varios vuelos de golpe.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Primero, preparamos una tabla de precios, uno por cada ciudad, y la llenamos toda con un valor que representa infinito, es decir, todavía inalcanzable. A la ciudad de salida le ponemos precio cero, porque llegar a ella no cuesta nada, ya estamos ahí.
+
+Después, decidimos cuántas rondas vamos a hacer: exactamente el número de escalas permitidas más uno. Esto es clave, porque cada ronda representa sumar un vuelo más al camino, y como escalas más uno es igual a vuelos, necesitamos esa cantidad exacta de rondas.
+
+En cada ronda, antes de empezar a actualizar nada, hacemos una copia completa de la tabla de precios tal como estaba al final de la ronda anterior. Esta copia es fundamental, y hablaremos de por qué en un momento.
+
+Luego, recorremos la lista completa de vuelos disponibles, uno por uno. Para cada vuelo, que va de una ciudad origen a una ciudad destino con un precio determinado, revisamos si la ciudad origen ya era alcanzable en la ronda anterior. Si lo era, calculamos cuánto costaría llegar a la ciudad destino pasando por ese vuelo: el precio que tenía la ciudad origen en la ronda anterior, más el precio de este vuelo. Si ese nuevo precio resulta más barato que lo que teníamos anotado para la ciudad destino en nuestra copia nueva, actualizamos la copia nueva con ese precio más barato.
+
+Es fundamental notar que, al calcular este nuevo precio, siempre usamos el precio de la ciudad origen tal como estaba anotado en la tabla vieja, la de la ronda anterior, y nunca el precio que acabamos de actualizar en esta misma ronda. Esta separación entre la tabla vieja y la tabla nueva es lo que evita que, sin querer, encadenemos dos o más vuelos dentro de la misma ronda, lo cual haría trampa con el límite de escalas.
+
+Cuando terminamos de revisar todos los vuelos de esa ronda, reemplazamos la tabla vieja por la tabla nueva que acabamos de construir, y empezamos la siguiente ronda repitiendo el mismo proceso.
+
+Al terminar todas las rondas, miramos qué precio quedó anotado para la ciudad de llegada. Si sigue marcado como infinito, quiere decir que nunca logramos alcanzarla dentro del límite de escalas, así que la respuesta es que resulta imposible. Si tiene un número anotado, ese número es el precio más barato posible respetando el límite.
+
+## Por qué esta complejidad
+
+En cuanto al tiempo, hacemos una cantidad de rondas igual al número de escalas permitidas más uno, y en cada ronda recorremos la lista completa de vuelos una sola vez. Entonces el trabajo total depende de multiplicar el número de rondas por el número de vuelos que existen en el mapa.
+
+En cuanto al espacio, solo necesitamos guardar un precio por cada ciudad, más la copia temporal que usamos durante cada ronda, así que el espacio depende únicamente de cuántas ciudades hay, sin importar cuántos vuelos existan ni cuántas rondas hagamos.
+
+## Errores comunes y tips de entrevista
+
+El error más frecuente, por mucho, es olvidar hacer la copia de la tabla de precios antes de empezar cada ronda, y en su lugar ir actualizando la misma tabla mientras la recorres. Si haces eso, dentro de una sola ronda podrías abaratar el precio de una ciudad y, sin darte cuenta, usar ese precio recién actualizado para abaratar otra ciudad más adelante en la misma ronda, lo cual equivale a colar dos vuelos en el espacio de uno solo y romper el límite de escalas sin que el resultado se vea obviamente mal.
+
+Otro error común es confundir el número de escalas con el número de vuelos. Si el límite son dos escalas, hay que hacer tres rondas, no dos, porque dos escalas intermedias implican tres vuelos en el camino.
+
+También conviene mencionar en voz alta, durante la entrevista, por qué esta técnica se elige en lugar de otras formas de buscar caminos más baratos que priorizan el precio total sin llevar la cuenta de cuántos vuelos se usaron: esas otras técnicas pueden encontrar rutas muy baratas, pero no ofrecen ningún control directo sobre el número de escalas, que es justo la restricción que este problema exige.
+
+Por último, vale la pena aclarar los casos especiales antes de programar: si la ciudad de salida y la de llegada son la misma, el precio es cero porque no hace falta volar; si no existe ninguna ruta posible sin importar cuántas escalas se permitan, la respuesta es que resulta imposible; y si el número de escalas permitidas es muy grande, el algoritmo simplemente termina calculando el camino más barato posible sin restricciones, porque las rondas de más ya no le hacen daño al resultado.

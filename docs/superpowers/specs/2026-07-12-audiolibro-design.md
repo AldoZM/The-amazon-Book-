@@ -1,19 +1,17 @@
-# Audiolibro — .md narrables por ejercicio (piloto)
+# Audiolibro — .md narrables por ejercicio
 
 ## Contexto
 
-El libro tiene 32 ejercicios LeetCode (20 Grafos + 12 Árboles) con solución en C++ y explicación en español nivel principiante en `capitulos/`. Se agrega una versión audiolibro: un `.md` independiente por ejercicio, escrito desde cero (no copiado del `.tex`), pensado para entenderse solo escuchándolo, con el algoritmo explicado en pseudocódigo narrado en prosa. Piloto de 2 problemas (200, 994) antes de escalar a los 32.
+El libro tiene 32 ejercicios LeetCode (20 Grafos + 12 Árboles) con solución en C++ y explicación en español nivel principiante en `capitulos/`. Se agrega una versión audiolibro: un `.md` independiente por ejercicio, escrito desde cero (no copiado del `.tex`), pensado para entenderse solo escuchándolo, con el algoritmo explicado en pseudocódigo narrado en prosa. Empezó como piloto de 2 problemas (200, 994) y se escaló a los 32 el mismo día, repartiendo la redacción en 6 agentes en paralelo (5 problemas cada uno) siguiendo la plantilla y reglas de estilo validadas en el piloto.
 
 ## Ubicación y estructura de archivos
 
-Carpeta `audiolibro/`, espejo de `capitulos/` y `src/`:
+Carpeta `audiolibro/`, espejo de `capitulos/` y `src/`. Cada problema tiene dos archivos: `.md` (con encabezados markdown) y `.txt` (texto plano sin símbolos `#`, listo para pegar en una herramienta de texto-a-voz):
 
 ```
 audiolibro/
-  01-grafos/
-    200-number-of-islands.md
-    994-rotting-oranges.md
-  02-arboles/        (se crea al escalar)
+  01-grafos/       20 problemas × (.md + .txt)
+  02-arboles/      12 problemas × (.md + .txt)
 ```
 
 Mismo slug que `capitulos/<cap>/<slug>.tex` y `src/<cap>/<slug>.cpp`.
@@ -39,4 +37,4 @@ Prosa pura: sin indexación (`grid[r][c]`), sin símbolos de comparación/asigna
 
 ## Estado
 
-Piloto completo: `audiolibro/01-grafos/200-number-of-islands.md` y `audiolibro/01-grafos/994-rotting-oranges.md` escritos siguiendo la plantilla. Pendiente: el usuario prueba con Edge TTS/Audiobook Maker y decide si escalar a los 32 problemas.
+Completo: los 32 problemas (20 Grafos + 12 Árboles) tienen su `.md` y `.txt` en `audiolibro/`, siguiendo la plantilla de 6 secciones, la convención de terminología del proyecto (algoritmos en inglés canónico con glosa en primera mención, estructuras en español) y el pseudocódigo narrativo sin símbolos ni indexación. Pendiente: el usuario prueba el audio con Edge TTS/Audiobook Maker.

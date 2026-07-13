@@ -1,0 +1,39 @@
+210. Course Schedule II
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Otra vez tenemos un total de cursos numerados desde el cero, y una lista de reglas de prerrequisito que dicen "para tomar tal curso, primero hay que haber tomado tal otro". Pero aquí ya no basta con responder si es posible o no: hay que entregar, en concreto, un orden completo en el que se puedan ir tomando todos los cursos sin romper ninguna regla. Si existen varios órdenes que funcionan, cualquiera de ellos sirve como respuesta. Y si resulta que ningún orden es posible, porque las reglas se piden entre sí en círculo, entonces la respuesta es una lista vacía.
+
+La idea central
+
+Imagina que eres el jefe de cocina de un restaurante y tienes que armar, para tus ayudantes, la lista exacta del orden en que se preparan los platillos de la noche. Hay platillos que requieren que otro ya esté listo antes de empezar, la salsa necesita el caldo reducido, el postre necesita el horno libre que antes estaba ocupado con el pan. No te basta con saber que sí se puede terminar todo el menú a tiempo: tienes que escribir, en un pizarrón, la secuencia exacta de estaciones que va a seguir la cocina esa noche. Entonces vas anotando en el pizarrón, uno por uno, los platillos que en este momento ya no están esperando nada, y en cuanto uno queda listo, revisas qué otros platillos estaban esperándolo, y si a alguno ya no le falta nada más, lo agregas también al pizarrón. Al final, el pizarrón completo es la receta de orden que vas a repartir en la cocina.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero recorremos toda la lista de reglas y, para cada curso, anotamos dos cosas: cuáles son los cursos que dependen directamente de él, y cuántos prerrequisitos le hacen falta todavía, es decir, cuántas reglas apuntan hacia él en este momento.
+
+Después juntamos, en una cola de espera, a todos los cursos que desde el principio no tienen ningún prerrequisito pendiente, y preparamos una lista de resultado, todavía vacía, donde vamos a ir anotando el orden final.
+
+Luego empezamos a sacar cursos de la cola de espera, uno a la vez. Cada vez que sacamos un curso, lo escribimos al final de la lista de resultado. Después, revisamos la lista de cursos que dependían directamente de este que acabamos de sacar, y a cada uno de ellos le restamos uno a su cantidad de prerrequisitos pendientes. Al curso que se quede sin ningún prerrequisito pendiente lo metemos a la cola de espera, para que en algún momento posterior también se escriba en la lista de resultado.
+
+Repetimos este proceso, sacar un curso, escribirlo en la lista de resultado, y liberar a sus dependientes, hasta que la cola de espera se quede completamente vacía.
+
+Al final, revisamos cuántos cursos quedaron escritos en la lista de resultado. Si la cantidad coincide con el número total de cursos que existían desde el inicio, esa lista es un orden válido y esa es la respuesta. Si a la lista le faltan cursos, quiere decir que algunos quedaron atrapados esperándose entre sí en un círculo cerrado de dependencias, así que no existe ningún orden posible, y la respuesta es una lista vacía.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, revisamos cada curso una sola vez para meterlo o sacarlo de la cola de espera y escribirlo en la lista de resultado, y revisamos cada regla de prerrequisito una sola vez, en el momento en que liberamos al curso que depende de ella. El trabajo total crece de forma proporcional a la cantidad de cursos más la cantidad de reglas, y no se puede hacer más rápido, porque cuando menos hay que leer todas las reglas una vez para poder construir el orden.
+
+En cuanto al espacio, guardamos, para cada curso, la lista de quiénes dependen de él y cuántos prerrequisitos pendientes tiene, además de la lista de resultado que al final va a contener a todos los cursos, así que el espacio también crece de forma proporcional a la cantidad de cursos más la cantidad de reglas.
+
+Errores comunes y tips de entrevista
+
+Un error frecuente es asumir que la lista de resultado tiene que ser exactamente una en particular. Casi siempre hay varias formas válidas de ordenar los cursos cuando existen ramas de dependencias que no se tocan entre sí, así que en la entrevista conviene aclarar desde el principio que cualquier orden que respete las reglas es una respuesta correcta, no hay una única respuesta esperada.
+
+Otro error es olvidar comprobar, al final, que la lista de resultado tenga a todos los cursos; si te saltas ese paso, puedes terminar devolviendo un orden incompleto sin darte cuenta de que había un círculo cerrado escondido entre algunos cursos.
+
+También es fácil confundir este problema con el anterior, el que solo pregunta si es posible terminar todo. Vale la pena mencionar en la entrevista que la lógica interna es casi idéntica, la diferencia es que aquí vamos guardando cada curso que sacamos de la cola de espera, en vez de solamente contarlo.
+
+Por último, si te piden comprobar tu propia respuesta sin tener un orden fijo con el cual comparar, basta con revisar, para cada regla de prerrequisito, que el curso que se necesita aparezca antes en la lista que el curso que lo necesita; explicar esa forma de verificación demuestra que entiendes bien qué es lo que hace válido a un orden.

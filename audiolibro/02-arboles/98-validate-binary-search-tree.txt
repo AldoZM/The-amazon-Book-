@@ -1,0 +1,47 @@
+98. Validate Binary Search Tree
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Nos dan la raíz de un árbol binario, es decir, una estructura donde cada nodo tiene, como mucho, un hijo a la izquierda y un hijo a la derecha. Queremos determinar si ese árbol es un árbol de búsqueda binaria válido. Para que lo sea, se tienen que cumplir tres condiciones a la vez: todo el subárbol que cuelga a la izquierda de cualquier nodo debe contener únicamente valores menores que el valor de ese nodo; todo el subárbol que cuelga a la derecha debe contener únicamente valores mayores; y, además, cada uno de esos subárboles tiene que ser, a su vez, un árbol de búsqueda binaria válido por sí mismo, no solo cumplir la regla superficialmente con el nodo justo encima. La pregunta que responde el algoritmo es simplemente sí o no.
+
+La idea central
+
+Piensa en una biblioteca donde los libros están acomodados por número en estantes que se ramifican: si estás parado frente al estante marcado con el número cinco, la regla no dice solamente que el libro justo a la izquierda sea menor que cinco. La regla dice que absolutamente todos los libros de toda el ala izquierda, sin importar qué tan lejos o qué tan abajo estén escondidos, tienen que ser menores que cinco. Y todos los libros del ala derecha, sin importar qué tan profundo estén, tienen que ser mayores que cinco.
+
+Aquí está la trampa en la que mucha gente cae: revisar solamente que el hijo inmediato de la izquierda sea menor y el hijo inmediato de la derecha sea mayor que el nodo actual. Eso no es suficiente, porque un nodo que está escondido muy abajo, del lado derecho de la raíz, podría tener un valor menor que la raíz y colarse como válido si solo comparamos localmente entre padres e hijos directos. La regla tiene que respetarse para el subárbol completo, no solamente para la comparación inmediata entre un nodo y sus dos hijos.
+
+Cómo funciona el algoritmo, paso a paso
+
+La manera correcta de resolver esto es que cada nodo, al ser revisado, lleve consigo una ventana de valores permitidos: un límite inferior y un límite superior dentro de los cuales su valor tiene que caer. Vamos bajando por el árbol pasando esa ventana de padres a hijos, y la ventana se va apretando conforme avanzamos.
+
+Al principio, quien revisa la raíz no tiene ninguna restricción todavía: su ventana permitida va desde un límite inferior extremadamente pequeño hasta un límite superior extremadamente grande, básicamente sin restricción real.
+
+Cuando estamos parados en un nodo cualquiera y vamos a revisar su hijo izquierdo, le pasamos una ventana nueva donde el límite inferior se queda igual que el que traíamos, pero el límite superior se aprieta hasta el valor del nodo actual, porque todo lo que está a la izquierda tiene que ser menor que él.
+
+Cuando vamos a revisar el hijo derecho, le pasamos una ventana nueva donde el límite superior se queda igual, pero el límite inferior sube hasta el valor del nodo actual, porque todo lo que está a la derecha tiene que ser mayor que él.
+
+En cada nodo que visitamos, antes de seguir bajando, comprobamos si su propio valor cae dentro de la ventana que le tocó recibir. Si el valor del nodo es menor o igual que el límite inferior de su ventana, o si es mayor o igual que el límite superior, entonces el árbol no es válido, y ahí mismo se detiene todo el proceso con una respuesta negativa.
+
+Si el nodo cae dentro de su ventana correctamente, seguimos bajando: revisamos su hijo izquierdo con la ventana apretada por arriba, y revisamos su hijo derecho con la ventana apretada por abajo, y el árbol completo solo se considera válido si ambos lados, recorridos de esta manera, resultan válidos también.
+
+Cuando llegamos a un lugar donde no hay ningún nodo, es decir, un hijo que no existe, consideramos que esa rama vacía siempre es válida, porque no hay nada que revisar ahí, y eso permite que el proceso termine correctamente en las puntas del árbol.
+
+Un detalle importante de implementación: como los valores de los nodos pueden llegar a tocar exactamente los extremos del rango de números representables, conviene usar un tipo de dato capaz de representar números más grandes y más pequeños que esos extremos para los límites de la ventana, de forma que la comparación nunca falle por quedarse sin margen en esos casos extremos.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, visitamos cada nodo del árbol exactamente una vez para comprobar si cae dentro de su ventana permitida, así que el trabajo total depende únicamente de cuántos nodos tiene el árbol.
+
+En cuanto al espacio, lo que se gasta es el espacio de las llamadas que quedan abiertas mientras vamos bajando por el árbol, y esa cantidad depende de la altura del árbol, es decir, de qué tan profundo llega la rama más larga. Si el árbol está bien balanceado, esa altura es pequeña en comparación con el número de nodos. Pero si el árbol está muy torcido y se parece más a una cadena que cuelga hacia un solo lado, la altura puede llegar a ser tan grande como el número total de nodos.
+
+Errores comunes y tips de entrevista
+
+El error más común, y el que casi siempre buscan detectar en la entrevista, es comparar cada nodo únicamente contra sus dos hijos inmediatos en lugar de llevar una ventana de límites que se hereda y se aprieta a lo largo de todo el camino desde la raíz. Ese enfoque superficial falla exactamente en el caso donde un nodo profundo rompe la regla de un ancestro lejano, no de su padre inmediato.
+
+Otro descuido frecuente tiene que ver con los valores extremos que puede tomar un nodo. Si los límites de la ventana se representan con el mismo tipo de dato que los valores del árbol, existe el riesgo de que las comparaciones fallen justo quedarse sin margen, porque el límite inicial necesita quedar estrictamente más allá del valor extremo más pequeño y más grande posibles. Usar un tipo de dato con más margen para los límites evita este problema por completo, y mencionarlo en la entrevista demuestra que piensas en los casos límite de los números, no solo en la lógica general.
+
+También vale la pena explicar en voz alta, antes de programar, que las comparaciones deben ser estrictas: un valor igual al límite inferior o igual al límite superior no es válido, porque el árbol de búsqueda binaria exige valores estrictamente menores o estrictamente mayores, no iguales.
+
+Por último, conviene mencionar los casos extremos de la altura del árbol: si el árbol está balanceado, el espacio usado por el recorrido es proporcional al logaritmo del número de nodos, y si el árbol está degenerado y se parece a una lista donde cada nodo solo tiene un hijo, ese espacio se vuelve proporcional al número total de nodos, lo cual es un buen punto para mostrar que entiendes el peor caso, no solo el caso promedio.

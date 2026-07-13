@@ -1,0 +1,45 @@
+543. Diameter of Binary Tree
+
+Dificultad: Fácil.
+
+El problema, en palabras simples
+
+Imagina un árbol binario, donde cada nodo puede tener hasta dos hijos, uno a la izquierda y otro a la derecha, y así hacia abajo hasta llegar a nodos que ya no tienen hijos. Entre cualquier par de nodos del árbol existe un único camino que los conecta, siguiendo las conexiones del árbol, y la longitud de ese camino se mide contando cuántas conexiones hay que cruzar para ir de un nodo al otro. Lo que se pide es encontrar la longitud del camino más largo que existe entre cualquier par de nodos del árbol, sin importar en qué parte del árbol esté ese camino.
+
+La idea central
+
+Piensa en un mapa de senderos en un bosque, donde los senderos se ramifican desde un punto de entrada, pero nunca se vuelven a juntar. Si te preguntan cuál es la caminata más larga posible entre dos puntos cualesquiera del bosque, la intuición equivocada es pensar que esa caminata siempre pasa por la entrada principal. En realidad, la caminata más larga puede estar escondida por completo en una zona alejada del bosque, sin pasar nunca por la entrada. La forma correcta de pensarlo es esta: cualquier caminata entre dos puntos tiene un lugar donde cambia de dirección, un punto donde deja de alejarse por una rama y empieza a alejarse por otra. Si te paras en ese punto de cambio de dirección, la longitud total de la caminata es exactamente lo lejos que se puede llegar bajando por una rama, más lo lejos que se puede llegar bajando por la otra rama. Entonces, en vez de buscar la caminata más larga directamente, revisamos cada punto del bosque como posible punto de cambio de dirección, y nos quedamos con el mejor de todos.
+
+Cómo funciona el algoritmo, paso a paso
+
+Recorremos el árbol de abajo hacia arriba, procesando primero los hijos y hasta el final el nodo padre; esto se llama recorrido en post-order, glosa de post-order.
+
+Llevamos guardado en algún lugar el mejor resultado encontrado hasta el momento, y lo inicializamos en cero antes de empezar.
+
+Para cada nodo, primero le preguntamos a su hijo izquierdo qué tan profundo puede llegar hacia abajo, contando cuántas conexiones hay desde ese hijo hasta el nodo más lejano en esa dirección. A esto le llamamos la altura del hijo izquierdo. Hacemos exactamente la misma pregunta al hijo derecho, obteniendo la altura del hijo derecho.
+
+Cuando un nodo no existe, es decir, es un espacio vacío donde no hay hijo, su altura es cero, porque no hay nada que recorrer desde ahí.
+
+Una vez que tenemos la altura del hijo izquierdo y la altura del hijo derecho, sumamos esas dos alturas. Ese resultado representa la longitud del camino más largo que cambia de dirección precisamente en este nodo: baja por la rama izquierda y luego baja por la rama derecha. Comparamos esa suma con el mejor resultado que llevábamos guardado, y si esta suma es mayor, actualizamos el mejor resultado.
+
+Después de actualizar el mejor resultado, el nodo actual necesita devolver hacia su propio padre un solo número: su propia altura. Esa altura es uno, por la conexión hacia este nodo, más la mayor de las dos alturas de sus hijos, la izquierda o la derecha, la que sea más grande. Es importante notar que hacia el padre solo se devuelve una rama, la más larga de las dos, nunca la suma de ambas.
+
+Repetimos este proceso subiendo nodo por nodo hasta terminar de procesar la raíz completa del árbol.
+
+Al final, el mejor resultado que quedó guardado es la respuesta: la longitud del camino más largo entre cualquier par de nodos de todo el árbol.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, cada nodo se visita exactamente una vez, y en esa visita se hace solamente una comparación y una suma con las alturas ya calculadas de sus hijos. Como ningún nodo se vuelve a visitar, el trabajo total crece de forma proporcional a la cantidad total de nodos del árbol.
+
+En cuanto al espacio, lo que ocupa memoria es la cadena de llamadas que va bajando desde la raíz hasta el nodo que se está procesando en cada momento. Esa cadena nunca es más larga que la altura del árbol, es decir, cuántos niveles hay entre la raíz y el nodo más profundo. En un árbol bien equilibrado esa altura es pequeña comparada con el número total de nodos, pero en un árbol muy desbalanceado, como uno que crece solo hacia un lado, esa altura puede acercarse al número total de nodos.
+
+Errores comunes y tips de entrevista
+
+El error más frecuente es asumir que el camino más largo siempre pasa por la raíz del árbol, y calcular solamente la suma de las alturas de los dos hijos de la raíz. Eso da una respuesta incorrecta cuando el camino más largo en realidad está escondido en una rama profunda que ni siquiera toca la raíz.
+
+Otro error común es confundir lo que se actualiza como mejor resultado con lo que se devuelve al padre: lo que se actualiza es la suma de las dos alturas, porque representa un camino completo que cambia de dirección en ese nodo; lo que se devuelve al padre es solamente la altura de una rama, la más larga, porque el padre solo puede seguir extendiendo el camino por una dirección a la vez.
+
+También conviene aclarar los casos extremos antes de programar: un árbol vacío, sin ningún nodo, tiene una respuesta de cero, y un árbol de un solo nodo también tiene una respuesta de cero, porque no existe ninguna conexión que cruzar.
+
+En la entrevista de Amazon, vale mucho explicar en voz alta por qué se necesita una variable aparte para guardar el mejor resultado global, separada de lo que la función devuelve hacia arriba en cada paso; mostrar que entiendes esa diferencia demuestra que comprendes bien la técnica y no solo memorizaste el código.

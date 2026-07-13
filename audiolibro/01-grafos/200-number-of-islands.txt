@@ -1,0 +1,43 @@
+200. Number of Islands
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Imagina un mapa dibujado en una cuadrícula. Cada casilla es tierra o es agua. Dos casillas de tierra pertenecen a la misma isla si están pegadas por arriba, por abajo, por la izquierda o por la derecha, no cuenta si solo se tocan en diagonal. Lo que se pide es contar cuántas islas separadas hay en total en ese mapa.
+
+La idea central
+
+Piensa en un mapa de islas visto desde un avión, y tú vas marcando con un plumón cada pedazo de tierra que ya reconociste como parte de una isla. En cuanto marcas una casilla, dejas de contarla otra vez, sin importar cuántas veces vuelvas a pasar por ahí. Entonces, la estrategia es: recorrer el mapa, y cada vez que encuentres tierra sin marcar, eso significa que descubriste una isla nueva. A partir de ahí, marcas con el plumón toda la tierra conectada a ella, para que cuando sigas recorriendo el mapa no la vuelvas a contar. Al final, el número de veces que descubriste tierra nueva es el número de islas.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero, recorremos todo el mapa, casilla por casilla, de arriba hacia abajo y de izquierda a derecha.
+
+Cuando llegamos a una casilla, revisamos dos cosas: si es tierra, y si todavía no la hemos marcado como visitada.
+
+Si la casilla es agua, o si ya la habíamos visitado antes, simplemente seguimos con la siguiente casilla, sin hacer nada más.
+
+Pero si la casilla es tierra y no ha sido visitada, entonces acabamos de encontrar una isla nueva. Sumamos uno al contador de islas.
+
+Después, empezamos a expandirnos desde esa casilla hacia sus cuatro vecinas: la de arriba, la de abajo, la de la izquierda y la de la derecha. A cada vecina que también sea tierra y no haya sido visitada, la marcamos como visitada y repetimos el mismo proceso desde ella, expandiéndonos otra vez en las cuatro direcciones. Esto continúa como una ola que se extiende, hasta que ya no queda tierra sin marcar conectada a la isla original.
+
+Cuando la ola termina de expandirse, esa isla completa quedó marcada, y regresamos a seguir recorriendo el mapa desde donde nos habíamos quedado, buscando la siguiente casilla de tierra sin visitar.
+
+Repetimos todo esto hasta terminar de recorrer el mapa completo. El contador final es la respuesta.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, visitamos cada casilla del mapa como máximo una vez para revisarla, y cada casilla de tierra se marca y se expande también una sola vez. Como no repetimos trabajo sobre una casilla ya visitada, el tiempo total depende solamente de cuántas casillas tiene el mapa: si el mapa tiene una cierta cantidad de filas y columnas, el trabajo crece de forma proporcional a filas por columnas.
+
+En cuanto al espacio, necesitamos recordar qué casillas ya visitamos, así que guardamos esa información para cada casilla del mapa. Además, si la expansión hacia las islas se hace llamándose a sí misma repetidamente, esas llamadas también ocupan espacio mientras están activas, y en el peor caso, un mapa que es una sola isla gigante, ese espacio puede llegar a ser tan grande como el mapa mismo.
+
+Errores comunes y tips de entrevista
+
+Un error frecuente es olvidar marcar una casilla como visitada justo en el momento en que la descubrimos, y no cuando la volvemos a procesar después; si te tardas en marcarla, puedes terminar contándola dos veces o entrando en un ciclo infinito.
+
+Otro error es confundir vecinos en diagonal con vecinos conectados: en este problema, solo cuentan arriba, abajo, izquierda y derecha.
+
+También conviene decir en voz alta, antes de programar, si vas a resolverlo expandiendo la isla con llamadas repetidas o usando una lista de pendientes que vas vaciando poco a poco; ambas funcionan, pero explicar la diferencia muestra que entiendes el uso de memoria de cada una, algo que en una entrevista de Amazon se valora.
+
+Por último, siempre aclara qué pasa si el mapa viene vacío o sin ninguna tierra: la respuesta correcta ahí es cero islas, y decirlo en voz alta evita que parezca que lo olvidaste.

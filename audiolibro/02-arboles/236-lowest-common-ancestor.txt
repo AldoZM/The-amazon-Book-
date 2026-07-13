@@ -1,0 +1,43 @@
+236. Lowest Common Ancestor of a Binary Tree
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Te dan un árbol binario y dos nodos específicos dentro de ese árbol, a los que llamaremos el primer nodo y el segundo nodo; se garantiza que ambos existen en el árbol. Un ancestro de un nodo es cualquier nodo que esté por encima de él dentro del árbol, siguiendo el camino hacia arriba hasta llegar a la raíz; además, por convención, un nodo se considera ancestro de sí mismo. Lo que se pide es encontrar el ancestro común más bajo entre el primer nodo y el segundo nodo, es decir, el ancestro compartido que está más alejado de la raíz y más cerca de ambos nodos al mismo tiempo, el punto exacto donde sus dos caminos hacia arriba se juntan por primera vez.
+
+La idea central
+
+Imagina un árbol genealógico dibujado al revés, donde arriba está el fundador de la familia y hacia abajo van colgando sus descendientes, generación tras generación. Ahora imagina que quieres encontrar al pariente compartido más cercano entre dos primos lejanos de esa familia. Una forma de hacerlo es empezar en el fundador, hasta arriba de todo, y preguntarte: ¿alguno de los dos primos que busco desciende de mi rama izquierda? ¿Y alguno desciende de mi rama derecha? Si resulta que uno de ellos está del lado izquierdo y el otro está del lado derecho, entonces tú mismo, la persona en la que estás parado en este momento, eres el punto exacto donde sus dos líneas familiares se separan, así que tú eres la respuesta. Pero si los dos primos resultan estar del mismo lado, entonces el pariente compartido más cercano no eres tú, sino alguien más abajo en esa misma rama, así que le pasas la pregunta a esa rama y dejas que ella siga buscando más profundo, hasta encontrar el punto exacto donde finalmente se separan.
+
+Cómo funciona el algoritmo, paso a paso
+
+Definimos un proceso que revisa un nodo cualquiera del árbol, junto con el primer nodo y el segundo nodo que estamos buscando.
+
+Si el nodo que estamos revisando no existe, o si el nodo que estamos revisando es exactamente el primer nodo que buscamos, o si es exactamente el segundo nodo que buscamos, entonces devolvemos ese mismo nodo tal cual, sin seguir bajando por esa rama. Esto tiene sentido porque, si ya encontramos a uno de los dos nodos buscados, no necesitamos seguir explorando más abajo de él para saber que está presente en esta rama.
+
+Si el nodo actual no es ninguno de los dos que buscamos, entonces le preguntamos lo mismo a su hijo izquierdo, y por separado le preguntamos lo mismo a su hijo derecho, dejando que cada rama investigue si el primer nodo o el segundo nodo viven en algún lugar dentro de ella.
+
+Una vez que las dos ramas terminaron de responder, revisamos qué encontraron. Si tanto la rama izquierda como la rama derecha devolvieron algo distinto de nada, eso significa que el primer nodo y el segundo nodo se repartieron uno en cada rama, uno a la izquierda y otro a la derecha. En ese caso, el nodo actual es exactamente el punto donde sus caminos se juntan, así que devolvemos el nodo actual como la respuesta.
+
+Si en cambio solamente una de las dos ramas devolvió algo distinto de nada, eso significa que ambos nodos buscados, o al menos el único que se ha encontrado hasta ahora, viven del mismo lado. En ese caso, simplemente pasamos hacia arriba lo que esa rama nos devolvió, sin modificarlo, dejando que sea la respuesta que le pasamos a quien nos llamó a nosotros.
+
+Si ninguna de las dos ramas encontró nada, devolvemos nada, indicando que en esta parte del árbol no vive ninguno de los dos nodos que buscamos.
+
+Este proceso empieza en la raíz del árbol completo y va bajando hacia las hojas, y las respuestas se van formando desde abajo hacia arriba, resolviendo primero a los hijos y hasta el final al nodo padre. Cuando el proceso termina sobre el árbol completo, el resultado que se obtiene en la raíz es el ancestro común más bajo entre los dos nodos buscados.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, en el peor de los casos visitamos cada nodo del árbol exactamente una vez, porque cada nodo se revisa solo cuando el proceso baja hasta él, y nunca se vuelve a revisar después. Como el trabajo por cada nodo es constante, el tiempo total crece de forma proporcional a la cantidad de nodos que tiene el árbol.
+
+En cuanto al espacio, como este proceso se llama a sí mismo bajando primero hacia la rama izquierda y luego hacia la derecha antes de poder responder, esas llamadas se van apilando mientras siguen activas, como una torre. Esa torre nunca crece más alto que la altura del árbol, es decir, la cantidad de pisos que hay desde la raíz hasta el nodo más profundo, así que el espacio ocupado por esas llamadas es proporcional a la altura del árbol y no a la cantidad total de nodos.
+
+Errores comunes y tips de entrevista
+
+Un detalle importante que vale la pena mencionar en la entrevista es que la comparación para saber si el nodo actual es alguno de los dos buscados no se hace por el valor que contiene el nodo, sino por identificar si es exactamente ese mismo nodo dentro de la estructura del árbol. Esto es importante porque, si el árbol tuviera valores repetidos, comparar solamente por valor podría confundir un nodo distinto con el que en realidad se está buscando.
+
+Otro punto que conviene aclarar en voz alta es qué pasa cuando uno de los dos nodos buscados es en realidad ancestro directo del otro. En ese caso, el ancestro común más bajo es el propio ancestro, porque un nodo se considera ancestro de sí mismo, y el algoritmo lo maneja de forma natural gracias a que se detiene apenas encuentra a cualquiera de los dos nodos buscados, sin necesidad de un caso especial adicional.
+
+También es fácil olvidar mencionar que, si el árbol estuviera ordenado de una manera especial, donde los valores menores siempre están a la izquierda y los mayores siempre están a la derecha, existiría una forma más rápida de resolver este mismo problema, bajando directamente hacia el lado correcto sin necesidad de revisar las dos ramas en cada nodo. Mencionar esta alternativa, aunque no se use aquí porque el árbol de este problema no tiene esa propiedad, demuestra que conoces la diferencia entre un árbol binario cualquiera y un árbol de búsqueda binario.
+
+Por último, no olvides los casos raros antes de que te los pregunten: dos nodos que resultan ser hermanos directos, colgando del mismo padre, y un árbol donde uno de los dos nodos buscados está mucho más profundo que el otro; el algoritmo maneja ambos casos sin ningún ajuste especial, precisamente porque compara nodo por nodo sin asumir nada sobre la forma del árbol.

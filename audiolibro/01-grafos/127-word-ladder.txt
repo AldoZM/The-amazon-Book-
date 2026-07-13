@@ -1,0 +1,45 @@
+127. Word Ladder
+
+Dificultad: Difícil.
+
+El problema, en palabras simples
+
+Nos dan una palabra inicial, una palabra final, y una lista de palabras permitidas. La regla del juego es que, a partir de la palabra inicial, podemos transformarla en otra palabra cambiando exactamente una sola letra en cada paso, con la condición de que la palabra que resulte de ese cambio tiene que existir dentro de la lista permitida. Queremos saber cuántas palabras hacen falta, contando la inicial y la final, para llegar de una a la otra dando el menor número posible de esos pasos. Si la palabra final ni siquiera aparece en la lista permitida, o si no hay ninguna forma de llegar hasta ella cambiando una letra a la vez, la respuesta es que resulta imposible.
+
+La idea central
+
+Imagina un juego de mesa donde cada palabra es una casilla del tablero, y dos casillas están conectadas por un camino solamente si sus palabras se diferencian en una sola letra. Por ejemplo, la palabra hit está conectada con la palabra hot, porque solo cambia una letra. Lo que buscamos es la ruta más corta desde la casilla donde empezamos hasta la casilla donde queremos llegar. Para encontrar la ruta más corta en un tablero así, la mejor estrategia no es lanzarse por un solo camino y ver qué tan lejos llega, sino explorar en oleadas concéntricas: primero visitamos todas las casillas a las que se llega en un solo paso, luego, sin repetir ninguna, todas las casillas nuevas a las que se llega en dos pasos, después las de tres pasos, y así sucesivamente. En cuanto alguna de esas oleadas toca la casilla final, sabemos con certeza que encontramos el camino más corto, porque exploramos siempre del paso más chico al más grande, sin saltarnos ninguno. Esa forma de explorar por oleadas se llama Breadth-First Search, o BFS, y aquí cada oleada nueva representa exactamente un paso más de transformación.
+
+Cómo funciona el algoritmo, paso a paso
+
+Antes de empezar cualquier exploración, revisamos si la palabra final siquiera aparece en la lista permitida. Si no aparece, sabemos de inmediato que la respuesta es imposible y ni siquiera vale la pena buscar.
+
+Si sí aparece, preparamos una cola, que es una fila de espera donde lo primero que entra es lo primero que sale, y ponemos ahí a la palabra inicial. También llevamos un contador de cuántas palabras lleva nuestra secuencia hasta el momento, empezando en uno, porque la palabra inicial ya cuenta como la primera.
+
+Luego repetimos esto una y otra vez: antes de procesar la siguiente oleada, contamos cuántas palabras hay en este momento esperando en la fila, porque esas son exactamente las palabras que pertenecen a la oleada actual. Sacamos, una por una, solamente esa cantidad de palabras de la fila.
+
+Para cada palabra que sacamos, primero revisamos si es la palabra final. Si lo es, ya terminamos: la respuesta es el contador de palabras que llevamos acumulado.
+
+Si todavía no es la palabra final, generamos todas sus posibles vecinas: recorremos cada posición de la palabra, y en esa posición probamos, una por una, cada letra del abecedario distinta a la original, formando una palabra nueva cada vez. Cada palabra que resulte de este cambio, y que además exista en la lista permitida y que no hayamos usado antes, la agregamos al final de la fila, para que forme parte de la siguiente oleada, y la marcamos como ya usada para no volver a visitarla nunca más y evitar dar vueltas en círculo.
+
+Cuando terminamos de procesar todas las palabras que pertenecían a la oleada actual, sumamos uno a nuestro contador, porque estamos a punto de entrar a la siguiente oleada, y repetimos el proceso completo con las palabras nuevas que quedaron esperando en la fila.
+
+Si en algún momento la fila se queda completamente vacía sin que hayamos encontrado nunca la palabra final, entonces significa que resulta imposible llegar hasta ella, y esa es la respuesta que damos.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, por cada palabra que sacamos de la fila probamos cambiar cada una de sus posiciones por cada una de las letras del abecedario, y armar cada palabra nueva nos cuesta revisar todas sus letras otra vez. Entonces el trabajo por cada palabra depende del cuadrado de su longitud, multiplicado por la cantidad de letras del abecedario, y ese trabajo se repite tantas veces como palabras haya en la lista permitida. En resumen, el tiempo total es proporcional a la cantidad de palabras de la lista, multiplicada por el cuadrado de la longitud de cada palabra, multiplicada por las letras del abecedario.
+
+En cuanto al espacio, necesitamos guardar en un conjunto todas las palabras de la lista permitida para poder preguntar rápidamente si una palabra generada existe, y también necesitamos recordar cuáles palabras ya visitamos, así que el espacio que usamos crece de forma proporcional a la cantidad de palabras de la lista multiplicada por la longitud de cada una.
+
+Errores comunes y tips de entrevista
+
+Lo primero que hay que revisar, sin falta, es si la palabra final está en la lista permitida. Es un chequeo muy barato que evita explorar todo el tablero sin necesidad cuando la respuesta ya se sabe de antemano que es imposible.
+
+Un error común es intentar encontrar las palabras vecinas comparando la palabra actual contra cada palabra de la lista, letra por letra, para ver cuáles difieren en una sola posición. Eso funciona, pero se vuelve muy lento cuando la lista tiene muchas palabras. Es mucho más eficiente generar nosotros mismos todas las variantes posibles cambiando una letra a la vez, y simplemente preguntarle a un conjunto si esa variante existe, porque esa pregunta se responde casi al instante.
+
+Otro error es olvidar marcar una palabra como visitada justo en el momento en que la agregamos a la fila, y no hasta que la sacamos de ella. Si te tardas en marcarla, la misma palabra puede colarse varias veces en la fila desde distintos caminos, y eso desperdicia trabajo, aunque no rompe la corrección del resultado.
+
+En una entrevista de Amazon, vale la pena mencionar que existe una variante llamada Breadth-First Search bidireccional, en la que se exploran oleadas al mismo tiempo desde la palabra inicial y desde la palabra final, para que se encuentren a la mitad del camino. Esta variante reduce bastante el trabajo en la práctica, aunque no cambia la idea central del algoritmo.
+
+Por último, no olvides mencionar en voz alta qué pasa si la palabra inicial y la palabra final se diferencian en una sola letra y esa palabra final ya está en la lista: en ese caso el camino más corto es directo, y la respuesta correcta es dos, porque se cuentan tanto la palabra inicial como la final.

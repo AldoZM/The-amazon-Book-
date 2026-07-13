@@ -1,0 +1,41 @@
+323. Number of Connected Components in an Undirected Graph
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Tenemos una cierta cantidad de nodos, numerados desde el cero, y una lista de conexiones entre parejas de nodos, donde cada conexión funciona en ambos sentidos. Lo que se pide es contar cuántos grupos separados forman esos nodos, entendiendo por grupo separado a un conjunto de nodos que se pueden alcanzar unos a otros siguiendo conexiones, sin que exista ninguna conexión, directa o por varios pasos, hacia los nodos de otro grupo.
+
+La idea central
+
+Piensa en un mapa de estaciones de tren repartidas por distintas ciudades, donde algunas estaciones tienen vías que las conectan directamente con otras, y otras vías conectan estaciones más lejanas formando rutas largas. Lo que queremos saber es cuántas redes ferroviarias separadas existen en total, es decir, cuántos grupos de estaciones puedes recorrer subiéndote a un tren, sin que exista ninguna vía, ni directa ni por transbordos, que te lleve de un grupo a otro. Al principio, antes de trazar ninguna vía, cada estación es su propia red aislada de una sola estación. Cada vez que se construye una vía nueva entre dos estaciones, hay dos posibilidades: si esas dos estaciones ya pertenecían a la misma red, porque ya se podía llegar de una a la otra por algún otro camino de vías, entonces la vía nueva no cambia nada, sigue habiendo la misma cantidad de redes separadas. Pero si las dos estaciones pertenecían a redes distintas, la vía nueva las fusiona en una sola red más grande, y automáticamente hay una red menos en el mapa completo.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero le asignamos a cada nodo su propio grupo, de manera que al principio cada nodo es un grupo de una sola pieza, y cada grupo tiene su propio representante, que empieza siendo el mismo nodo. También arrancamos un contador de grupos con el valor total de nodos que existen, porque en este momento todavía no hemos unido nada.
+
+Después recorremos la lista de conexiones, una por una. Para cada conexión, buscamos quién es el representante del grupo del primer nodo y quién es el representante del grupo del segundo nodo, siguiendo la cadena de representantes hacia arriba hasta llegar al que ya no tiene a nadie más arriba.
+
+Si los dos nodos de esa conexión ya comparten el mismo representante, quiere decir que ya pertenecían al mismo grupo desde antes, gracias a otro camino de conexiones, así que esta conexión no cambia nada y seguimos con la siguiente sin tocar el contador.
+
+Si tienen representantes distintos, entonces fusionamos los dos grupos en uno solo, haciendo que el representante de un grupo pase a depender del representante del otro grupo, y restamos uno al contador de grupos, porque dos grupos que antes eran distintos ahora se convirtieron en uno solo.
+
+Repetimos este proceso con cada conexión de la lista, hasta terminar de recorrerla por completo.
+
+Al final, el valor que quedó en el contador de grupos es exactamente la cantidad de grupos separados que tiene el conjunto completo de nodos, y esa es la respuesta.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, tocamos cada nodo una sola vez al principio para asignarle su propio grupo, y tocamos cada conexión una sola vez para revisar y, si hace falta, fusionar sus dos grupos. Buscar al representante de un grupo resulta prácticamente instantáneo gracias a dos trucos que se aplican juntos: acortar el camino hacia el representante cada vez que lo buscamos, y siempre colgar el grupo más chico del más grande al fusionar. Por eso el tiempo total crece de forma casi proporcional a la cantidad de nodos más la cantidad de conexiones.
+
+En cuanto al espacio, solamente necesitamos guardar, para cada nodo, quién es su representante actual y qué tan alto es su grupo, así que el espacio usado crece de forma proporcional a la cantidad de nodos.
+
+Errores comunes y tips de entrevista
+
+Un error común es olvidar inicializar el contador de grupos con el total de nodos desde el principio, y en vez de eso intentar calcularlo de alguna otra forma más complicada; el truco está justamente en arrancar contando cada nodo como su propio grupo y solamente ir restando cuando de verdad se fusionan dos grupos distintos.
+
+Otro error es procesar una conexión y restar del contador aunque los dos nodos ya compartieran representante; hay que revisar primero si los representantes son distintos, porque restar de más lleva a un conteo final incorrecto.
+
+También conviene mencionar en la entrevista que este problema es primo cercano de otros dos: comparte la misma herramienta de agrupar y fusionar con el problema de comprobar si un grafo forma un árbol válido, nada más que ahí, en vez de contar grupos, se pregunta si al final queda un solo grupo con la cantidad exacta de conexiones necesarias; y comparte el mismo espíritu con contar islas en una cuadrícula, aunque ahí las conexiones no vienen dadas como lista de parejas, sino que se deducen de qué casillas están pegadas entre sí. Explicar ese parecido demuestra que reconoces el patrón de fondo más allá de la forma en que llegan los datos.
+
+Por último, no olvides los casos raros: si no llega ninguna conexión, la respuesta es que hay tantos grupos como nodos, porque cada uno queda aislado; un solo nodo sin conexiones ya es, por sí mismo, un grupo completo; y una conexión repetida entre los mismos dos nodos no debe restar dos veces del contador, porque para la segunda vez que aparece esa conexión, esos dos nodos ya comparten representante.

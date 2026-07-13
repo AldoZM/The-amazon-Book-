@@ -1,0 +1,45 @@
+297. Serialize and Deserialize Binary Tree
+
+Dificultad: Difícil.
+
+El problema, en palabras simples
+
+Serializar significa transformar una estructura de datos, como un árbol binario, en un formato lineal, como una sola cadena de texto, para poder guardarla en un archivo o enviarla por una red. Deserializar es el proceso contrario: tomar esa cadena de texto y reconstruir, a partir de ella, la estructura original de forma exacta, sin perder ni un solo detalle sobre cómo estaban conectados los nodos. Lo que se pide en este problema es diseñar ambos procesos para un árbol binario: una función que convierta cualquier árbol en una cadena de texto, y otra función que tome esa cadena de texto y devuelva un árbol binario idéntico al original.
+
+La idea central
+
+Imagina que tienes que desarmar un mueble de madera para mandarlo por correo, y del otro lado alguien tiene que armarlo de nuevo exactamente igual, usando solamente una lista escrita de instrucciones. Para que eso funcione, la lista no puede describir nada más las piezas que sí existen; también tiene que dejar clarísimo dónde había huecos, dónde no había ninguna pieza conectada, porque si no se anotan esos huecos, la persona que arma el mueble no sabría dónde detenerse en cada rama. La forma más práctica de anotar esa lista es caminando por el árbol siempre en el mismo orden: primero se anota el valor de un nodo, después se sigue el mismo proceso con su rama izquierda completa, y hasta el final se sigue el mismo proceso con su rama derecha completa. A este orden de recorrido se le llama pre-order. Y cada vez que, durante ese recorrido, nos topamos con un lugar donde no hay ningún nodo, anotamos un símbolo especial que signifique justamente eso: aquí no hay nada. Con esos huecos marcados de forma explícita, la lista de texto describe el árbol completo sin dejar ninguna duda sobre cómo reconstruirlo.
+
+Cómo funciona el algoritmo, paso a paso
+
+Para serializar el árbol, definimos un proceso que revisa un nodo cualquiera. Si el nodo no existe, es decir, si ahí hay un hueco, anotamos el símbolo especial que representa un hueco, seguido de una coma, y no hacemos nada más en esa rama.
+
+Si el nodo sí existe, primero anotamos su valor seguido de una coma. Después, aplicamos este mismo proceso a su rama izquierda completa, y todo lo que ese proceso vaya anotando lo agregamos justo después. Una vez que la rama izquierda terminó de anotarse por completo, aplicamos el mismo proceso a la rama derecha completa, y agregamos lo que resulte al final. De esta manera, el texto final queda organizado siempre en el mismo orden: primero la raíz, luego toda la rama izquierda, y hasta el final toda la rama derecha, incluyendo los huecos marcados en cada lugar donde no había ningún nodo.
+
+Para deserializar, es decir, para reconstruir el árbol a partir de esa cadena de texto, leemos los valores en el mismo orden exacto en que los escribimos, uno por uno, separados por las comas.
+
+Definimos un proceso que va leyendo el siguiente valor disponible de la cadena de texto cada vez que se le llama. Si el siguiente valor que lee es el símbolo especial de hueco, entonces no hay ningún nodo ahí, y este proceso devuelve nada.
+
+Si el siguiente valor que lee es un número, entonces ese número es el valor de un nodo nuevo, y creamos ese nodo. Como sabemos que el texto fue escrito en pre-order, sabemos con certeza que lo siguiente que viene en la cadena de texto, inmediatamente después de este valor, corresponde a la rama izquierda de este nodo recién creado. Entonces, llamamos a este mismo proceso otra vez para construir la rama izquierda, y conectamos el resultado como el hijo izquierdo del nodo actual.
+
+Una vez que la rama izquierda terminó de leerse por completo, lo siguiente que queda en la cadena de texto corresponde a la rama derecha de este mismo nodo. Llamamos de nuevo a este proceso para construir la rama derecha, y la conectamos como el hijo derecho.
+
+Finalmente devolvemos este nodo, ya con sus dos ramas conectadas, hacia quien nos llamó. La clave de todo esto es que la posición de lectura dentro de la cadena de texto se comparte entre todas las llamadas, de manera que cada llamada continúa leyendo justo donde la llamada anterior se quedó, sin perderse ni repetir ningún valor.
+
+Cuando este proceso termina de leer toda la cadena de texto, el nodo que devolvió la primera llamada es la raíz del árbol reconstruido, idéntico en estructura y valores al árbol original.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, tanto al serializar como al deserializar tocamos cada nodo del árbol exactamente una vez, y también anotamos o leemos un símbolo por cada hueco, que como máximo son tantos huecos como nodos más uno. Como el trabajo por cada nodo o cada hueco es constante, el tiempo total, tanto para armar la cadena de texto como para reconstruir el árbol a partir de ella, crece de forma proporcional a la cantidad de nodos del árbol.
+
+En cuanto al espacio, la cadena de texto que se genera al serializar tiene que guardar un pedazo de información por cada nodo y por cada hueco, así que su tamaño también es proporcional a la cantidad de nodos. Además, como tanto el proceso de serializar como el de deserializar se llaman a sí mismos bajando por las ramas, esas llamadas se van apilando mientras están activas, y en el peor caso esa pila puede llegar a ser tan grande como la cantidad total de nodos del árbol. No se puede aspirar a menos que esto, porque para reconstruir el árbol con exactitud es necesario, de alguna forma, escribir y después leer información sobre cada uno de sus nodos.
+
+Errores comunes y tips de entrevista
+
+Un error común es olvidar anotar el símbolo especial cuando un nodo no existe. Sin ese marcador de hueco, la cadena de texto pierde información sobre la forma exacta del árbol, y al reconstruirlo después ya no habría manera de saber si una rama termina ahí o si sigue más abajo.
+
+Otro error frecuente es intentar llevar la posición de lectura de la cadena de texto usando una variable global compartida entre todas las llamadas de forma poco cuidadosa, en lugar de pasar el estado de lectura explícitamente entre las llamadas, por ejemplo pasando el flujo de lectura por referencia. Usar una variable global de forma descuidada puede funcionar en un caso simple, pero suele complicarse y volverse frágil en programas más grandes, así que mencionar la alternativa de pasar el estado por referencia deja ver un mejor manejo del diseño del código.
+
+También conviene explicar por qué se eligió el orden pre-order en lugar de otro recorrido, como el que procesa el árbol nivel por nivel: el recorrido en pre-order permite reconstruir el árbol con una recursión muy compacta, porque el primer valor leído siempre es la raíz del pedazo que se está reconstruyendo en ese momento, mientras que un recorrido por niveles también funciona pero generalmente necesita más código para manejar los huecos de cada nivel.
+
+Por último, vale la pena mencionar los casos raros antes de que te los pregunten: un árbol vacío se debe serializar a algo que, al deserializarse, devuelva de nuevo nada, y un árbol de un solo nodo se debe poder serializar y reconstruir sin necesitar ningún caso especial adicional, simplemente como una raíz con dos huecos colgando de ella.

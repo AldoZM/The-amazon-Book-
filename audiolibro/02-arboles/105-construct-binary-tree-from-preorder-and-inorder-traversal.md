@@ -1,0 +1,47 @@
+# 105. Construct Binary Tree from Preorder and Inorder Traversal
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Te dan dos listas de números que describen el mismo árbol binario, pero cada una fue anotada caminando por el árbol de una manera distinta. La primera lista es el recorrido en pre-order: en ese recorrido, primero se anota el valor de un nodo, después todo lo que hay en su rama izquierda, y al final todo lo que hay en su rama derecha. La segunda lista es el recorrido en in-order: en ese recorrido, primero se anota todo lo que hay en la rama izquierda de un nodo, luego el valor del nodo mismo, y al final todo lo que hay en su rama derecha. Ninguna de las dos listas por separado alcanza para saber cómo se conectan los nodos, pero las dos juntas sí. Lo que se pide es reconstruir el árbol original a partir de esas dos listas. Se garantiza que ningún valor se repite, así que cada número identifica a un único nodo.
+
+## La idea central
+
+Imagina que un amigo desarmó un mueble de madera para mandarlo por correo, y te mandó dos listas distintas de las piezas: una lista en el orden en que las fue desatornillando desde afuera hacia adentro, y otra lista en el orden en que estaban acomodadas de izquierda a derecha cuando el mueble seguía armado. Ninguna lista sola te dice cómo se conectaban las piezas, pero si las cruzas, sí puedes reconstruir el mueble exacto. Aquí pasa algo parecido: la lista en pre-order siempre empieza con la pieza que va hasta arriba de todo, la raíz de ese pedazo del árbol. Y en la lista en in-order, como ahí todo lo de la izquierda aparece antes de la raíz y todo lo de la derecha aparece después, en cuanto encuentras esa raíz dentro de la lista en in-order, automáticamente sabes cuáles números pertenecen al lado izquierdo y cuáles al lado derecho. Es como si te dijeran quién es el jefe, y luego, viendo la fila de empleados ordenada de izquierda a derecha con el jefe en medio, supieras exactamente quién reporta a la izquierda y quién reporta a la derecha. Repites este mismo truco una y otra vez sobre porciones cada vez más chicas, hasta que el árbol completo queda armado.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Antes de empezar a construir, preparamos una agenda que, para cada valor del recorrido en in-order, guarda en qué posición aparece dentro de esa lista. Esto nos va a ahorrar tener que buscar valores uno por uno más adelante.
+
+También llevamos un contador que apunta a la siguiente posición sin usar de la lista en pre-order, empezando en el inicio.
+
+Ahora definimos el proceso de construir un pedazo del árbol, dado un rango de posiciones dentro de la lista en in-order que le corresponde a ese pedazo. Si el rango está vacío, es decir, si no queda ningún nodo por colocar ahí, entonces ese pedazo del árbol simplemente no existe, y devolvemos nada.
+
+Si el rango sí tiene nodos, tomamos el siguiente valor disponible de la lista en pre-order y avanzamos el contador. Ese valor es la raíz de este pedazo del árbol. Creamos un nodo nuevo con ese valor.
+
+Después, usando la agenda que preparamos al inicio, buscamos en qué posición aparece esa raíz dentro del recorrido en in-order. Todo lo que queda a la izquierda de esa posición, dentro del rango que estamos procesando, forma el subárbol izquierdo de este nodo. Todo lo que queda a la derecha de esa posición forma el subárbol derecho.
+
+Entonces, construimos primero el subárbol izquierdo, llamando al mismo proceso con el rango correspondiente a la izquierda, y conectamos el resultado como el hijo izquierdo del nodo actual. Es muy importante hacer esto antes que la rama derecha, porque el contador de la lista en pre-order avanza en el mismo orden en que fuimos anotando el árbol originalmente: primero la raíz, luego todo el lado izquierdo, y hasta el final el lado derecho.
+
+Después de terminar completamente con el subárbol izquierdo, construimos el subárbol derecho de la misma manera, usando el rango que quedó a la derecha de la raíz, y lo conectamos como el hijo derecho del nodo actual.
+
+Finalmente devolvemos este nodo, ya con sus dos ramas conectadas, hacia quien nos llamó. Cuando este proceso termina de ejecutarse sobre el rango completo, tenemos el árbol original reconstruido desde su raíz.
+
+## Por qué esta complejidad
+
+En cuanto al tiempo, cada nodo del árbol se crea exactamente una vez, y gracias a la agenda que preparamos al inicio, encontrar la posición de cualquier raíz dentro del recorrido en in-order toma un tiempo constante en lugar de tener que recorrer la lista completa buscándola. Como el trabajo por cada nodo es constante y hay tantos nodos como números en las listas, el tiempo total crece de forma proporcional a la cantidad de nodos del árbol.
+
+En cuanto al espacio, la agenda que relaciona cada valor con su posición guarda un dato por cada nodo, así que su tamaño también es proporcional a la cantidad de nodos. Además, como este proceso se llama a sí mismo para construir cada rama, esas llamadas van quedando apiladas mientras están activas, y en el peor caso, cuando el árbol está muy desbalanceado y parece más una fila que un árbol, esa pila de llamadas puede llegar a ser tan alta como la cantidad total de nodos.
+
+## Errores comunes y tips de entrevista
+
+Un error frecuente es intentar buscar la posición de cada raíz recorriendo la lista en in-order desde el principio cada vez, en lugar de preparar la agenda de posiciones desde el inicio; eso funciona, pero vuelve la solución mucho más lenta cuando el árbol tiene muchos nodos, y en una entrevista de Amazon es justo el tipo de detalle que se espera que menciones sin que te lo pregunten.
+
+Otro error común es confundir el orden en que hay que construir las ramas: si construyes primero la rama derecha y después la izquierda, el contador de la lista en pre-order se desincroniza, porque esa lista fue anotada primero con toda la rama izquierda y hasta el final con la derecha.
+
+También es fácil olvidar que el contador de la lista en pre-order tiene que ser compartido entre todas las llamadas que van construyendo distintas partes del árbol al mismo tiempo; si cada llamada usa su propia copia del contador en lugar de una copia compartida que todas modifican juntas, la raíz que le toca a cada pedazo del árbol sale equivocada.
+
+Vale la pena explicar en voz alta, antes de programar, por qué la garantía de que no hay valores repetidos es indispensable para este algoritmo: si un mismo valor pudiera aparecer dos veces, ya no sabrías con certeza en qué posición del recorrido en in-order buscar la raíz correcta, y el árbol reconstruido podría salir distinto del original.
+
+Por último, conviene mencionar los casos raros antes de que te los pregunten: un árbol vacío da como resultado nada, y un árbol de un solo nodo se resuelve de inmediato porque su rango en in-order tiene un único elemento.

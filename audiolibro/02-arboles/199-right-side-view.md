@@ -1,0 +1,43 @@
+# 199. Binary Tree Right Side View
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Te dan un árbol binario. Imagina que te paras justo a la derecha del árbol y lo miras de frente, como si estuvieras viendo una fotografía tomada desde ese costado. Desde ahí, solo alcanzas a ver ciertos nodos: para cada nivel de altura del árbol, ves únicamente al nodo que queda más hacia la derecha en ese nivel, porque cualquier otro nodo del mismo nivel que esté más a la izquierda queda tapado detrás de él. Lo que se pide es devolver la lista de esos valores visibles, ordenados de arriba hacia abajo, es decir, empezando por la raíz y terminando por el nivel más profundo del árbol.
+
+## La idea central
+
+Imagina que estás sentado en las gradas de un estadio, viendo hacia la cancha desde un extremo lateral, y en la cancha hay varias filas de jugadores formados uno detrás de otro, cada fila a una distancia distinta de ti. De cada fila, sin importar cuántos jugadores tenga, tú solamente alcanzas a ver a uno: el que está parado más cerca del borde de tu lado, porque todos los demás jugadores de esa misma fila quedan escondidos detrás de él, sin importar que estén perfectamente alineados o no. Ahora, piensa en cada nivel del árbol como una de esas filas. Si en cada nivel recorremos a los nodos de izquierda a derecha, el último nodo que encontramos en ese recorrido es exactamente el que queda más cerca del borde derecho, y por lo tanto es el único visible desde afuera. No importa si ese nodo cuelga de la rama izquierda o de la rama derecha de su padre; lo único que importa es su posición dentro de su propio nivel.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Si el árbol está vacío, no hay nada que ver, así que devolvemos una lista vacía de inmediato.
+
+Si el árbol tiene al menos un nodo, preparamos una fila de espera donde vamos a ir metiendo nodos, y metemos ahí a la raíz del árbol como primer elemento.
+
+Mientras la fila de espera no esté vacía, repetimos lo siguiente. Primero anotamos cuántos nodos hay en este momento dentro de la fila: esa cantidad es exactamente el tamaño del nivel que estamos a punto de procesar, ni uno más ni uno menos.
+
+Después, sacamos de la fila esa misma cantidad de nodos, uno por uno, siempre en el mismo orden en que fueron entrando, que es de izquierda a derecha dentro de su nivel. Por cada nodo que sacamos, si tiene hijo izquierdo, lo metemos al final de la fila para procesarlo en el siguiente nivel, y si tiene hijo derecho, también lo metemos al final de la fila.
+
+El detalle importante ocurre cuando sacamos al último nodo de ese grupo, es decir, cuando ya sacamos tantos nodos como el tamaño que anotamos al principio del nivel: ese último nodo es, por definición, el que queda más a la derecha dentro de su nivel, así que anotamos su valor en la lista de nodos visibles.
+
+Cuando terminamos de sacar todo el grupo correspondiente a un nivel, la fila ya quedó cargada únicamente con los nodos del siguiente nivel, y repetimos el mismo proceso desde el principio: anotar el nuevo tamaño, sacar esa cantidad de nodos, y anotar el valor del último.
+
+Esto continúa hasta que la fila de espera queda completamente vacía, lo cual significa que ya procesamos todos los niveles del árbol. En ese momento, la lista de valores que fuimos anotando, en el orden en que los fuimos anotando, es la respuesta final.
+
+## Por qué esta complejidad
+
+En cuanto al tiempo, cada nodo del árbol entra a la fila de espera exactamente una vez y sale de ella exactamente una vez, y el trabajo que hacemos por cada nodo es constante: revisar si tiene hijos y, en algunos casos, anotar su valor. Como el trabajo por nodo es constante y hay tantos nodos como el árbol tenga en total, el tiempo total crece de forma proporcional a la cantidad de nodos.
+
+En cuanto al espacio, la fila de espera puede llegar a contener, en algún momento, a todos los nodos de un mismo nivel completo. En el nivel más ancho de un árbol razonablemente parejo, esa cantidad puede acercarse a la mitad de todos los nodos del árbol, así que en el peor caso el espacio que ocupa la fila crece de forma proporcional a la cantidad total de nodos.
+
+## Errores comunes y tips de entrevista
+
+Un error muy común es asumir que el nodo visible de cada nivel siempre cuelga de una rama derecha de su padre. Eso no es cierto: si la rama derecha de un nivel termina antes que la izquierda, el último nodo leído de izquierda a derecha en ese nivel puede perfectamente colgar de una rama izquierda, y aun así seguir siendo el más visible desde la derecha. Aclarar esto en voz alta durante la entrevista deja claro que entendiste el problema a fondo y no memorizaste una solución sin comprenderla.
+
+Otro error frecuente es olvidar guardar el tamaño del nivel antes de empezar a sacar nodos de la fila. Como vamos metiendo nuevos nodos a la misma fila mientras la vaciamos, si no fijamos ese número desde el principio, es fácil perder la cuenta de dónde termina un nivel y dónde empieza el siguiente, y terminar anotando como visible a un nodo equivocado.
+
+También conviene mencionar la alternativa de resolver este problema visitando primero la rama derecha y luego la izquierda, y anotando el primer nodo que se encuentra en cada profundidad; como se visita la derecha antes que la izquierda, el primer nodo que aparece en cada profundidad es justo el más a la derecha. Mencionar las dos formas de resolverlo, y explicar por qué ambas funcionan, muestra flexibilidad frente al entrevistador.
+
+Por último, no olvides los casos raros: un árbol vacío da como resultado una lista vacía, un árbol de un solo nodo da como resultado una lista con ese único valor, y un árbol donde una rama es mucho más profunda que la otra sigue funcionando igual, porque el algoritmo nunca asume que las dos ramas tienen el mismo tamaño.
