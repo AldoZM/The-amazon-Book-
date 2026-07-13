@@ -52,7 +52,7 @@ CAPITULOS = [
 
 
 def unir_capitulo(carpeta: str, orden: list[str], salida: str) -> None:
-    dir_cap = RAIZ / carpeta
+    dir_cap = RAIZ / "mp3" / carpeta
     lista_path = dir_cap / "_lista.txt"
     faltantes = [slug for slug in orden if not (dir_cap / f"{slug}.mp3").exists()]
     if faltantes:
