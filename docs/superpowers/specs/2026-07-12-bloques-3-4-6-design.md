@@ -21,10 +21,16 @@ El libro tiene 32 problemas completos (Grafos + Árboles), cada uno con C++, cap
 Mismo patrón que `01-grafos`/`02-arboles`, con slugs de bloque tomados de la hoja de ruta:
 
 ```
-capitulos/03-intervalos/          src/03-intervalos/          audiolibro/03-intervalos/
-capitulos/04-heaps-topk/           src/04-heaps-topk/           audiolibro/04-heaps-topk/
-capitulos/06-sliding-window-stack/ src/06-sliding-window-stack/ audiolibro/06-sliding-window-stack/
+capitulos/03-intervalos/          src/03-intervalos/
+capitulos/04-heaps-topk/           src/04-heaps-topk/
+capitulos/06-sliding-window-stack/ src/06-sliding-window-stack/
+
+audiolibro/md/03-intervalos/   audiolibro/txt/03-intervalos/   audiolibro/mp3/03-intervalos/
+audiolibro/md/04-heaps-topk/   audiolibro/txt/04-heaps-topk/   audiolibro/mp3/04-heaps-topk/
+audiolibro/md/06-sliding-window-stack/  audiolibro/txt/06-sliding-window-stack/  audiolibro/mp3/06-sliding-window-stack/
 ```
+
+`audiolibro/` está organizado por tipo de archivo primero (`md/`, `txt/`, `mp3/`), cada uno con una subcarpeta por bloque — mismo patrón que `capitulos/`/`src/` en la raíz del repo.
 
 Se salta el número `05` porque ya está reservado para el futuro Bloque 5 (Design) en la hoja de ruta.
 
@@ -104,15 +110,15 @@ Agregar 3 nuevos `\chapter{}` después del bloque de Árboles y antes de `\inclu
 
 Marcar `\checkmark` en los 15 problemas de Bloques 3, 4 y 6 (siguiendo el formato ya usado en Bloques 1 y 2).
 
-### Plantilla audiolibro (`audiolibro/<bloque>/<slug>.md` + `.txt`)
+### Plantilla audiolibro (`audiolibro/md/<bloque>/<slug>.md` + `audiolibro/txt/<bloque>/<slug>.txt`)
 
-Misma plantilla de 6 secciones ya validada en los 32 problemas existentes (ver `audiolibro/01-grafos/200-number-of-islands.md` como referencia): encabezado, "El problema en palabras simples", "La idea central", "Cómo funciona el algoritmo paso a paso" (pseudocódigo narrativo en prosa, sin símbolos ni indexación), "Por qué esta complejidad", "Errores comunes y tips de entrevista". Contenido redactado desde cero, no traducido del `.tex`. Misma convención de terminología (algoritmos en inglés canónico con glosa en primera mención — `min-heap`, `max-heap`, `sliding window`, `two pointers`; estructuras en español — `pila`, `cola`, `arreglo`).
+Misma plantilla de 6 secciones ya validada en los 32 problemas existentes (ver `audiolibro/md/01-grafos/200-number-of-islands.md` como referencia): encabezado, "El problema en palabras simples", "La idea central", "Cómo funciona el algoritmo paso a paso" (pseudocódigo narrativo en prosa, sin símbolos ni indexación), "Por qué esta complejidad", "Errores comunes y tips de entrevista". Contenido redactado desde cero, no traducido del `.tex`. Misma convención de terminología (algoritmos en inglés canónico con glosa en primera mención — `min-heap`, `max-heap`, `sliding window`, `two pointers`; estructuras en español — `pila`, `cola`, `arreglo`).
 
-`.txt` = misma redacción sin símbolos markdown, listo para TTS.
+`audiolibro/txt/<bloque>/<slug>.txt` = misma redacción sin símbolos markdown, listo para TTS.
 
 ### Generación de audio
 
-Reusar `audiolibro/generar-audios.py` (recorre todos los `.txt` nuevos automáticamente) y extender `audiolibro/unir-capitulos.py` con 3 nuevas entradas en `CAPITULOS` (una por bloque nuevo), usando el orden de `main.tex` como `ORDEN_*`.
+Reusar `audiolibro/generar-audios.py` (recorre `audiolibro/txt/*/*.txt` y genera el `.mp3` correspondiente en `audiolibro/mp3/<bloque>/`, automáticamente) y extender `audiolibro/unir-capitulos.py` con 3 nuevas entradas en `CAPITULOS` (una por bloque nuevo), usando el orden de `main.tex` como `ORDEN_*`. Los mp3 individuales y el combinado por capítulo quedan en `audiolibro/mp3/<bloque>/`.
 
 ### Ejecución sugerida (Fase 1)
 
