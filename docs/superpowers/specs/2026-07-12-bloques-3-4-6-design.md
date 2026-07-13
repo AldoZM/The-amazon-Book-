@@ -295,4 +295,4 @@ Resumen de todo lo que SÍ requiere tocar archivos existentes (todo lo demás es
 ## Estado
 
 Fase 1 (contenido): **completa** (commit `8e8b022`). Los 15 problemas compilados y verificados con `g++ -std=c++17 -Wall` (todos los `assert()` pasan), libro recompilado a 207 páginas sin errores, audio generado (15 mp3 individuales + 3 combinados por capítulo).
-Fase 2 (visualizador): diseñada en detalle arriba, NO implementada — queda como trabajo futuro documentado para retomar sin research adicional.
+Fase 2 (visualizador): **implementada** (commit `2e05bc8`, 2026-07-13), junto con el Bloque 7 (DP). Los 19 problemas que faltaban (15 de este spec + 4 de DP) ya tienen módulo en `rep-visual/js/problems/`, registrados en `manifest.js`. Se agregaron los 2 renderers nuevos (`array`, `bars`) tal como se diseñó, sin tocar `engine.js` salvo la línea de azúcar sintáctico en `autoStage()`. Los 51 problemas del libro pasan `validate-code.js` y `test-editors.js` sin errores.
