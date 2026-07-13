@@ -294,5 +294,5 @@ Resumen de todo lo que SÍ requiere tocar archivos existentes (todo lo demás es
 
 ## Estado
 
-Fase 1 (contenido): pendiente de implementar tras aprobación de este spec.
+Fase 1 (contenido): **completa** (commit `8e8b022`). Los 15 problemas compilados y verificados con `g++ -std=c++17 -Wall` (todos los `assert()` pasan), libro recompilado a 207 páginas sin errores, audio generado (15 mp3 individuales + 3 combinados por capítulo).
 Fase 2 (visualizador): diseñada en detalle arriba, NO implementada — queda como trabajo futuro documentado para retomar sin research adicional.
