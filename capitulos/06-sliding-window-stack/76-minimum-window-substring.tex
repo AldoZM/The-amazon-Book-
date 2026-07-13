@@ -1,0 +1,78 @@
+\problema{Minimum Window Substring}{76}{src/06-sliding-window-stack/76-minimum-window-substring.cpp}{H}
+
+Dadas dos cadenas \texttt{s} y \texttt{t}, devuelve la subcadena
+\emph{contigua} más corta de \texttt{s} que contiene a todos los caracteres
+de \texttt{t}, contando repeticiones (si \texttt{t} tiene dos \texttt{'a'},
+la ventana debe tener al menos dos \texttt{'a'}). Si no existe tal
+subcadena, devuelve la cadena vacía.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que tienes una
+lista de compras (\texttt{t}) y caminas por los pasillos de un supermercado
+muy largo (\texttt{s}) tomando productos según los vas encontrando, sin
+poder saltarte pasillos ni regresar por productos sueltos: solo puedes
+quedarte con un tramo continuo de pasillo. Quieres encontrar el tramo más
+corto que, entre todo lo que recogiste ahí, cubra tu lista completa (aunque
+recojas cosas de más que no estaban en la lista, no importa). En cuanto tu
+carrito ya cubre la lista completa, empiezas a soltar productos por el lado
+donde entraste primero, mientras la lista siga cubierta, para ver si el
+tramo se puede acortar todavía más.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+A D O B E C O D E B A N C\\
+$\phantom{AAAAAAAAAAAAAAAAAA}$[B A N C]\\
+\end{tabular}
+\end{center}
+
+\noindent Con \texttt{s = "ADOBECODEBANC"}, \texttt{t = "ABC"}, la ventana
+más corta que cubre \texttt{A}, \texttt{B} y \texttt{C} es \texttt{"BANC"},
+de longitud \texttt{4}.
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Guardamos en un mapa
+\texttt{necesita} cuántas veces aparece cada carácter en \texttt{t}, y en
+\texttt{requeridos} cuántos caracteres \emph{distintos} hay que cubrir.
+Llevamos otro mapa \texttt{ventana} con lo que hay actualmente entre los
+punteros \texttt{L} y \texttt{R}, y un contador \texttt{cubiertos} de
+cuántos caracteres distintos ya alcanzaron la cantidad necesaria.
+\begin{enumerate}
+  \item Avanzamos \texttt{R} y metemos \texttt{s[R]} a la ventana.
+  \item Si \texttt{s[R]} es uno de los caracteres necesarios y la ventana
+        acaba de alcanzar justo la cantidad requerida de él, sumamos uno a
+        \texttt{cubiertos}.
+  \item Mientras \texttt{cubiertos} sea igual a \texttt{requeridos} (la
+        ventana ya cubre todo \texttt{t}): comparamos su tamaño contra la
+        mejor guardada, y si es más chica la guardamos; luego sacamos
+        \texttt{s[L]} de la ventana y avanzamos \texttt{L}. Si al sacar
+        \texttt{s[L]} la cantidad cae por debajo de lo necesario,
+        restamos uno a \texttt{cubiertos} (la ventana deja de estar
+        completa y el ciclo de contracción se detiene).
+  \item Repetimos hasta que \texttt{R} llega al final de \texttt{s}.
+\end{enumerate}
+La clave es que \texttt{L} y \texttt{R} solo avanzan hacia adelante, nunca
+retroceden: por eso cada carácter de \texttt{s} entra y sale de la ventana
+a lo más una vez, y el algoritmo entero es lineal.
+
+\lstinputlisting{src/06-sliding-window-stack/76-minimum-window-substring.cpp}
+
+\complejidad{$O(|s| + |t|)$}{$O(|s| + |t|)$}
+
+\paragraph{¿Qué significa esa complejidad?} Recorremos \texttt{s} una vez
+para expandir y, en total, otra vez más para contraer (nunca más de
+\texttt{|s|} pasos combinados), y construir el mapa de \texttt{t} cuesta
+\texttt{|t|}. El espacio lo usan los dos mapas de conteo, acotados por
+cuántos caracteres distintos puede haber.
+
+\paragraph{Consejos para la entrevista (Amazon).} Es uno de los problemas de
+sliding window más pedidos porque combina ventana de tamaño variable con
+conteo de multiplicidad (no basta con ``¿está el carácter?'', hay que
+contar cuántas veces se necesita). El error más común es comparar
+\texttt{ventana[c] > 0} en vez de \texttt{ventana[c] >= necesita[c]}, lo
+cual falla en cuanto \texttt{t} tiene caracteres repetidos. Otro punto que
+suelen evaluar: por qué la condición del \texttt{while} de contracción usa
+igualdad exacta (\texttt{cubiertos == requeridos}) y no una comparación de
+mayor o igual —conviene explicar que \texttt{cubiertos} nunca puede superar
+\texttt{requeridos} por construcción—. Casos límite a mencionar: \texttt{s}
+o \texttt{t} vacías, y \texttt{t} pidiendo más repeticiones de un carácter
+de las que existen en \texttt{s} (no hay solución, se devuelve cadena
+vacía).

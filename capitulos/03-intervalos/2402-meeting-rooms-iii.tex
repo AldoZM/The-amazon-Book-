@@ -1,0 +1,79 @@
+\problema{Meeting Rooms III}{2402}{src/03-intervalos/2402-meeting-rooms-iii.cpp}{H}
+
+Hay \texttt{n} salas numeradas de \texttt{0} a \texttt{n-1}. Nos dan
+\texttt{meetings[i] = [inicio, fin]}, y se procesan en orden de
+\texttt{inicio}. Cada reunión se asigna a la sala \emph{libre} de menor
+índice disponible en ese momento. Si ninguna está libre, la reunión se
+\emph{retrasa} hasta que la sala que se desocupe primero quede disponible,
+conservando la \emph{misma duración} que tenía originalmente, y se asigna a
+esa sala (la de menor índice si varias se desocupan al mismo tiempo).
+Queremos la sala que organizó más reuniones en total (la de menor índice en
+caso de empate).
+
+\paragraph{La idea, con un ejemplo de la vida real.} Es la versión
+``estricta'' de repartir salas: en vez de simplemente contar cuántas salas
+hacen falta (como en el problema anterior), aquí ya existe un número fijo
+de salas y hay que decidir, reunión por reunión, cuál usa cada una,
+incluyendo qué pasa cuando llega una reunión y no hay ninguna sala libre en
+ese instante: se le dice a los organizadores ``espera a que alguna sala se
+desocupe'', y su reunión se recorre en el tiempo sin acortarse. Es como una
+recepcionista con \texttt{n} salas de juntas que siempre prefiere la sala 1
+sobre la sala 2 cuando ambas están libres, y que sabe exactamente cuál sala
+va a desocuparse primero cuando todas están ocupadas.
+
+\noindent Con \texttt{n = 2}, \texttt{meetings = [[0,10],[1,5],[2,7],[3,4]]}:
+\texttt{[0,10]} toma la sala 0, \texttt{[1,5]} toma la sala 1. Cuando llega
+\texttt{[2,7]} ninguna sala está libre; la sala 1 se desocupa primero (en el
+tiempo 5), así que la reunión se retrasa: dura $7-2=5$, ocupa la sala 1 de
+5 a 10. Cuando llega \texttt{[3,4]} tampoco hay sala libre; ambas se
+desocupan en el tiempo 10 (empate), gana la de menor índice, sala 0; dura
+$4-3=1$, ocupa la sala 0 de 10 a 11. Cada sala terminó con 2 reuniones:
+empate, gana la sala 0.
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Ordenamos las reuniones por \texttt{inicio}, porque el enunciado
+        exige procesarlas en ese orden.
+  \item Mantenemos dos \emph{min-heaps} (colas de prioridad que siempre dan
+        el menor elemento primero): uno de \textbf{salas libres}, ordenado
+        por índice de sala; otro de \textbf{salas ocupadas}, ordenado por
+        la hora en que cada una se desocupa (y, en empate, por índice).
+  \item Antes de procesar cada reunión, sacamos del heap de ocupadas todas
+        las salas cuya hora de fin ya pasó (es decir, es menor o igual al
+        inicio de la reunión actual) y las movemos al heap de libres.
+  \item Si después de eso hay alguna sala libre, la reunión la usa (la de
+        menor índice, que es justo lo que da un min-heap por índice) y esa
+        sala vuelve al heap de ocupadas con su hora de fin real.
+  \item Si no hay ninguna sala libre, tomamos del heap de ocupadas la que se
+        va a desocupar \emph{más pronto}: la reunión se retrasa hasta esa
+        hora, conservando su duración original, y esa sala vuelve al heap
+        de ocupadas con la nueva hora de fin (hora en que se liberó más la
+        duración).
+  \item En cualquiera de los dos casos, sumamos uno al contador de esa sala.
+  \item Al final, devolvemos la sala con mayor contador (la de menor índice
+        en caso de empate).
+\end{enumerate}
+
+\lstinputlisting{src/03-intervalos/2402-meeting-rooms-iii.cpp}
+
+\complejidad{$O(n \log n + n \log k)$}{$O(n + k)$}
+
+\paragraph{¿Qué significa esa complejidad?} Ordenar las $n$ reuniones cuesta
+$O(n \log n)$. Cada reunión hace un número constante de operaciones sobre
+heaps de tamaño a lo más $k$ (el número de salas), así que procesarlas
+todas cuesta $O(n \log k)$. En espacio guardamos los dos heaps (tamaño total
+acotado por $k$) más el arreglo de contadores, tamaño $k$, además de una
+copia ordenada de las reuniones, tamaño $n$.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema mezcla dos
+ideas del bloque de intervalos: el barrido por tiempo (como en Meeting
+Rooms II) y el uso de dos heaps con roles distintos (como en Find Median
+from Data Stream). El punto más fácil de arruinar es la regla de retraso:
+hay que conservar la \emph{duración}, no la hora de fin original, al mover
+una reunión en el tiempo. Otro detalle fino: cuando varias salas se
+desocupan exactamente a la misma hora, el desempate por índice debe
+respetarse tanto al elegir sala libre como al elegir cuál sala ocupada se
+desocupa primero; por eso el heap de ocupadas ordena por el par
+\texttt{(hora de fin, índice)} y no solo por la hora. Menciona el caso
+límite de una sola sala, donde todas las reuniones, se traslapen o no,
+terminan cayendo ahí, posiblemente retrasadas en cadena.

@@ -1,0 +1,41 @@
+# 973. K Closest Points to Origin
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Nos dan una lista de puntos dibujados en un plano, cada uno con su coordenada horizontal y su coordenada vertical, y un número k. Queremos encontrar los k puntos que están más cerca del punto de origen, es decir, del punto donde ambas coordenadas valen cero. El orden en el que entreguemos esos k puntos no importa.
+
+## La idea central
+
+Imagina que estás eligiendo las k farmacias más cercanas a tu casa entre una lista larga de direcciones repartidas por toda la ciudad. No necesitas calcular con precisión absoluta la distancia exacta en metros de cada farmacia, ni ordenar la ciudad entera de más cerca a más lejos. Te basta con ir guardando, en una lista corta, las k farmacias más cercanas que has encontrado hasta el momento, y cada vez que aparece una farmacia más cercana que alguna de las que ya tienes guardadas, sacas de tu lista corta a la que estaba más lejos de todas las que traías. Esta idea es prácticamente la misma que usamos para encontrar el k-ésimo elemento más grande de una lista, solo que aquí la damos vuelta: en vez de quedarnos con los valores más grandes usando un montículo mínimo, nos quedamos con los puntos más cercanos usando un montículo máximo, una estructura que siempre nos deja ver de inmediato cuál es el elemento más grande, o en este caso, el más lejano, que estamos guardando.
+
+Un detalle práctico y curioso: para comparar qué tan lejos está cada punto, no hace falta calcular la distancia real con raíz cuadrada. Basta con comparar el cuadrado de la distancia, porque si un número al cuadrado es menor que otro número al cuadrado, y ambos son positivos, entonces el primer número también era menor que el segundo antes de elevarlo al cuadrado. Esto nos ahorra una operación más costosa y evita errores de precisión con números decimales.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Primero, preparamos una lista corta vacía, organizada como un montículo máximo, que va a contener como máximo k puntos a la vez.
+
+Luego recorremos la lista completa de puntos, uno por uno. Para cada punto, calculamos qué tan lejos está del origen, usando el cuadrado de su distancia en vez de la distancia real, y guardamos ese valor junto con el punto.
+
+Metemos ese punto, con su distancia calculada, en la lista corta.
+
+Después de meter cada punto, revisamos el tamaño de la lista corta. Si tiene más de k elementos, sacamos de ahí el punto que está más lejos de todos los que guardamos, porque ya sabemos que no puede formar parte de los k puntos más cercanos de toda la lista original.
+
+Repetimos este proceso hasta terminar de recorrer todos los puntos.
+
+Cuando terminamos, la lista corta contiene exactamente los k puntos más cercanos al origen de toda la lista original, y esos son los que devolvemos como respuesta.
+
+## Por qué esta complejidad
+
+Recorremos cada punto de la lista original una sola vez, así que ese trabajo depende del tamaño total de la lista de puntos. Cada vez que metemos o sacamos un punto de la lista corta, ese costo depende únicamente del tamaño de la lista corta, que nunca crece más allá de k elementos, y ese costo crece muy lentamente conforme crece k. Entonces el trabajo total es el tamaño de la lista completa multiplicado por ese costo pequeño relacionado con k, mucho mejor que tener que ordenar la lista de puntos entera cuando k es mucho más chico que el total de puntos. En cuanto al espacio, solo necesitamos guardar hasta k puntos a la vez en la lista corta.
+
+## Errores comunes y tips de entrevista
+
+Un error frecuente es calcular la raíz cuadrada de la distancia sin necesidad; aunque el resultado es correcto igualmente, gastar tiempo en esa operación de más, y arriesgarte a errores de precisión con números decimales, no es lo ideal, y mencionarlo en voz alta muestra atención al detalle.
+
+Otro error común es confundir cuál montículo usar: aquí necesitamos descartar rápidamente a los puntos más lejanos, así que necesitamos tener siempre a la mano, en la cima de la estructura, al más lejano del grupo actual, y eso lo da un montículo máximo, no uno mínimo.
+
+También puede surgir la pregunta de qué hacer si dos puntos están exactamente a la misma distancia del origen: como el problema no pide un orden específico entre ellos, cualquiera de los dos puede aparecer primero en la respuesta, siempre que ambos terminen dentro del grupo de los k más cercanos.
+
+Por último, si te preguntan por alternativas, puedes mencionar quickselect, la misma técnica de partición mencionada para el problema del k-ésimo elemento más grande, que en promedio resuelve este problema más rápido, aunque con peor garantía en el peor de los casos.

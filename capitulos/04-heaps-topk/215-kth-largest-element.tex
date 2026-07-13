@@ -1,0 +1,62 @@
+\problema{Kth Largest Element in an Array}{215}{src/04-heaps-topk/215-kth-largest-element.cpp}{M}
+
+Nos dan un arreglo \texttt{nums} sin ordenar y un entero \texttt{k}. Hay que
+devolver el \texttt{k}-ésimo elemento más grande, contando desde el más
+grande (el primer más grande es el máximo, el segundo es el que le sigue, y
+así sucesivamente). Si hay valores repetidos, cada copia cuenta por
+separado: no es el \texttt{k}-ésimo valor \emph{distinto}.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que estás
+organizando una competencia y solo te interesa saber quién quedó en el
+\texttt{k}-ésimo lugar del podio, sin importarte el resto de la tabla
+completa. No hace falta ordenar a todos los competidores de principio a fin:
+basta con quedarte, en todo momento, con los \texttt{k} mejores vistos hasta
+ahora, y descartar de inmediato a cualquiera que no logre meterse en ese
+grupo selecto.
+
+Esa es la idea de usar un \emph{min-heap} (montículo mínimo, una estructura
+que siempre te da acceso rápido a su elemento más pequeño) de tamaño fijo
+\texttt{k}: metemos cada número, y si el montículo crece más de \texttt{k}
+elementos, sacamos el más chico de ese grupo, porque ya sabemos que no puede
+ser el \texttt{k}-ésimo más grande de todo el arreglo.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+nums = [3,2,1,5,6,4], k = 2\\
+ordenado desc: 6, 5, 4, 3, 2, 1 -> 2do lugar = 5\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Creamos un min-heap vacío.
+  \item Por cada número del arreglo, lo insertamos en el heap.
+  \item Si el heap tiene más de \texttt{k} elementos, sacamos el más
+        pequeño: ya perdió toda oportunidad de ser el \texttt{k}-ésimo mayor.
+  \item Al terminar de recorrer el arreglo, el heap contiene exactamente los
+        \texttt{k} valores más grandes vistos, y como es un min-heap, su
+        cima (el menor de esos \texttt{k}) es justo la respuesta.
+\end{enumerate}
+
+\lstinputlisting{src/04-heaps-topk/215-kth-largest-element.cpp}
+
+\complejidad{$O(n \log k)$}{$O(k)$}
+
+\paragraph{¿Qué significa esa complejidad?} Recorremos los $n$ elementos del
+arreglo una vez, y cada operación sobre el heap (insertar o sacar) cuesta
+$\log k$ porque el heap nunca guarda más de \texttt{k} elementos a la vez.
+Como normalmente \texttt{k} es mucho más pequeño que $n$, esto es bastante
+más rápido que ordenar todo el arreglo ($O(n \log n)$), sobre todo cuando
+\texttt{k} es chico.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema suele usarse
+para ver si sabes elegir la estructura correcta según lo que realmente se
+necesita: aquí no hace falta el orden completo, solo el \texttt{k}-ésimo
+valor, así que ordenar todo es desperdiciar trabajo. Vale la pena mencionar
+la alternativa de \emph{quickselect} (una variante de \emph{quicksort} que
+solo particiona el lado que le interesa), que logra $O(n)$ en promedio pero
+$O(n^2)$ en el peor caso, contra el $O(n \log k)$ garantizado del heap. Ten
+cuidado con la trampa de usar un max-heap de todo el arreglo: funciona, pero
+gasta $O(n)$ de espacio y $O(n + k \log n)$ de tiempo, peor que la versión
+con heap de tamaño fijo \texttt{k}.

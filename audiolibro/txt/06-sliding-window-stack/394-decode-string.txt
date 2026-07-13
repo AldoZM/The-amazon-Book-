@@ -1,0 +1,41 @@
+394. Decode String
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Nos dan una cadena de texto codificada con un patrón especial: un número seguido de un pedazo de texto entre corchetes significa que ese pedazo de texto se debe repetir esa cantidad de veces. Este patrón puede aparecer anidado, es decir, con corchetes dentro de otros corchetes, y también puede haber letras sueltas fuera de cualquier corchete. Queremos devolver la cadena completamente expandida, sin ningún número ni corchete, solo el texto final resultante.
+
+La idea central
+
+Piensa en un juego de cajas rusas, esas muñecas que se abren y tienen otra más chica adentro, pero en vez de muñecas, cada caja trae pegada una notita que dice cuántas veces hay que repetir lo que hay adentro antes de cerrarla. Cuando abres una caja nueva, lo primero que haces es guardar en un lugar seguro, fuera de la caja, todo lo que ya tenías armado hasta ese momento, junto con el número que traía pegado esa caja. Luego empiezas a armar el contenido de la caja nueva desde cero. Cuando terminas de armar el contenido y cierras esa caja, tomas lo que armaste, lo repites tantas veces como decía la notita, y lo pegas de vuelta a lo que habías guardado antes de abrirla. Ese lugar seguro donde vas guardando las cosas pendientes, una encima de otra, es justamente lo que en programación llamamos una pila: lo último que guardaste es lo primero que recuperas al cerrar una caja.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero, preparamos una pila vacía, una cadena de trabajo vacía donde vamos armando el nivel actual, y un número acumulado que empieza en cero.
+
+Luego, recorremos la cadena codificada carácter por carácter, de principio a fin.
+
+Cada vez que encontramos un dígito, no lo agregamos directamente a la cadena: lo acumulamos en el número de trabajo, multiplicando por diez lo que ya teníamos y sumando el nuevo dígito, para poder manejar correctamente números de más de una cifra.
+
+Cuando encontramos un corchete que abre, eso significa que estamos por entrar a un nivel nuevo. En ese momento, guardamos en la pila tanto la cadena que llevábamos armada hasta ahora como el número acumulado que representa cuántas veces hay que repetir lo que sigue. Después de guardar eso, reiniciamos la cadena de trabajo a vacía y el número acumulado a cero, porque el nivel nuevo empieza desde limpio.
+
+Mientras seguimos leyendo, cada letra normal que encontramos simplemente se agrega al final de la cadena de trabajo actual.
+
+Cuando encontramos un corchete que cierra, eso significa que terminamos de armar el contenido de este nivel. Sacamos de la pila lo último que habíamos guardado, que es la cadena anterior junto con el número de repeticiones pendiente. Tomamos la cadena de trabajo que acabamos de terminar, la repetimos esa cantidad de veces, y la pegamos justo después de la cadena anterior que recuperamos de la pila. El resultado de esa unión se convierte en la nueva cadena de trabajo, como si hubiéramos regresado al nivel de afuera con el contenido ya resuelto.
+
+Repetimos este proceso letra por letra, dígito por dígito, corchete por corchete, hasta terminar de leer toda la cadena codificada. Al final, la cadena de trabajo que nos queda es la respuesta completamente decodificada.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, el trabajo depende de cuánto texto terminamos copiando conforme vamos repitiendo bloques y pegándolos unos con otros. Si hay muchos niveles de repeticiones anidadas, la cadena final puede volverse mucho más grande que la cadena codificada original, y ese crecimiento es justamente lo que determina cuánto trabajo hacemos, porque cada copia de un bloque repetido cuesta tiempo proporcional a su tamaño.
+
+En cuanto al espacio, la pila puede llegar a tener tantos niveles guardados como corchetes anidados haya en la cadena original, así que su tamaño depende de qué tan profundo sea el anidamiento. La cadena final también ocupa espacio proporcional a su propio tamaño, que como ya dijimos, puede ser mucho mayor que el de la cadena codificada.
+
+Errores comunes y tips de entrevista
+
+Un error común es asumir que el número antes de un corchete siempre tiene un solo dígito; hay que acumular los dígitos uno por uno, multiplicando por diez cada vez que aparece uno nuevo, porque los números de repetición pueden tener dos cifras o más.
+
+Otro error es confundir el orden en que se recupera la pila: al cerrar un corchete, hay que pegar la cadena repetida después de la cadena que estaba guardada antes de abrir ese corchete, no al revés, porque el contenido de afuera siempre va antes que el contenido que se acaba de repetir.
+
+También conviene mencionar en la entrevista que este problema se puede resolver con una función que se llama a sí misma en vez de usar una pila explícita, pero que la versión con pila evita el riesgo de quedarse sin espacio en el caso de anidamientos muy profundos. Por último, es bueno decir en voz alta los casos límite: una cadena vacía se devuelve vacía, y una cadena que no tiene ningún corchete se devuelve exactamente igual, sin cambios.

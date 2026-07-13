@@ -1,0 +1,41 @@
+3. Longest Substring Without Repeating Characters
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Nos dan una cadena de texto y queremos encontrar el trozo continuo más largo dentro de ella donde ninguna letra se repita. No se trata de reordenar nada ni de saltarse letras: el trozo tiene que ser un pedazo seguido de la cadena original, tal como aparece.
+
+La idea central
+
+Imagina que vas leyendo un libro con el dedo, letra por letra, y llevas una libreta donde anotas la última página en la que viste cada letra del alfabeto. Mientras avanzas, si te encuentras una letra que no habías visto todavía —o que viste hace mucho, en una parte del libro que ya dejaste atrás— sigues adelante sin problema. Pero si te encuentras una letra que ya está apuntada en tu libreta y esa aparición todavía cae dentro del tramo que estás leyendo en este momento, entonces sabes que ese tramo ya se rompió: tienes que empezar a contar un tramo nuevo justo después de donde habías visto esa letra la vez anterior. Esta técnica de ir moviendo los dos bordes de un tramo —uno que avanza siempre hacia adelante y otro que salta hacia adelante solo cuando hace falta— se conoce como ventana deslizante, o sliding window en inglés.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero, preparamos una libreta vacía donde vamos a anotar, para cada letra, la última posición en la que la vimos. También arrancamos con el borde izquierdo del tramo al principio de la cadena, y con la mejor longitud encontrada hasta ahora en cero.
+
+Luego, recorremos la cadena letra por letra, moviendo siempre el borde derecho del tramo hacia adelante.
+
+Cada vez que llegamos a una letra nueva, primero revisamos la libreta: si esa letra ya está anotada, y la posición anotada todavía cae dentro del tramo actual, entonces movemos el borde izquierdo justo a la posición siguiente de donde habíamos visto esa letra la última vez. Así nos aseguramos de que el tramo ya no contenga la letra repetida.
+
+Si la letra no estaba anotada, o si estaba anotada pero en una posición que ya quedó fuera del tramo actual, no movemos el borde izquierdo para nada, seguimos igual.
+
+Después de decidir si movemos o no el borde izquierdo, actualizamos la libreta con la posición actual de la letra que acabamos de leer.
+
+Finalmente, calculamos qué tan largo es el tramo en este momento, restando la posición del borde izquierdo a la del borde derecho y sumando uno, y si ese tramo es más largo que el mejor que teníamos guardado, lo actualizamos.
+
+Repetimos esto letra por letra hasta terminar de leer toda la cadena, y al final la mejor longitud que guardamos es la respuesta.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, cada letra de la cadena entra al tramo una sola vez, cuando el borde derecho avanza hasta ella, y sale del tramo una sola vez, cuando el borde izquierdo la deja atrás. Como ninguna letra hace este viaje más de una vez, el trabajo total crece de forma proporcional al tamaño de la cadena, sin importar cuántas repeticiones tenga.
+
+En cuanto al espacio, lo único que guardamos es la libreta con la última posición vista de cada letra distinta. Si la cadena usa pocos símbolos distintos, la libreta es chica; en el peor caso, su tamaño depende de cuántos símbolos distintos existan en el alfabeto que estemos usando, o del tamaño de la cadena, lo que sea menor.
+
+Errores comunes y tips de entrevista
+
+Un error muy común es mover el borde izquierdo letra por letra hasta salir de la repetición, en vez de saltar directamente a la posición correcta usando la libreta; esa versión también funciona, pero es más lenta y no es la que se espera cuando piden la solución óptima.
+
+Otro error, más sutil, es olvidar comparar la posición anotada contra el borde izquierdo actual antes de decidir si hay que mover algo. Si una letra ya se vio, pero esa aparición anterior quedó fuera del tramo actual porque el borde izquierdo ya había avanzado por otra razón, no hay que retroceder el borde izquierdo: hacerlo rompería la ventana sin necesidad y daría una respuesta equivocada.
+
+También conviene mencionar en voz alta los casos límite antes de programar: una cadena vacía debe devolver longitud cero, y una cadena de una sola letra debe devolver longitud uno. Decirlo desde el principio muestra que ya pensaste en los bordes del problema antes de que te lo señalen.

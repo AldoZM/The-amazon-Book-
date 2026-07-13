@@ -1,0 +1,67 @@
+\problema{Top K Frequent Elements}{347}{src/04-heaps-topk/347-top-k-frequent-elements.cpp}{M}
+
+Nos dan un arreglo \texttt{nums} y un entero \texttt{k}. Hay que devolver los
+\texttt{k} valores que aparecen con mayor frecuencia en \texttt{nums}. El
+orden de la respuesta no importa, y se garantiza que la respuesta es única
+(no hay empates ambiguos justo en la posición \texttt{k}).
+
+\paragraph{La idea, con un ejemplo de la vida real.} Piensa en la lista de
+canciones más reproducidas de un usuario en un servicio de música: no
+importa \emph{cuándo} se reprodujo cada canción, solo cuántas veces se
+reprodujo cada una. Para armar el top \texttt{k}, primero cuentas cuántas
+veces se repite cada canción, y luego agrupas las canciones en
+``casilleros'' según su número de reproducciones: un casillero para las que
+se reprodujeron una vez, otro para las que se reprodujeron dos veces, y así
+sucesivamente. Como el número máximo de reproducciones posible es el total
+de reproducciones registradas, hay un número limitado y conocido de
+casilleros. Para armar el top \texttt{k} basta recorrer los casilleros
+empezando por el de más reproducciones y bajando, tomando canciones hasta
+completar \texttt{k}.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+nums = [1,1,1,2,2,3], k = 2\\
+frecuencias: 1 -> 3, 2 -> 2, 3 -> 1\\
+buckets[3]=\{1\}, buckets[2]=\{2\}, buckets[1]=\{3\}\\
+recorriendo de mayor a menor: 1, luego 2 -> respuesta \{1, 2\}\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Contamos cuántas veces aparece cada valor con un mapa de frecuencias.
+  \item Creamos un arreglo de \emph{buckets} (casilleros) de tamaño
+        $n+1$, donde \texttt{buckets[f]} guardará todos los valores que
+        aparecen exactamente \texttt{f} veces.
+  \item Recorremos el mapa de frecuencias y colocamos cada valor en el
+        casillero que le corresponde según su frecuencia.
+  \item Recorremos los casilleros de mayor a menor frecuencia, agregando sus
+        valores a la respuesta, hasta juntar \texttt{k} elementos.
+\end{enumerate}
+Esto se conoce como \emph{bucket sort} (ordenamiento por casilleros): en vez
+de comparar elementos entre sí para ordenarlos, usamos directamente el valor
+que queremos ordenar (aquí, la frecuencia) como índice de un arreglo. Como
+cada valor cae en exactamente un casillero, llenar los casilleros cuesta
+$O(n)$, y recorrerlos también.
+
+\lstinputlisting{src/04-heaps-topk/347-top-k-frequent-elements.cpp}
+
+\complejidad{$O(n)$}{$O(n)$}
+
+\paragraph{¿Qué significa esa complejidad?} Tanto contar frecuencias como
+llenar y recorrer los casilleros toma un tiempo proporcional al tamaño del
+arreglo original, sin ningún logaritmo de por medio: es más rápido que
+cualquier solución basada en ordenar ($O(n \log n)$) o incluso que un
+min-heap de tamaño \texttt{k} ($O(n \log k)$), aunque ambas alternativas
+también son aceptables en una entrevista.
+
+\paragraph{Consejos para la entrevista (Amazon).} Si te preguntan la primera
+solución que se te ocurre, es normal mencionar primero el min-heap de
+tamaño \texttt{k} (el mismo patrón del problema 215): es más fácil de
+explicar y sigue siendo eficiente. El \emph{bucket sort} es la mejora
+``inteligente'' que muestra que reconoces cuando el rango de valores
+posibles (aquí, la frecuencia máxima es $n$) es lo bastante acotado como
+para usarlo directamente de índice. Menciona explícitamente por qué el
+tamaño del arreglo de buckets es $n+1$ y no algo arbitrario: la frecuencia
+de cualquier valor nunca puede superar el tamaño del arreglo de entrada.

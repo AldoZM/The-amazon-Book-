@@ -1,0 +1,75 @@
+\problema{Find Median from Data Stream}{295}{src/04-heaps-topk/295-find-median-data-stream.cpp}{H}
+
+Hay que diseñar una estructura \texttt{MedianFinder} que reciba números uno a
+uno mediante \texttt{addNum} y en cualquier momento pueda devolver, con
+\texttt{findMedian}, la mediana de todos los números recibidos hasta ese
+instante. Si la cantidad de números vistos es impar, la mediana es el de en
+medio; si es par, es el promedio de los dos de en medio.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina una fila de
+personas ordenadas de menor a mayor estatura, y quieres saber en todo
+momento quién está justo en medio, aunque la fila crezca constantemente y
+nunca la reordenes por completo. Una forma práctica es partir la fila en dos
+mitades desde el principio: los más bajitos a la izquierda, los más altos a
+la derecha, cuidando que ambos lados tengan casi el mismo número de
+personas. La mediana siempre está en la frontera entre ambas mitades: la
+persona más alta del lado izquierdo, la más baja del lado derecho, o el
+promedio de ambas si las dos mitades tienen el mismo tamaño.
+
+Para mantener esa frontera accesible en todo momento sin reordenar la fila
+completa, guardamos la mitad izquierda en un \emph{max-heap} (para consultar
+su máximo, es decir, el más alto del lado bajo, en tiempo constante) y la
+mitad derecha en un \emph{min-heap} (para consultar su mínimo, el más bajo
+del lado alto, también en tiempo constante).
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+addNum(1) -> stream: [1]\\
+addNum(2) -> stream: [1,2] -> mediana = 1.5\\
+addNum(3) -> stream: [1,2,3] -> mediana = 2\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Mantenemos dos heaps: \texttt{izquierda} (max-heap, la mitad menor
+        de los números vistos) y \texttt{derecha} (min-heap, la mitad
+        mayor).
+  \item Al insertar un número nuevo, decidimos a qué heap va comparándolo
+        con la cima de \texttt{izquierda}: si es menor o igual (o si
+        \texttt{izquierda} está vacía), va a \texttt{izquierda}; si no, va
+        a \texttt{derecha}.
+  \item Después de cada inserción, rebalanceamos: si algún heap le lleva más
+        de un elemento de ventaja al otro, movemos su cima al heap
+        contrario. Esto mantiene la diferencia de tamaños en, a lo más, 1.
+  \item Para consultar la mediana: si ambos heaps tienen el mismo tamaño, es
+        el promedio de sus dos cimas; si no, es la cima del heap más grande.
+\end{enumerate}
+El invariante clave que se mantiene todo el tiempo es que \emph{todo}
+elemento de \texttt{izquierda} es menor o igual que \emph{todo} elemento de
+\texttt{derecha}. Como cada inserción respeta ese orden y el rebalanceo solo
+mueve el elemento frontera de un heap al otro, ese invariante nunca se
+rompe, y por eso la mediana siempre puede leerse directamente de las cimas.
+
+\lstinputlisting{src/04-heaps-topk/295-find-median-data-stream.cpp}
+
+\complejidad{$O(\log n)$ por \texttt{addNum}, $O(1)$ por \texttt{findMedian}}{$O(n)$}
+
+\paragraph{¿Qué significa esa complejidad?} Cada número que entra puede
+costar hasta dos operaciones de heap (una inserción y, en el peor caso, un
+rebalanceo), cada una $O(\log n)$ porque los heaps van creciendo con el
+stream. En cambio, consultar la mediana no requiere ningún trabajo extra:
+las cimas de ambos heaps ya están calculadas, así que es simplemente leerlas.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este es un problema
+clásico de diseño de estructura de datos con heaps, y suelen evaluar si
+reconoces cuándo un problema deja de ser ``calcula una respuesta'' y pasa a
+ser ``mantén una respuesta actualizable eficientemente'' conforme llegan
+datos nuevos. El error más común es rebalancear mal: olvidar el caso en que
+\texttt{izquierda} está vacía al decidir dónde insertar el primer número, o
+permitir que la diferencia de tamaños crezca más de 1 (rompiendo la
+garantía de $O(1)$ en \texttt{findMedian}). Vale la pena aclarar en voz alta
+por qué se usa \texttt{<=} y no \texttt{<} al decidir el heap destino: con
+duplicados, cualquiera de las dos convenciones funciona mientras se use de
+forma consistente.

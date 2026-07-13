@@ -1,0 +1,74 @@
+\problema{Task Scheduler}{621}{src/04-heaps-topk/621-task-scheduler.cpp}{M}
+
+Nos dan un arreglo de tareas (cada una representada por una letra de la
+\texttt{A} a la \texttt{Z}) y un entero \texttt{n}: el número mínimo de
+unidades de tiempo que deben pasar entre dos ejecuciones de la
+\emph{misma} tarea (su ``enfriamiento'', o \emph{cooldown}). En cada unidad
+de tiempo se puede ejecutar una tarea o quedarse inactivo. Hay que devolver
+el número mínimo de unidades de tiempo necesarias para ejecutar todas las
+tareas respetando el enfriamiento.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina una lavadora
+que, después de lavar una prenda de cierto color, necesita esperar
+\texttt{n} ciclos antes de volver a lavar otra prenda del mismo color (para
+evitar que se manchen entre sí). Si tienes muchas prendas del mismo color,
+conviene lavar primero las que \textbf{más} se repiten, porque esas son las
+que más tiempo de espera van a necesitar acumulado; dejarlas para el final
+solo alarga más el proceso total. Por eso en cada turno conviene elegir,
+entre las prendas disponibles en ese momento, la del color con más prendas
+pendientes: eso es justo lo que resuelve un \emph{max-heap} de conteos.
+
+Las prendas que se acaban de lavar no están disponibles de inmediato: se
+guardan aparte, en una cola de ``enfriamiento'', hasta que les toque volver
+a estar disponibles.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+tasks = [A,A,A,B,B,B], n = 2\\
+horario: A, B, idle, A, B, idle, A, B -> 8 unidades\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Contamos cuántas veces aparece cada tarea con un mapa de
+        frecuencias, y metemos esos conteos (solo el número, no la letra)
+        en un max-heap.
+  \item Usamos una cola de enfriamiento donde guardamos pares (conteo
+        restante, momento en que puede volver a estar disponible).
+  \item En cada unidad de tiempo: primero revisamos si el frente de la cola
+        de enfriamiento ya puede regresar al heap (si su momento de
+        regreso coincide con el tiempo actual), y si es así, lo regresamos.
+  \item Luego, si el heap no está vacío, sacamos el conteo más alto, le
+        restamos uno (la ejecutamos), y si todavía le queda conteo
+        pendiente, la mandamos a la cola de enfriamiento con su nuevo
+        momento de regreso (\texttt{tiempo + n + 1}).
+  \item Si el heap estaba vacío en ese instante pero aún quedan tareas en
+        enfriamiento, esa unidad de tiempo se pierde como inactividad.
+  \item Repetimos hasta que tanto el heap como la cola de enfriamiento estén
+        vacíos.
+\end{enumerate}
+
+\lstinputlisting{src/04-heaps-topk/621-task-scheduler.cpp}
+
+\complejidad{$O(T)$}{$O(1)$}
+
+\paragraph{¿Qué significa esa complejidad?} $T$ es el número total de
+tareas. Aunque cada unidad de tiempo puede requerir una operación de heap,
+el heap nunca tiene más de 26 elementos distintos (uno por letra del
+alfabeto), así que su costo logarítmico es una constante que no depende de
+$T$; por eso el tiempo total es lineal en $T$. El espacio también es
+constante, ya que como mucho guardamos 26 conteos distintos sin importar
+cuántas tareas haya en total.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema es un
+ejemplo clásico de estrategia \emph{greedy} (voraz): en cada paso se toma la
+decisión que parece mejor localmente (ejecutar la tarea con más conteo
+restante), y hay que poder justificar por qué esa elección local nunca
+perjudica el resultado global. También existe una fórmula matemática
+cerrada basada en la frecuencia máxima y cuántas tareas empatan en esa
+frecuencia máxima, que da la respuesta sin simular nada; mencionarla es un
+plus, pero la simulación con heap y cola de enfriamiento es más fácil de
+razonar y de explicar en la pizarra, y generaliza mejor si el entrevistador
+cambia las reglas del problema a mitad de la conversación.

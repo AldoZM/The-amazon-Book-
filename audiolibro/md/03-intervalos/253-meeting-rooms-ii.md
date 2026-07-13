@@ -1,0 +1,39 @@
+# 253. Meeting Rooms II
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Nos dan una lista de reuniones, cada una con una hora de inicio y una hora de fin. Dos reuniones que se traslapan en el tiempo no pueden compartir la misma sala. Lo que se pide es averiguar cuál es el número mínimo de salas que se necesitan para que todas esas reuniones se puedan llevar a cabo, sin que ninguna se quede sin lugar.
+
+## La idea central
+
+Piensa en que trabajas en la recepción de una oficina y te entregan de golpe todas las solicitudes de reunión del día, sin ningún orden en particular. En vez de intentar acomodar reunión por reunión en salas específicas, hay una manera más simple de pensarlo: olvídate de a qué reunión pertenece cada hora, y quédate solamente con dos listas, una de todas las horas en que arranca alguna reunión, y otra de todas las horas en que termina alguna reunión. Si recorres el día de principio a fin y vas contando cuántas reuniones están activas en cada instante, el número más alto que alcanzas en algún momento del día es exactamente cuántas salas necesitas, porque ese es el momento de mayor presión sobre tu edificio.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Primero, separamos todas las horas de inicio en una lista, y todas las horas de fin en otra lista distinta.
+
+Después, ordenamos cada una de esas dos listas por su cuenta, de la hora más temprana a la más tardía.
+
+Luego avanzamos por el tiempo con dos punteros, uno que recorre la lista de inicios y otro que recorre la lista de fines, y llevamos un contador de cuántas salas están ocupadas en este momento, además de otro contador que guarda el máximo que ha alcanzado ese número a lo largo de todo el recorrido.
+
+En cada paso, comparamos la siguiente hora de inicio pendiente contra la siguiente hora de fin pendiente. Si la hora de inicio llega antes que la hora de fin, quiere decir que una reunión nueva arranca antes de que la reunión más próxima a terminar haya liberado su sala: entonces aumentamos el contador de salas ocupadas en uno, avanzamos al siguiente inicio pendiente, y si hace falta, actualizamos el máximo que llevamos registrado.
+
+Si en cambio la hora de fin llega antes, o justo al mismo tiempo que la hora de inicio, entonces una sala se libera en ese instante: disminuimos el contador de salas ocupadas en uno, y avanzamos al siguiente fin pendiente.
+
+Repetimos esta comparación hasta terminar de recorrer todas las horas de inicio. El valor máximo que llegamos a registrar durante todo el recorrido es la respuesta: el número mínimo de salas necesarias.
+
+## Por qué esta complejidad
+
+El paso que domina el tiempo total es ordenar las dos listas de horas, cada una de un tamaño proporcional al número de reuniones, y ese ordenamiento toma un tiempo proporcional a ese tamaño multiplicado por su logaritmo. El recorrido posterior con los dos punteros solamente pasa una vez por cada lista, así que no le agrega un costo mayor al del ordenamiento.
+
+En cuanto al espacio, necesitamos guardar aparte las dos listas de horas, cada una con tantos elementos como reuniones haya, así que el espacio adicional crece de forma proporcional al número de reuniones.
+
+## Errores comunes y tips de entrevista
+
+Un detalle que se presta a confusión es qué hacer cuando una reunión termina exactamente a la misma hora en que otra empieza: la convención correcta es que la sala se considera libre justo a tiempo, así que el fin debe procesarse como si ocurriera antes que el inicio en ese empate. Si programas la comparación al revés, terminas contando una sala de más de la que realmente hace falta.
+
+Otro error común es intentar resolver esto fusionando los intervalos primero, como en el problema de fusionar intervalos traslapados; aquí no buscamos fusionar nada, buscamos contar cuántas reuniones están activas al mismo tiempo, que es un problema distinto aunque se parezcan las palabras.
+
+Por último, vale la pena mencionar en voz alta el caso de una lista vacía, donde la respuesta correcta es cero salas, y el caso de una sola reunión, donde basta con una sala sin importar cuánto dure.

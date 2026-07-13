@@ -1,0 +1,37 @@
+# 56. Merge Intervals
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Nos dan una lista de intervalos, y cada intervalo es simplemente un par de números que marca un principio y un final. Algunos de esos intervalos se traslapan entre sí, es decir, comparten una parte del rango, y otros incluso se tocan justo en la orilla, donde uno termina exactamente donde empieza el siguiente. Lo que se pide es juntar todos los que se traslapan o se tocan en un solo intervalo más grande, y devolver la lista más corta posible de intervalos que ya no se pisan entre sí, pero que en conjunto cubren exactamente el mismo terreno que la lista original.
+
+## La idea central
+
+Imagina que estás pintando con cinta varias franjas sobre una pared, una franja por cada intervalo. Si dos franjas de cinta se sobreponen, en la pared terminan viéndose como una sola franja continua, más ancha, no como dos separadas. Para encontrar esas franjas fusionadas sin tener que ir comparando cada intervalo contra todos los demás, primero los acomodamos en orden, de izquierda a derecha, según en qué punto empieza cada uno. Una vez ordenados, ya no hace falta comparar un intervalo contra todos los anteriores: basta con compararlo contra el último grupo que llevamos armado hasta ese momento, porque si no se pisa con ese, tampoco se puede pisar con ninguno más atrás.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Primero, ordenamos todos los intervalos según su punto de inicio, de menor a mayor.
+
+Después, vamos recorriendo esa lista ya ordenada, y mantenemos aparte una lista de resultado, que empieza vacía.
+
+Para cada intervalo que revisamos, nos fijamos en el último intervalo que ya quedó guardado en la lista de resultado. Si el final de ese último intervalo guardado es menor que el inicio del intervalo que estamos revisando ahora, quiere decir que no hay ningún traslape entre ellos: entonces simplemente agregamos el intervalo actual como uno nuevo, independiente, al final de la lista de resultado.
+
+Pero si el final del último intervalo guardado llega hasta el inicio del intervalo actual, o incluso más allá, entonces sí hay traslape, o cuando menos se tocan en la orilla. En ese caso no agregamos nada nuevo: en vez de eso, estiramos el final del último intervalo guardado, dejándolo en el mayor de los dos valores de fin, el que ya tenía guardado y el del intervalo que acabamos de revisar.
+
+Repetimos esto para cada intervalo de la lista ordenada, y al terminar, la lista de resultado contiene exactamente los intervalos fusionados que buscábamos.
+
+## Por qué esta complejidad
+
+El paso que más tiempo consume es ordenar la lista de intervalos al principio, y ordenar una lista de un cierto tamaño toma un tiempo proporcional a ese tamaño multiplicado por su logaritmo, que es la complejidad típica de cualquier buen algoritmo de ordenamiento. Una vez ordenada, recorrerla una sola vez para fusionar toma un tiempo proporcional solamente al tamaño de la lista, así que el ordenamiento es lo que domina el costo total.
+
+En cuanto al espacio, en el peor de los casos, cuando ningún intervalo se traslapa con otro, la lista de resultado termina teniendo tantos elementos como la lista original, así que el espacio adicional que usamos crece de forma proporcional al número de intervalos.
+
+## Errores comunes y tips de entrevista
+
+El error más frecuente es saltarse el paso de ordenar, o intentar fusionar intervalos comparando cada uno contra todos los demás sin ningún orden previo; eso funciona, pero es mucho más lento y complica el código innecesariamente.
+
+Otro descuido común es decidir mal cuándo dos intervalos cuentan como traslapados: si uno termina justo donde el otro empieza, técnicamente no se sobreponen en ningún punto interior, pero el problema pide tratarlos como si sí se traslaparan y fusionarlos de todos modos. Vale la pena decir esto en voz alta durante la entrevista, porque es justo el tipo de detalle que se presta a confusión.
+
+Por último, conviene mencionar qué pasa con una lista vacía o con una lista de un solo intervalo: en ambos casos no hay nada que fusionar, y la respuesta es la misma lista de entrada, sin cambios.

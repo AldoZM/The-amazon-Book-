@@ -1,0 +1,37 @@
+295. Find Median from Data Stream
+
+Dificultad: Difícil.
+
+El problema, en palabras simples
+
+Tenemos que diseñar una estructura capaz de recibir números uno por uno, sin parar, y que en cualquier momento pueda decirnos cuál es la mediana de todos los números recibidos hasta ese instante. La mediana es el valor que queda justo en medio si acomodáramos todos los números de menor a mayor: si la cantidad de números es impar, es el que queda exactamente al centro; si es par, es el promedio de los dos que quedan al centro.
+
+La idea central
+
+Imagina un desfile de personas que se van formando una tras otra, ordenadas de la más bajita a la más alta, pero que nunca dejan de llegar personas nuevas a la fila. Quieres saber, en cualquier momento, quién está justo en la mitad del desfile, aunque la fila siga creciendo. Reordenar el desfile completo cada vez que llega alguien nuevo sería agotador. En cambio, puedes partir mentalmente el desfile en dos mitades desde el principio: la mitad de los más bajitos a un lado, la mitad de los más altos al otro lado, cuidando siempre que ambos lados tengan aproximadamente el mismo número de personas. La persona que buscas, la de en medio, siempre está justo en la frontera entre ambos lados: es la persona más alta del lado bajito, o la más bajita del lado alto, o el promedio entre ambas si los dos lados tienen exactamente el mismo tamaño.
+
+Para no tener que buscar esa frontera desde cero cada vez, guardamos el lado de los más bajitos en una estructura que siempre nos deja ver de inmediato a la persona más alta de ese grupo, y el lado de los más altos en una estructura que siempre nos deja ver de inmediato a la persona más bajita de ese otro grupo. Con eso, consultar quién está en medio del desfile completo se vuelve casi instantáneo, sin importar cuánta gente haya llegado ya.
+
+Cómo funciona el algoritmo, paso a paso
+
+Mantenemos dos grupos separados todo el tiempo: un grupo izquierdo, que guarda la mitad menor de los números que hemos recibido, organizado de forma que siempre podamos ver de inmediato al mayor de ese grupo; y un grupo derecho, que guarda la mitad mayor de los números, organizado de forma que siempre podamos ver de inmediato al menor de ese grupo.
+
+Cuando llega un número nuevo, primero decidimos a qué grupo debe entrar. Si el grupo izquierdo está vacío, o si el número nuevo es menor o igual que el mayor del grupo izquierdo, entonces el número nuevo entra al grupo izquierdo. Si no, entra al grupo derecho.
+
+Después de colocar el número nuevo, revisamos si los dos grupos siguen balanceados, es decir, si ninguno de los dos le lleva más de una persona de ventaja al otro. Si el grupo izquierdo quedó con más de una persona de ventaja sobre el derecho, movemos a la persona más alta del grupo izquierdo hacia el grupo derecho. Si fue el grupo derecho el que quedó con más ventaja, movemos a la persona más bajita del grupo derecho hacia el grupo izquierdo.
+
+Cuando alguien pregunta por la mediana en cualquier momento, revisamos los tamaños de ambos grupos. Si son iguales, la mediana es el promedio entre la persona más alta del grupo izquierdo y la persona más bajita del grupo derecho. Si un grupo tiene una persona más que el otro, la mediana es directamente la persona que está en la frontera del grupo más grande.
+
+Por qué esta complejidad
+
+Cada vez que llega un número nuevo, como mucho hacemos dos operaciones sobre nuestros grupos: colocar el número nuevo en el grupo que le corresponde, y quizás mover a alguien de un grupo al otro para mantener el balance. Cada una de esas operaciones cuesta un tiempo que crece muy lentamente conforme el desfile crece, porque los grupos están organizados de una forma que permite encontrar y sacar rápidamente a la persona en el extremo relevante de cada uno. En cambio, consultar la mediana no cuesta prácticamente nada, porque las dos personas que están en la frontera entre ambos grupos ya están accesibles de inmediato en todo momento, sin necesidad de buscarlas. En cuanto al espacio, entre los dos grupos guardamos a todas las personas que han llegado al desfile hasta el momento, así que el espacio crece proporcionalmente a la cantidad total de números recibidos.
+
+Errores comunes y tips de entrevista
+
+Un error común es olvidar el caso en el que el grupo izquierdo está vacío al momento de decidir dónde colocar el primer número que llega; sin ese caso especial, el programa puede fallar al intentar comparar contra un grupo que todavía no tiene a nadie.
+
+Otro error frecuente es descuidar el balance entre los dos grupos, dejando que uno crezca mucho más que el otro; si eso ocurre, ya no se puede garantizar que la frontera entre ambos grupos sea realmente el centro de todos los números recibidos.
+
+También vale la pena explicar en voz alta la diferencia entre resolver este problema calculando la mediana cada vez desde cero, ordenando todo de nuevo, contra mantenerla actualizada de forma incremental conforme llegan los números; esta segunda forma es mucho más eficiente cuando se esperan muchas consultas de la mediana mezcladas con muchas inserciones de números nuevos, que es exactamente el escenario que describe este problema.
+
+Por último, ten cuidado con los números repetidos: el algoritmo funciona igual de bien con ellos, siempre que la regla de decidir a qué grupo va cada número nuevo se aplique de forma consistente en cada inserción.

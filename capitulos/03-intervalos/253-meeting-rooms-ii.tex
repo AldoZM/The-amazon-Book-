@@ -1,0 +1,70 @@
+\problema{Meeting Rooms II}{253}{src/03-intervalos/253-meeting-rooms-ii.cpp}{M}
+
+Nos dan un arreglo de intervalos de reunión \texttt{intervals[i] = [inicio,
+fin]}. Queremos el número \emph{mínimo} de salas necesarias para que todas
+las reuniones se puedan realizar, sabiendo que dos reuniones que se
+traslapan en el tiempo no pueden compartir sala.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que eres el
+encargado de reservar salas de juntas en una oficina, y te llegan todas las
+solicitudes de reunión del día de golpe. En vez de intentar asignar salas
+reunión por reunión, es más fácil pensar en dos listas separadas: ``a qué
+horas empieza alguna reunión'' y ``a qué horas termina alguna reunión''.
+Si recorres el día cronológicamente y llevas la cuenta de cuántas salas
+están ocupadas en cada instante, el número máximo que alcanzas en algún
+momento es la respuesta: necesitas al menos esa cantidad de salas para no
+quedarte sin espacio.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+0 -----------------------------30\\
+\ \ \ \ 5----10\\
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ 15----20\\
+\end{tabular}
+\end{center}
+
+\noindent Con \texttt{intervals = [[0,30],[5,10],[15,20]]}: \texttt{[5,10]}
+y \texttt{[15,20]} no se traslapan entre sí, así que podrían compartir una
+segunda sala; pero ambas se traslapan con \texttt{[0,30]}, que necesita su
+propia sala durante todo ese tiempo. En total hacen falta \texttt{2} salas.
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Separamos los \texttt{inicio}s de todas las reuniones en un
+        arreglo, y los \texttt{fin}es en otro. A partir de aquí ya no
+        importa a qué reunión pertenecía cada hora, solo el momento en que
+        ocurre.
+  \item Ordenamos ambos arreglos por separado, de menor a mayor.
+  \item Recorremos el tiempo con dos punteros, uno para \texttt{inicio}s y
+        otro para \texttt{fin}es (barrido / \emph{sweep line}). En cada
+        paso comparamos el siguiente inicio pendiente contra el siguiente
+        fin pendiente.
+  \item Si el próximo inicio ocurre \emph{antes} de que la reunión más
+        próxima a terminar acabe, necesitamos una sala adicional: sumamos
+        uno al contador de salas en uso y avanzamos el puntero de inicios.
+  \item Si no (el próximo fin ocurre antes o al mismo tiempo), una sala se
+        libera: restamos uno al contador de salas en uso y avanzamos el
+        puntero de fines.
+  \item Llevamos registro del valor \emph{máximo} que alcanzó el contador de
+        salas en uso durante todo el barrido: esa es la respuesta.
+\end{enumerate}
+
+\lstinputlisting{src/03-intervalos/253-meeting-rooms-ii.cpp}
+
+\complejidad{$O(n \log n)$}{$O(n)$}
+
+\paragraph{¿Qué significa esa complejidad?} Ordenar los dos arreglos de $n$
+horas cada uno domina el costo, $O(n \log n)$; el barrido con dos punteros
+después es lineal. En espacio guardamos dos arreglos de tamaño $n$ (los
+inicios y los fines por separado).
+
+\paragraph{Consejos para la entrevista (Amazon).} Un desempate que suele
+pasar desapercibido: cuando un inicio y un fin ocurren \emph{exactamente al
+mismo tiempo}, ¿libera la sala antes de que se necesite otra, o hace falta
+una sala nueva de todos modos? La convención estándar (y la que produce la
+respuesta correcta) es tratar los fines como si ocurrieran primero: una
+reunión que termina a las 10 libera la sala justo a tiempo para otra que
+empieza a las 10. Menciona también la alternativa con un min-heap de horas
+de fin (equivalente en complejidad, más fácil de explicar en pizarrón), y
+el caso límite de un arreglo vacío, que no necesita ninguna sala.

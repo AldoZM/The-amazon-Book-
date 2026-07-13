@@ -1,0 +1,41 @@
+# 621. Task Scheduler
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Nos dan una lista de tareas, cada una representada por una letra, y un número n que representa cuántas unidades de tiempo mínimas deben pasar entre dos ejecuciones de la misma tarea, como un tiempo de descanso obligatorio. En cada unidad de tiempo se puede ejecutar una sola tarea, o dejar ese momento vacío, sin hacer nada. Queremos saber cuál es el menor número de unidades de tiempo necesarias para ejecutar todas las tareas de la lista respetando ese tiempo de descanso entre repeticiones de una misma tarea.
+
+## La idea central
+
+Piensa en una cocina que prepara varios platillos distintos, donde cada vez que se usa la misma sartén para el mismo platillo, hay que dejarla enfriar un rato antes de volver a usarla para ese mismo platillo, aunque se pueda usar de inmediato para preparar un platillo distinto. Si tienes muchos pedidos del mismo platillo acumulados, conviene ir preparándolos lo antes posible en cuanto la sartén correspondiente esté disponible, porque ese platillo es el que más tiempo de espera vas a necesitar acumular a lo largo del turno. Dejar para el final los platillos que más se repiten solo alarga el turno completo de forma innecesaria. Por eso, en cada momento libre conviene preguntarse cuál de los platillos disponibles en ese instante es el que todavía tiene más pedidos pendientes, y preparar ese primero.
+
+Los platillos que se acaban de preparar no vuelven a estar disponibles de inmediato: se quedan guardados aparte, como en una lista de espera, hasta que se cumple su tiempo de enfriamiento y pueden regresar a la fila de platillos disponibles.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Primero, contamos cuántas veces se repite cada tarea en la lista original, y guardamos esos conteos en un grupo especial organizado de forma que siempre podamos ver de inmediato cuál es la tarea con más repeticiones pendientes.
+
+También preparamos una lista de espera vacía, donde vamos a guardar temporalmente a las tareas que se acaban de ejecutar y todavía están en su tiempo de enfriamiento, junto con el momento exacto en que podrán volver a estar disponibles.
+
+Empezamos a avanzar el tiempo, unidad por unidad. En cada unidad de tiempo, primero revisamos si la tarea que lleva más tiempo esperando en la lista de espera ya cumplió su tiempo de enfriamiento; si es así, la regresamos al grupo de tareas disponibles.
+
+Después, si el grupo de tareas disponibles no está vacío en ese instante, tomamos la tarea con más repeticiones pendientes, la ejecutamos, y le restamos una repetición a su conteo. Si a esa tarea todavía le quedan repeticiones pendientes después de ejecutarla, la mandamos a la lista de espera, anotando el momento futuro en que podrá volver a estar disponible, que es el tiempo actual más el tiempo de enfriamiento más una unidad.
+
+Si en ese instante el grupo de tareas disponibles estaba vacío pero todavía hay tareas esperando su turno de enfriamiento en la lista de espera, esa unidad de tiempo se pierde sin ejecutar nada, como un momento de la cocina donde ninguna sartén disponible tiene pedidos pendientes.
+
+Repetimos todo esto, avanzando el tiempo unidad por unidad, hasta que tanto el grupo de tareas disponibles como la lista de espera queden completamente vacíos. El número total de unidades de tiempo que avanzamos es la respuesta.
+
+## Por qué esta complejidad
+
+El número de tareas distintas posibles está limitado desde el principio, porque solo existen tantas letras como el alfabeto permite, así que el grupo especial de tareas disponibles nunca crece más allá de ese límite fijo, sin importar cuántas tareas totales haya en la lista original. Por eso, cada operación sobre ese grupo cuesta un tiempo que prácticamente no cambia, sin importar qué tan grande sea la lista de tareas. Como recorremos una unidad de tiempo por cada tarea que se ejecuta, el trabajo total termina siendo proporcional al número total de tareas en la lista original. En cuanto al espacio, solo necesitamos guardar un conteo por cada letra distinta posible, así que el espacio usado prácticamente no cambia sin importar cuántas tareas totales haya.
+
+## Errores comunes y tips de entrevista
+
+Un error común es olvidar avanzar el tiempo durante los momentos en que ninguna tarea está disponible pero todavía quedan tareas esperando su enfriamiento; si no cuentas esos momentos vacíos como parte del tiempo total, la respuesta te va a quedar más chica de lo que realmente es.
+
+Otro error frecuente es calcular mal el momento en que una tarea puede volver a estar disponible después de ejecutarse; hay que sumarle tanto el tiempo de enfriamiento como una unidad extra por la propia ejecución que se acaba de hacer.
+
+También conviene mencionar que este problema se puede resolver con una fórmula matemática directa, basada en cuál es la tarea con más repeticiones y cuántas tareas distintas empatan en ese máximo número de repeticiones, sin necesidad de simular nada paso a paso. Sin embargo, explicar la simulación con el grupo de tareas disponibles y la lista de espera suele ser más fácil de justificar en una entrevista, y se adapta mejor si te cambian alguna regla del problema a mitad de la conversación, como agregar prioridades distintas entre tareas.
+
+Por último, aclara qué pasa si el tiempo de enfriamiento es cero: en ese caso nunca hace falta esperar entre repeticiones de una misma tarea, y la respuesta se reduce simplemente al número total de tareas en la lista.

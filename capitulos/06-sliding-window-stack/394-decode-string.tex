@@ -1,0 +1,74 @@
+\problema{Decode String}{394}{src/06-sliding-window-stack/394-decode-string.cpp}{M}
+
+Dada una cadena codificada \texttt{s} con el patrón \texttt{k[cadena]},
+donde \texttt{k} es un entero positivo, decodifícala devolviendo la cadena
+expandida, repitiendo \texttt{k} veces lo que está dentro de los
+corchetes. El patrón puede anidarse (corchetes dentro de corchetes) y
+también puede haber texto normal fuera de cualquier corchete.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que estás
+armando cajas dentro de cajas, con una nota pegada afuera de cada una que
+dice ``repetir el contenido tantas veces''. Cuando abres una caja nueva
+(un \texttt{[}), guardas en un lugar seguro lo que llevabas armado hasta
+ese momento y cuántas veces hay que repetir lo que va adentro, y empiezas a
+armar el contenido de esa caja desde cero. Cuando cierras la caja (un
+\texttt{]}), repites lo que armaste adentro la cantidad de veces indicada,
+y lo pegas de vuelta a lo que tenías guardado antes de abrirla. Esa ``pila
+de cajas pendientes'' es literalmente una \textbf{pila} (stack): cada caja
+que abres se apila encima de la anterior, y se va desapilando en orden
+inverso conforme se cierran.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+3[ a 2[ c ] ]\\
+"c" repetida 2 veces $\to$ "cc"\\
+"a"+"cc" $=$ "acc", repetida 3 veces $\to$ "accaccacc"\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Mantenemos una pila
+donde cada elemento es un par: la cadena que llevábamos construida
+\emph{antes} de entrar a ese nivel de corchetes, y el número de
+repeticiones pendiente para ese nivel. También llevamos dos variables de
+trabajo: \texttt{actual} (lo que se está construyendo en el nivel presente)
+y \texttt{numero} (los dígitos acumulados antes de encontrar un \texttt{[}).
+\begin{enumerate}
+  \item Si el carácter es un dígito, lo acumulamos en \texttt{numero}
+        (multiplicando por diez lo que ya teníamos, para soportar números
+        de más de un dígito).
+  \item Si es \texttt{[}, empujamos a la pila el par
+        \texttt{(actual, numero)}, y reiniciamos \texttt{actual} y
+        \texttt{numero} para empezar el nuevo nivel limpio.
+  \item Si es \texttt{]}, sacamos de la pila el par que guardamos al
+        entrar a este nivel, y reconstruimos \texttt{actual} como la
+        cadena anterior más la cadena de este nivel repetida la cantidad
+        de veces indicada.
+  \item Si es cualquier otro carácter (una letra), simplemente la
+        agregamos a \texttt{actual}.
+\end{enumerate}
+Al terminar de recorrer \texttt{s}, \texttt{actual} contiene la cadena
+completamente decodificada.
+
+\lstinputlisting{src/06-sliding-window-stack/394-decode-string.cpp}
+
+\complejidad{$O(n \cdot m)$}{$O(n)$}
+
+\paragraph{¿Qué significa esa complejidad?} \texttt{n} es la longitud de la
+cadena codificada y \texttt{m} es la longitud de la cadena final ya
+expandida (que puede ser mucho más grande que \texttt{n} si hay muchas
+repeticiones anidadas). El tiempo depende de cuánto texto terminamos
+copiando al reconstruir cada nivel. El espacio es proporcional a
+\texttt{n} porque la pila, en el peor caso, tiene tantos niveles como
+corchetes anidados haya.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema es un buen
+ejemplo de simular recursión con una pila explícita: cada \texttt{[}
+equivale a ``entrar a una llamada'' y cada \texttt{]} a ``regresar de
+ella''. Vale la pena mencionar que también se puede resolver con
+recursión real, pero la versión con pila evita el riesgo de desbordar la
+pila de llamadas si hay muchísimos niveles de anidamiento. Un detalle
+fácil de pasar por alto: el número antes de un corchete puede tener más de
+un dígito (\texttt{"10[a]"}), así que hay que acumular dígitos, no
+asumir que siempre es uno solo. Casos límite a mencionar: cadena vacía,
+cadena sin ningún corchete (se devuelve tal cual), y anidamiento profundo.

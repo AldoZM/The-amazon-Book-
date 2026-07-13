@@ -1,0 +1,70 @@
+\problema{Largest Rectangle in Histogram}{84}{src/06-sliding-window-stack/84-largest-rectangle-histogram.cpp}{H}
+
+Dado un arreglo \texttt{heights} con las alturas de las barras de un
+histograma (cada barra de ancho \texttt{1}, todas paradas sobre la misma
+línea base), encuentra el área del rectángulo más grande que se puede
+formar usando una o más barras \emph{consecutivas}, con altura igual a la
+barra más chica del tramo elegido.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina una fila de
+libros de distinto grosor parados uno junto al otro en un librero, vistos
+desde arriba como barras de distinta altura. Quieres cubrir un tramo
+continuo de esos libros con una tabla rectangular apoyada encima; la tabla
+solo puede llegar tan alto como el libro más bajo del tramo que decidas
+cubrir (si un libro es más bajo, la tabla se hunde hasta ahí). Quieres
+encontrar qué tramo, y qué altura de tabla, te da el área más grande
+posible.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+alturas: 2 1 5 6 2 3\\
+mejor rectángulo: barras de altura 5 y 6, área $= 5 \times 2 = 10$\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Usamos una
+\textbf{pila monótona} (monotonic stack): una pila de índices cuyas alturas
+correspondientes van siempre en aumento de abajo hacia arriba.
+\begin{enumerate}
+  \item Recorremos las barras de izquierda a derecha, y agregamos al final
+        una barra ``fantasma'' de altura \texttt{0} (un centinela) para
+        forzar a que la pila se vacíe por completo al terminar.
+  \item Para cada barra nueva, mientras la altura del tope de la pila sea
+        mayor o igual a la altura actual, esa barra del tope ya no puede
+        seguir creciendo hacia la derecha: la sacamos de la pila y
+        calculamos el rectángulo más grande que la tiene a \emph{ella}
+        como altura limitante.
+  \item El ancho de ese rectángulo llega, por la izquierda, hasta la barra
+        que quedó justo debajo en la pila (la última vez que hubo algo más
+        bajo o igual), y por la derecha, hasta la posición actual
+        (exclusiva).
+  \item Guardamos el área más grande vista, y al final metemos la barra
+        actual a la pila.
+\end{enumerate}
+El centinela final es lo que garantiza que ninguna barra se quede sin
+evaluar: si el histograma termina con barras cada vez más altas, sin el
+centinela nunca se dispararía el ``mientras'' que las saca de la pila.
+
+\lstinputlisting{src/06-sliding-window-stack/84-largest-rectangle-histogram.cpp}
+
+\complejidad{$O(n)$}{$O(n)$}
+
+\paragraph{¿Qué significa esa complejidad?} Aunque hay un ciclo anidado
+(el \texttt{while} dentro del \texttt{for}), cada índice entra a la pila
+exactamente una vez y sale de la pila a lo más una vez, así que el trabajo
+total sigue siendo proporcional a \texttt{n}, no a \texttt{n al cuadrado}.
+El espacio lo usa la pila, que en el peor caso (barras siempre creciendo)
+guarda todos los índices al mismo tiempo.
+
+\paragraph{Consejos para la entrevista (Amazon).} La solución ingenua
+(para cada barra, expandirse hacia los lados hasta encontrar algo más bajo)
+es \texttt{O(n al cuadrado)} y suele ser el punto de partida esperado antes
+de llegar a la pila monótona. Vale la pena explicar en voz alta por qué el
+ancho se calcula con el índice que quedó \emph{debajo} en la pila, no con el
+índice que se acaba de sacar: ese índice inferior es la barrera real por la
+izquierda. El centinela de altura \texttt{0} al final es un detalle fácil
+de olvidar y una fuente común de bugs (rectángulos que quedan sin evaluar).
+Casos límite: arreglo vacío (área \texttt{0}), una sola barra (el área es
+esa misma altura), y todas las barras con la misma altura (el rectángulo
+óptimo las usa todas).

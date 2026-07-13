@@ -1,0 +1,70 @@
+\problema{Longest Substring Without Repeating Characters}{3}{src/06-sliding-window-stack/3-longest-substring-without-repeating.cpp}{M}
+
+Dada una cadena \texttt{s}, devuelve la longitud de la subcadena
+\emph{contigua} más larga que no repite ningún carácter.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que caminas por
+un pasillo lleno de gente y quieres encontrar el tramo más largo del pasillo
+donde no te vuelvas a topar con la misma persona dos veces. Vas avanzando y
+llevas la cuenta de en qué lugar del pasillo viste por última vez a cada
+persona. En cuanto te topas otra vez con alguien que ya conoces \emph{dentro
+del tramo que llevas contando}, sabes que ese tramo ya no sirve desde el
+principio: tienes que empezar a contar de nuevo justo después del lugar
+donde la viste la vez anterior. A esta técnica de mantener un rango \texttt{[L,
+R]} que se expande y se contrae según lo que vamos viendo se le llama
+\textbf{sliding window} (ventana deslizante).
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+a b c a b c b b\\
+L$\ \ \ \ \ \ \ \ $R (al toparnos con la segunda `a', movemos L)\\
+\end{tabular}
+\end{center}
+
+\noindent Con \texttt{s = "abcabcbb"}, la subcadena más larga sin repetidos
+es \texttt{"abc"}, de longitud \texttt{3}.
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Guardamos, en un mapa,
+el último índice en el que vimos cada carácter. Con dos punteros \texttt{L}
+(izquierdo) y \texttt{R} (derecho) definimos la ventana actual.
+\begin{enumerate}
+  \item Recorremos la cadena con \texttt{R} de izquierda a derecha.
+  \item Para el carácter en \texttt{R}, revisamos si ya lo vimos antes
+        \emph{y} si esa aparición anterior cae dentro de la ventana actual
+        (es decir, su índice es mayor o igual que \texttt{L}).
+  \item Si es así, la ventana ya no es válida desde \texttt{L}: movemos
+        \texttt{L} justo un lugar después de esa aparición anterior.
+  \item Actualizamos el último índice visto del carácter actual a
+        \texttt{R}.
+  \item La longitud de la ventana en este momento es \texttt{R - L + 1};
+        nos quedamos con la más grande vista hasta ahora.
+\end{enumerate}
+El detalle importante está en el paso 2: si vimos el carácter antes pero esa
+aparición ya quedó \emph{fuera} de la ventana actual (porque \texttt{L} ya
+había avanzado por otra razón), no hay que retroceder \texttt{L}: eso
+rompería la ventana sin necesidad.
+
+\lstinputlisting{src/06-sliding-window-stack/3-longest-substring-without-repeating.cpp}
+
+\complejidad{$O(n)$}{$O(\min(n, |\Sigma|))$}
+
+\paragraph{¿Qué significa esa complejidad?} Cada carácter entra a la
+ventana (cuando \texttt{R} avanza) y sale de ella (cuando \texttt{L}
+avanza) como máximo una vez, así que el trabajo total es proporcional al
+tamaño de la cadena: \texttt{n}. El espacio depende de cuántos caracteres
+distintos puede haber: en el peor caso, tantos como el tamaño del alfabeto
+\texttt{$|\Sigma|$} (por ejemplo, 128 para ASCII), o \texttt{n} si la cadena
+es más corta que eso.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema es el
+ejemplo canónico de sliding window con tamaño de ventana variable (a
+diferencia de una ventana de tamaño fijo). El error más común es mover
+\texttt{L} de uno en uno hasta salir del carácter repetido, en vez de
+saltar directamente a la posición correcta usando el mapa de últimos
+índices; ambas versiones son correctas, pero la segunda es la que se
+espera en \texttt{O(n)}. Vale la pena mencionar en voz alta la trampa del
+paso 2 (comparar contra \texttt{L}, no solo contra ``¿ya lo vi?''), porque
+es la parte donde más fácil se cuela un bug sutil. Casos límite que conviene
+decir en voz alta: cadena vacía (respuesta \texttt{0}) y cadena de un solo
+carácter (respuesta \texttt{1}).

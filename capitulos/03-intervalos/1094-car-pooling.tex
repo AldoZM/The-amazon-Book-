@@ -1,0 +1,77 @@
+\problema{Car Pooling}{1094}{src/03-intervalos/1094-car-pooling.cpp}{M}
+
+Manejas un coche con cierta \texttt{capacity} de pasajeros y solo avanzas
+hacia adelante, nunca retrocedes. Nos dan \texttt{trips[i] = [numPasajeros,
+desde, hasta]}: en el tramo del camino que va de \texttt{desde} a
+\texttt{hasta} suben \texttt{numPasajeros} personas, que bajan justo en
+\texttt{hasta}. Queremos saber si es posible llevar a todos los pasajeros de
+todos los viajes sin exceder la capacidad del coche en ningún punto del
+camino.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Piensa en una app de
+carpooling universitario: el conductor va publicando en qué kilómetro sube
+cada grupo de pasajeros y en qué kilómetro se bajan. En vez de simular el
+viaje pasajero por pasajero, basta con anotar, en cada kilómetro del
+camino, \emph{cuántos suben} y \emph{cuántos bajan} ahí mismo. Si vas
+sumando esos cambios netos conforme avanzas, en todo momento sabes cuántos
+pasajeros van sentados en el coche, sin importar el orden en que llegaron
+las solicitudes de viaje.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l|cccccccc}
+posición & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7\\
+\hline
+viaje A (+2 en 1, -2 en 5) & & +2 & & & & -2 & &\\
+viaje B (+3 en 3, -3 en 7) & & & & +3 & & & & -3\\
+ocupación acumulada & 0 & 2 & 2 & 5 & 5 & 3 & 3 & 0\\
+\end{tabular}
+\end{center}
+
+\noindent Con \texttt{trips = [[2,1,5],[3,3,7]]} y \texttt{capacity = 4}: en
+la posición \texttt{3} ya van los \texttt{2} pasajeros del viaje A (que
+bajan hasta la posición \texttt{5}) más los \texttt{3} nuevos del viaje B:
+$2+3=5 > 4$. No cabe, la respuesta es \texttt{false}.
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Esta es la técnica de
+\emph{arreglo de diferencias} (\emph{difference array}), una variante del
+barrido de intervalos.
+\begin{enumerate}
+  \item Creamos un arreglo \texttt{diff} tan largo como el rango de
+        posiciones posible del camino, inicializado en ceros.
+  \item Para cada viaje \texttt{(num, desde, hasta)}, sumamos \texttt{num} en
+        \texttt{diff[desde]} (aquí suben personas) y restamos \texttt{num}
+        en \texttt{diff[hasta]} (aquí bajan).
+  \item Recorremos \texttt{diff} de la posición más chica a la más grande,
+        acumulando una variable \texttt{ocupacion} que va sumando cada
+        valor de \texttt{diff} conforme avanzamos.
+  \item En cada posición, si \texttt{ocupacion} supera \texttt{capacity},
+        devolvemos \texttt{false} de inmediato: en algún punto del camino el
+        coche se llenó de más.
+  \item Si terminamos el recorrido sin exceder nunca la capacidad,
+        devolvemos \texttt{true}.
+\end{enumerate}
+
+\lstinputlisting{src/03-intervalos/1094-car-pooling.cpp}
+
+\complejidad{$O(n + d)$}{$O(d)$}
+
+\paragraph{¿Qué significa esa complejidad?} $n$ es el número de viajes y
+$d$ es el rango de posiciones del camino (en LeetCode, acotado a 1000).
+Construir el arreglo de diferencias toma $O(n)$ (una suma y una resta por
+viaje), y barrerlo entero toma $O(d)$; como $d$ es una constante fija en
+este problema, en la práctica el algoritmo es lineal en $n$. El espacio es
+$O(d)$ por el arreglo de diferencias, también acotado por una constante.
+
+\paragraph{Consejos para la entrevista (Amazon).} El error más común es
+restar en \texttt{hasta - 1} en vez de \texttt{hasta}, pensando que hay que
+``incluir'' la última posición ocupada; pero el enunciado dice que los
+pasajeros bajan \emph{en} \texttt{hasta}, así que ese punto ya no debe
+contarlos. Si el rango de posiciones no viniera acotado por el enunciado
+(a diferencia de este problema, donde sí lo está a 1000), la alternativa
+general es usar un mapa ordenado (\texttt{std::map}) en vez de un arreglo
+fijo, con el mismo principio de sumar en \texttt{desde} y restar en
+\texttt{hasta}. Vale la pena mencionar también que este mismo patrón de
+``arreglo de diferencias'' resuelve cualquier problema de ``aplica un
+cambio a un rango, muchas veces, y pregunta el valor final en cada punto''
+sin tener que recorrer cada rango por separado.

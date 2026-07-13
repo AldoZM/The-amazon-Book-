@@ -1,0 +1,64 @@
+\problema{K Closest Points to Origin}{973}{src/04-heaps-topk/973-k-closest-points.cpp}{M}
+
+Nos dan una lista de puntos en el plano, \texttt{points[i] = [x, y]}, y un
+entero \texttt{k}. Hay que devolver los \texttt{k} puntos más cercanos al
+origen $(0,0)$, usando la distancia euclidiana. El orden de la respuesta no
+importa.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que estás
+eligiendo las \texttt{k} sucursales más cercanas a tu casa entre una lista
+larga de direcciones. No necesitas ordenar \emph{todas} las sucursales por
+distancia, solo necesitas quedarte con las \texttt{k} más cercanas vistas
+hasta ahora, y cada vez que aparece una candidata mejor, descartar a la peor
+de tu grupo actual. Ese es exactamente el mismo patrón del problema 215
+(\emph{Kth Largest Element}), pero invertido: en vez de quedarnos con los
+más grandes usando un min-heap, aquí nos quedamos con los más cercanos
+usando un \emph{max-heap} (montículo máximo), porque lo que queremos
+descartar rápido es al candidato más \textbf{lejano}.
+
+Un detalle práctico: para comparar distancias no hace falta calcular la raíz
+cuadrada. Si $a^2 < b^2$ con $a, b \geq 0$, entonces $a < b$; comparar las
+distancias al cuadrado da el mismo orden que comparar las distancias reales,
+y evita el costo (y los posibles errores de precisión) de \texttt{sqrt}.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+points = [[1,3],[-2,2]], k = 1\\
+d2([1,3]) = 1+9 = 10\\
+d2([-2,2]) = 4+4 = 8\\
+8 < 10 -> respuesta \{[-2,2]\}\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Creamos un max-heap vacío, donde cada elemento es un par
+        (distancia al cuadrado, índice del punto).
+  \item Por cada punto, calculamos su distancia al cuadrado al origen y lo
+        insertamos en el heap.
+  \item Si el heap crece más de \texttt{k} elementos, sacamos el de mayor
+        distancia: es el candidato menos atractivo para el top-\texttt{k}
+        cercano.
+  \item Al terminar, el heap contiene exactamente los \texttt{k} puntos más
+        cercanos al origen de toda la lista.
+\end{enumerate}
+
+\lstinputlisting{src/04-heaps-topk/973-k-closest-points.cpp}
+
+\complejidad{$O(n \log k)$}{$O(k)$}
+
+\paragraph{¿Qué significa esa complejidad?} Igual que en el problema 215:
+recorremos los $n$ puntos una vez, y cada operación del heap cuesta
+$\log k$ porque nunca guardamos más de \texttt{k} elementos. Cuando
+\texttt{k} es mucho menor que $n$, esto es notablemente más rápido que
+ordenar todos los puntos por distancia.
+
+\paragraph{Consejos para la entrevista (Amazon).} El punto clave que suelen
+evaluar aquí es si reconoces que \emph{no} hace falta \texttt{sqrt}: mencionarlo
+proactivamente muestra atención al detalle. También es común que pregunten
+por qué se usa un max-heap y no un min-heap, a diferencia del problema 215:
+la respuesta es que aquí queremos descartar rápido a los \textbf{lejanos},
+así que necesitamos tener el más lejano del grupo actual siempre a la mano
+en la cima. Como en 215, quickselect es una alternativa válida con mejor
+tiempo promedio pero peor peor-caso.

@@ -45,9 +45,36 @@ ORDEN_ARBOLES = [
     "297-serialize-and-deserialize-binary-tree",
 ]
 
+ORDEN_INTERVALOS = [
+    "56-merge-intervals",
+    "253-meeting-rooms-ii",
+    "2402-meeting-rooms-iii",
+    "1094-car-pooling",
+]
+
+ORDEN_HEAPS_TOPK = [
+    "215-kth-largest-element",
+    "347-top-k-frequent-elements",
+    "973-k-closest-points",
+    "295-find-median-data-stream",
+    "23-merge-k-sorted-lists",
+    "621-task-scheduler",
+]
+
+ORDEN_SLIDING_WINDOW_STACK = [
+    "3-longest-substring-without-repeating",
+    "76-minimum-window-substring",
+    "42-trapping-rain-water",
+    "84-largest-rectangle-histogram",
+    "394-decode-string",
+]
+
 CAPITULOS = [
     ("01-grafos", ORDEN_GRAFOS, "audiolibro-grafos.mp3"),
     ("02-arboles", ORDEN_ARBOLES, "audiolibro-arboles.mp3"),
+    ("03-intervalos", ORDEN_INTERVALOS, "audiolibro-intervalos.mp3"),
+    ("04-heaps-topk", ORDEN_HEAPS_TOPK, "audiolibro-heaps-topk.mp3"),
+    ("06-sliding-window-stack", ORDEN_SLIDING_WINDOW_STACK, "audiolibro-sliding-window-stack.mp3"),
 ]
 
 

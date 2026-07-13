@@ -1,0 +1,41 @@
+2402. Meeting Rooms III
+
+Dificultad: Difícil.
+
+El problema, en palabras simples
+
+Hay un edificio con un número fijo de salas de juntas, numeradas empezando desde cero. Nos dan una lista de reuniones, cada una con su hora de inicio y su hora de fin, y hay que procesarlas en el orden en que empiezan. Cada reunión se le asigna a la sala libre de menor número disponible en ese momento. Si en el instante en que debería empezar una reunión no hay ninguna sala libre, esa reunión no se cancela: se pospone hasta que se libere la primera sala disponible, conservando la misma duración que iba a tener originalmente, y se le asigna justamente esa sala, la que se desocupó primero. Al final, se pregunta cuál sala terminó organizando más reuniones que cualquier otra, y si hay un empate, se prefiere la de menor número.
+
+La idea central
+
+Imagina una recepcionista muy metódica con varias salas de juntas bajo su cargo, que sigue dos reglas fijas sin excepción: si hay más de una sala libre al mismo tiempo, siempre ofrece la de número más bajo; y si no hay ninguna sala libre cuando alguien llega a pedir una, hace esperar a esa persona hasta que se desocupe la primera sala disponible, sin importar cuál sea, y sin acortarle su reunión por haber esperado. Para llevar esta cuenta sin perderse, la recepcionista tiene dos listas siempre ordenadas frente a ella: una con los números de las salas que están libres en este momento, ordenada de menor a mayor número de sala, y otra con las salas que están ocupadas, ordenada por la hora en que cada una va a desocuparse, y si dos se desocupan a la misma hora, por su número de sala.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero, ordenamos todas las reuniones según su hora de inicio, porque hay que atenderlas en ese orden exacto.
+
+Mantenemos dos listas siempre ordenadas: una de salas libres, ordenada por número de sala, y otra de salas ocupadas, ordenada por la hora en que cada una terminará su reunión actual.
+
+Antes de atender cada reunión nueva, revisamos la lista de salas ocupadas y movemos a la lista de libres todas las que ya hayan terminado su reunión para ese momento, es decir, cuya hora de fin ya pasó o coincide exactamente con la hora de inicio de la reunión que estamos por atender.
+
+Si después de ese movimiento hay alguna sala libre, se la damos a la reunión actual, y siempre elegimos la de menor número entre las disponibles. Esa sala pasa de nuevo a la lista de ocupadas, marcada con la hora real en que esta reunión va a terminar.
+
+Si en cambio no quedó ninguna sala libre, entonces buscamos en la lista de ocupadas cuál se va a desocupar primero. A la reunión actual la posponemos hasta esa hora, pero le respetamos su duración original, así que su nueva hora de fin es la hora en que se liberó la sala más la duración que tenía planeada. Esa sala también vuelve a la lista de ocupadas, con esta nueva hora de fin.
+
+En cualquiera de los dos casos, sumamos uno al contador de reuniones de la sala que quedó asignada.
+
+Cuando terminamos de procesar todas las reuniones, recorremos los contadores de todas las salas y devolvemos el número de la sala con el contador más alto; si dos o más empatan, devolvemos la de menor número.
+
+Por qué esta complejidad
+
+Ordenar la lista de reuniones al principio toma un tiempo proporcional al número de reuniones multiplicado por su logaritmo. Después, cada reunión provoca un número limitado de movimientos entre la lista de libres y la de ocupadas, y como esas listas nunca crecen más allá del número total de salas, cada movimiento cuesta un tiempo proporcional al logaritmo del número de salas. En total, el trabajo depende del número de reuniones multiplicado por el logaritmo del número de salas, más el costo de haber ordenado las reuniones al principio.
+
+En cuanto al espacio, necesitamos guardar las dos listas de salas, cuyo tamaño combinado nunca supera el número total de salas, más un contador de reuniones por cada sala, así que el espacio adicional depende tanto del número de salas como, de forma indirecta, del número de reuniones que tuvimos que ordenar.
+
+Errores comunes y tips de entrevista
+
+El descuido más costoso es, al posponer una reunión, usar la hora de fin original en vez de recalcularla a partir de la nueva hora de inicio: hay que conservar cuánto dura la reunión, no cuándo se suponía que iba a terminar según el plan original.
+
+Otro error sutil ocurre con los empates: cuando dos salas se desocupan exactamente a la misma hora, hay que preferir siempre la de menor número, tanto al elegir cuál sala está libre como al decidir cuál sala ocupada se va a desocupar primero. Si se te olvida ese criterio de desempate en cualquiera de los dos casos, puedes terminar dándole la sala equivocada a alguna reunión.
+
+Conviene explicar en voz alta que este problema combina dos ideas que probablemente ya usaste en problemas parecidos: recorrer el tiempo en el orden correcto, y usar dos estructuras que siempre te dan el elemento más pequeño primero, una para las salas libres y otra para las salas ocupadas según cuándo se desocupan. Por último, menciona el caso de una sola sala disponible: ahí todas las reuniones, se traslapen o no entre sí, terminan cayendo en esa única sala, posiblemente pospuestas varias veces en cadena.

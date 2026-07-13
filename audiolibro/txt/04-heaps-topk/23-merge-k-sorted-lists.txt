@@ -1,0 +1,39 @@
+23. Merge k Sorted Lists
+
+Dificultad: Difícil.
+
+El problema, en palabras simples
+
+Nos dan varias listas enlazadas, y cada una de ellas ya viene ordenada de menor a mayor por su cuenta. Queremos combinar todas esas listas en una sola lista enlazada, que también quede ordenada de menor a mayor de principio a fin, y devolver el inicio de esa lista combinada.
+
+La idea central
+
+Combinar dos listas ya ordenadas es un ejercicio conocido: te fijas en el primer elemento de cada una de las dos listas, te quedas con el más pequeño de esos dos, lo mandas a la lista combinada, avanzas esa lista un lugar, y repites la comparación. El reto aquí es que en vez de tener solo dos listas para combinar, tenemos muchas listas a la vez. Imagina varias filas de personas en una feria, cada fila ya ordenada de la persona más bajita a la más alta, y quieres formar una sola fila combinada, ordenada, tomando siempre a la persona más bajita disponible entre todas las filas. Si tuvieras que voltear a ver el frente de cada una de las filas cada vez que necesitas decidir a quién tomar, y hay muchas filas, perderías mucho tiempo comparando una por una. En vez de eso, puedes llevar contigo un grupo especial de referencia, donde metes a la persona que está al frente de cada fila, y ese grupo te permite encontrar rápidamente, sin comparar una por una, quién es la persona más bajita entre todas las que están al frente de sus respectivas filas en ese momento.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero, revisamos todas las listas que nos dieron, y por cada una que no esté vacía, tomamos a su primera persona, es decir, su primer nodo, y la metemos en nuestro grupo especial de referencia, organizado como un montículo mínimo, que siempre nos deja ver de inmediato quién es la más pequeña del grupo.
+
+Preparamos también un punto de partida vacío para ir construyendo la lista combinada, y un marcador que apunta al último elemento que ya colocamos ahí.
+
+Mientras el grupo de referencia tenga a alguien dentro, sacamos a la persona más pequeña de ese grupo. La enganchamos al final de la lista combinada que estamos construyendo, y movemos nuestro marcador para que apunte a esa persona recién colocada.
+
+Justo después, revisamos si la persona que acabamos de sacar tenía a alguien más detrás de ella en su fila original. Si es así, tomamos a esa siguiente persona de la misma fila y la metemos al grupo de referencia, porque ahora ella se vuelve la nueva candidata de esa fila en particular.
+
+Repetimos este proceso, sacar a la más pequeña del grupo de referencia, engancharla a la lista combinada, y traer a su reemplazo de la misma fila si existe, hasta que el grupo de referencia se quede completamente vacío.
+
+Al final, la lista combinada que construimos contiene a todas las personas de todas las filas originales, en orden de menor a mayor, y devolvemos el inicio de esa lista combinada.
+
+Por qué esta complejidad
+
+Cada persona de cada fila original entra al grupo de referencia exactamente una vez, y también sale de él exactamente una vez. El costo de meter o sacar a alguien de ese grupo depende del número de filas activas en ese momento, no del número total de personas, y ese costo crece muy lentamente conforme aumenta el número de filas. Entonces el trabajo total es el número total de personas en todas las filas, multiplicado por ese costo pequeño relacionado con el número de filas. En cuanto al espacio, el grupo de referencia nunca contiene más de una persona por cada fila activa, así que su tamaño depende del número de filas, no del número total de personas, ya que reutilizamos a las personas originales para construir la lista combinada en vez de crear copias nuevas.
+
+Errores comunes y tips de entrevista
+
+Un error común es olvidar revisar si la persona que se acaba de sacar del grupo de referencia tenía a alguien detrás de ella en su fila original; si se te olvida meter a esa siguiente persona al grupo, terminas perdiendo el resto de esa fila.
+
+Otro error frecuente es no manejar bien las filas que llegan completamente vacías desde el principio: hay que revisar eso antes de meter algo al grupo de referencia, para no intentar tomar a alguien que no existe.
+
+También conviene mencionar una alternativa a este método: combinar las filas de dos en dos repetidamente, de forma parecida a como funciona el ordenamiento por mezcla, hasta que solo quede una fila combinada. Esa alternativa logra un tiempo parecido sin necesitar el grupo especial de referencia, y es útil mencionarla para mostrar que conoces más de un camino para resolver el mismo problema.
+
+Por último, aclara qué debe devolver tu solución si todas las filas vienen vacías, o si de plano no te dan ninguna fila: en ambos casos la respuesta correcta es una lista vacía, y decirlo en voz alta antes de que te lo pregunten evita que parezca que lo pasaste por alto.

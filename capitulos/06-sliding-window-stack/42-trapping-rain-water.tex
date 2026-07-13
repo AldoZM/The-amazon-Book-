@@ -1,0 +1,67 @@
+\problema{Trapping Rain Water}{42}{src/06-sliding-window-stack/42-trapping-rain-water.cpp}{H}
+
+Dado un arreglo \texttt{height} que representa la altura de columnas de un
+histograma (cada columna tiene ancho \texttt{1}), calcula cuánta agua de
+lluvia queda atrapada entre las columnas después de llover.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina una fila de
+edificios de distintas alturas pegados uno junto a otro, y que llueve
+mucho. El agua se acumula entre dos edificios altos que hacen de ``paredes''
+para uno más bajo en medio: el nivel del agua sobre cualquier edificio no
+puede subir más que el más bajo de los dos edificios más altos que lo
+encierran (por la izquierda y por la derecha), porque el agua se derramaría
+por el lado más bajo. Entonces, sobre cada edificio, el agua atrapada es la
+diferencia entre ese nivel límite y la altura del edificio mismo (si esa
+diferencia es negativa, no se atrapa nada ahí).
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+altura: 0 1 0 2 1 0 1 3 2 1 2 1\\
+agua atrapada total: 6\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} En vez de calcular, para
+cada columna, el máximo a su izquierda y el máximo a su derecha por
+separado (lo cual tomaría espacio extra), usamos \textbf{two pointers} (dos
+punteros) que arrancan en los dos extremos del arreglo y se acercan.
+\begin{enumerate}
+  \item Mantenemos \texttt{leftMax} (el máximo visto hasta el puntero
+        izquierdo) y \texttt{rightMax} (el máximo visto hasta el puntero
+        derecho).
+  \item En cada paso comparamos \texttt{height[L]} contra
+        \texttt{height[R]}.
+  \item Si \texttt{height[L]} es menor o igual, sabemos con certeza que el
+        edificio más alto que limita el agua sobre \texttt{L} por el lado
+        derecho es \emph{al menos} \texttt{height[R]}, que ya es mayor o
+        igual que \texttt{height[L]}. Entonces el límite real es
+        \texttt{leftMax} (el máximo visto por la izquierda), sin necesidad
+        de saber el máximo exacto a la derecha. Sumamos
+        \texttt{leftMax - height[L]} al total y avanzamos \texttt{L}.
+  \item Si es al revés, hacemos lo simétrico con \texttt{R} y
+        \texttt{rightMax}.
+  \item Repetimos hasta que los punteros se crucen.
+\end{enumerate}
+
+\lstinputlisting{src/06-sliding-window-stack/42-trapping-rain-water.cpp}
+
+\complejidad{$O(n)$}{$O(1)$}
+
+\paragraph{¿Qué significa esa complejidad?} Cada paso del ciclo avanza uno
+de los dos punteros, y entre los dos recorren el arreglo una sola vez en
+total, así que el tiempo es lineal en el tamaño del arreglo. El espacio es
+constante porque solo guardamos un puñado de variables (\texttt{leftMax},
+\texttt{rightMax}, los dos punteros y el total), sin arreglos auxiliares.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema suele
+empezar con una solución de dos arreglos auxiliares
+(\texttt{maxIzquierda[]}, \texttt{maxDerecha[]}) que ya es \texttt{O(n)}
+en tiempo pero también \texttt{O(n)} en espacio; el reto real es notar que
+se puede resolver con espacio constante usando two pointers, y explicar
+\emph{por qué} es seguro mover el puntero del lado menor sin conocer el
+máximo real del otro lado (la clave está en que ese máximo real, aunque
+desconocido, ya es mayor o igual al lado que estamos procesando). Casos
+límite que conviene mencionar: arreglo vacío o con menos de tres columnas
+(no se puede atrapar nada, porque hace falta al menos un valle entre dos
+paredes).

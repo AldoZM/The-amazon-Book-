@@ -1,0 +1,72 @@
+\problema{Merge k Sorted Lists}{23}{src/04-heaps-topk/23-merge-k-sorted-lists.cpp}{H}
+
+Nos dan un arreglo de \texttt{k} listas enlazadas, cada una ya ordenada de
+menor a mayor. Hay que fusionarlas en una sola lista enlazada, también
+ordenada, y devolver su cabeza.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Fusionar dos listas
+ordenadas ya es un ejercicio clásico: comparas las dos cabezas, te quedas
+con la más chica, avanzas esa lista, y repites. Aquí el reto es que hay
+\texttt{k} listas en vez de dos. Imagina \texttt{k} filas de personas, cada
+fila ya ordenada de menor a mayor estatura, y quieres formar una sola fila
+combinada ordenada. En cada paso necesitas saber cuál de las \texttt{k}
+personas al frente de cada fila es la más bajita; compararlas una por una
+cada vez que avanzas sería lento si \texttt{k} es grande. En vez de eso,
+metes a las \texttt{k} personas que están al frente de cada fila en un
+\emph{min-heap}: sacar a la más bajita de un grupo de \texttt{k} candidatos
+cuesta mucho menos que compararlas todas cada vez.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+lists = [[1,4,5],[1,3,4],[2,6]]\\
+fusión: 1,1,2,3,4,4,5,6\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Metemos al min-heap la cabeza de cada lista no vacía (el primer nodo
+        de cada una).
+  \item Creamos un nodo \texttt{dummy} (ancla vacía) para ir construyendo la
+        lista de respuesta, y un puntero \texttt{cola} que empieza
+        apuntando a ese \texttt{dummy}.
+  \item Mientras el heap no esté vacío: sacamos el nodo con menor valor,
+        lo enganchamos al final de la respuesta (\texttt{cola->next}) y
+        avanzamos \texttt{cola}.
+  \item Si el nodo que acabamos de sacar tenía un siguiente (su lista
+        original no se había terminado), metemos ese siguiente al heap: se
+        vuelve el nuevo candidato de esa lista.
+  \item Devolvemos \texttt{dummy->next}: el primer nodo real de la fusión.
+\end{enumerate}
+En cualquier momento, el heap contiene exactamente un candidato por cada
+lista que todavía tiene nodos sin usar (su nodo actual, el más pequeño no
+usado de esa lista en particular, porque las listas ya vienen ordenadas). El
+menor de todos esos candidatos es, por lo tanto, el menor valor no usado de
+\emph{todas} las listas juntas, así que siempre es seguro colocarlo a
+continuación.
+
+\lstinputlisting{src/04-heaps-topk/23-merge-k-sorted-lists.cpp}
+
+\complejidad{$O(N \log k)$}{$O(k)$}
+
+\paragraph{¿Qué significa esa complejidad?} $N$ es el número total de nodos
+en todas las listas juntas, y \texttt{k} es el número de listas. Cada uno de
+los $N$ nodos entra y sale del heap exactamente una vez, y cada una de esas
+operaciones cuesta $\log k$ porque el heap nunca tiene más de \texttt{k}
+elementos a la vez (uno por lista activa). El espacio extra es solo
+$O(k)$ para el heap, ya que reutilizamos los nodos originales para construir
+la lista de salida en vez de crear nodos nuevos.
+
+\paragraph{Consejos para la entrevista (Amazon).} Este problema combina dos
+técnicas que suelen evaluar por separado: fusión de listas enlazadas y uso
+de heaps para elegir entre múltiples candidatos. Vale la pena mencionar la
+alternativa de fusionar las listas de dos en dos (fusión por pares, similar
+a merge sort), que también logra $O(N \log k)$ pero sin necesitar un heap
+explícito. Un detalle de implementación en C++ que suelen preguntar: cómo
+comparar punteros a nodos dentro de un \texttt{priority\_queue} usando un
+comparador personalizado, ya que no se puede comparar directamente
+\texttt{ListNode*} por valor. También aclara qué pasa si alguna lista viene
+vacía (\texttt{nullptr}) o si el arreglo completo de listas viene vacío: en
+ambos casos la respuesta debe ser \texttt{nullptr}, sin caer en un acceso
+inválido.
