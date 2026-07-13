@@ -75,6 +75,30 @@
     return { ok: true, edges: arr, n: Math.max(0, maxFound + 1) };
   };
 
+  /* Lista de intervalos "[[a,b],[c,d]]" (no son nodos: a puede ser mayor a b
+     solo si el problema lo permite; aquí solo se valida que sean pares de
+     enteros dentro de un límite de cantidad, cada problema decide si exige
+     a &lt;= b).                                                                */
+  VIS.parse.intervalList = function (text, maxIntervalos) {
+    let s = String(text == null ? "" : text).trim();
+    if (!s) return err("Escribe intervalos, ej: [[1,3],[2,6]].", "Type intervals, ex: [[1,3],[2,6]].");
+    let arr;
+    try { arr = JSON.parse(s); }
+    catch (e) { return err("Sintaxis inválida. Verifica corchetes.", "Invalid syntax. Check brackets."); }
+    if (!Array.isArray(arr)) return err("Debe ser una lista de listas.", "Must be a list of lists.");
+    if (arr.length > maxIntervalos) {
+      return err(`Demasiados intervalos: ${arr.length}. Caben ${maxIntervalos}.`,
+                 `Too many intervals: ${arr.length}. The limit is ${maxIntervalos}.`);
+    }
+    for (const iv of arr) {
+      if (!Array.isArray(iv) || iv.length !== 2) return err("Cada intervalo debe tener 2 números.", "Each interval must have 2 numbers.");
+      for (const n of iv) {
+        if (!Number.isInteger(n)) return err(`Valor inválido: ${n}.`, `Invalid value: ${n}.`);
+      }
+    }
+    return { ok: true, intervals: arr };
+  };
+
   VIS.parse.prereqList = function (text, maxNodos) {
     const res = VIS.parse.edgeList(text, maxNodos);
     if (!res.ok) return res;

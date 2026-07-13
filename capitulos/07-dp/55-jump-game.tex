@@ -1,0 +1,66 @@
+\problema{Jump Game}{55}{src/07-dp/55-jump-game.cpp}{M}
+
+Dado un arreglo \texttt{nums} donde cada elemento \texttt{nums[i]}
+representa el número máximo de posiciones que se puede saltar hacia
+adelante desde el índice \texttt{i}, determina si es posible llegar desde el
+índice \texttt{0} hasta el último índice del arreglo.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina piedras
+colocadas en fila para cruzar un río, y cada piedra tiene escrito cuántas
+piedras hacia adelante puedes brincar desde ahí como máximo. En vez de
+probar todas las secuencias posibles de saltos (que se ramifican
+exponencialmente), basta con llevar la cuenta de \emph{cuál es la piedra más
+lejana a la que se puede llegar}, considerando todo lo que ya se sabe
+alcanzable. Si en algún momento la siguiente piedra que toca revisar está
+más allá de ese alcance máximo, ya no hay forma de llegar ahí y el cruce es
+imposible.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+nums = [2, 3, 1, 1, 4]\\
+desde el índice 0 se alcanza el índice 2\\
+desde el índice 1 se alcanza el índice 4 (el último) -> true\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.} Este problema admite
+una solución de programación dinámica (\emph{dynamic programming}, DP)
+tabular, pero la solución esperada en entrevista es un algoritmo
+\textbf{greedy} (voraz), más simple y con espacio constante.
+\begin{enumerate}
+  \item Mantenemos una sola variable, \texttt{alcanceMaximo}, inicializada
+        en \texttt{0}.
+  \item Recorremos el arreglo de izquierda a derecha con un índice
+        \texttt{i}.
+  \item Si \texttt{i} es mayor que \texttt{alcanceMaximo}, significa que
+        ninguna posición ya confirmada como alcanzable puede llegar hasta
+        aquí: devolvemos \texttt{false} de inmediato.
+  \item Si no, actualizamos \texttt{alcanceMaximo = max(alcanceMaximo, i +
+        nums[i])}, es decir, consideramos si saltar desde la posición actual
+        extiende el alcance máximo conocido.
+  \item Si el ciclo termina sin encontrar una posición inalcanzable,
+        devolvemos \texttt{true}.
+\end{enumerate}
+
+\lstinputlisting{src/07-dp/55-jump-game.cpp}
+
+\complejidad{$O(n)$}{$O(1)$}
+
+\paragraph{¿Qué significa esa complejidad?} Recorremos el arreglo una sola
+vez, actualizando una sola variable en cada paso, así que el tiempo es
+lineal en el tamaño del arreglo. El espacio es constante porque no se
+necesita ninguna tabla ni estructura auxiliar, a diferencia de una solución
+DP tabular que gastaría espacio lineal.
+
+\paragraph{Consejos para la entrevista (Amazon).} Vale la pena mencionar
+primero la versión DP (\texttt{dp[i]} = ``¿se puede llegar al índice
+\texttt{i}?'', mirando hacia atrás todas las posiciones que podrían saltar
+hasta ahí) para demostrar que se entiende el problema desde ese ángulo, y
+luego señalar la mejora greedy y por qué es válida: \texttt{alcanceMaximo}
+resume toda la información relevante de las posiciones ya visitadas, sin
+necesidad de recordar el detalle de cada una. Un caso límite importante es
+un cero en medio del arreglo que \emph{no} bloquea el camino porque una
+posición anterior ya tenía alcance suficiente para saltar por encima de él;
+hay que distinguirlo del caso en que el cero sí bloquea porque ninguna
+posición previa alcanza a rebasarlo.

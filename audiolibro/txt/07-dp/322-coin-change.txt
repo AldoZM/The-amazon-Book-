@@ -1,0 +1,33 @@
+322. Coin Change
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Tienes un conjunto de monedas de distintos valores, y puedes usar cada valor tantas veces como quieras. Te dan una cantidad de dinero que necesitas juntar exactamente, ni un peso de más ni de menos. La pregunta es: cuál es el menor número de monedas que necesitas para lograrlo. Y si no hay ninguna combinación de esas monedas que sume exactamente esa cantidad, la respuesta debe ser que es imposible.
+
+La idea central
+
+Imagina que trabajas en una caja registradora y quieres dar cambio usando la menor cantidad de monedas posible. Podrías intentar adivinar combinaciones al azar, pero eso es lentísimo y poco confiable. En cambio, la estrategia inteligente es resolver primero los problemas pequeños y guardarte la respuesta: si ya sabes cuál es el mínimo de monedas para juntar un peso, para dos pesos, para tres pesos, y así sucesivamente, entonces para juntar una cantidad más grande solo necesitas ver qué pasa si le restas el valor de cada moneda disponible y te fijas en la mejor respuesta que ya tenías guardada para esa cantidad menor. Le sumas una moneda a esa respuesta guardada, y ya tienes una candidata para la cantidad grande. Esto es la esencia de la programación dinámica, conocida en inglés como dynamic programming o DP: resolver problemas grandes construyéndolos a partir de respuestas ya calculadas para problemas más chicos.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero, preparamos una libreta de notas con un espacio para cada cantidad posible, desde cero hasta la cantidad objetivo. En cada espacio anotaremos el mínimo número de monedas necesario para juntar esa cantidad exacta. Al principio, no sabemos nada, así que marcamos cada espacio como todavía no encontrado, excepto el espacio correspondiente a la cantidad cero, donde anotamos que se necesitan cero monedas, porque no hace falta ninguna moneda para juntar nada.
+
+Después, recorremos las cantidades una por una, empezando desde uno y subiendo hasta la cantidad objetivo. Para cada cantidad que estamos analizando, probamos cada una de las monedas disponibles. Si el valor de la moneda es menor o igual a la cantidad que estamos analizando, entonces revisamos qué anotamos para la cantidad que resulta de restarle el valor de esa moneda. Si esa cantidad menor sí tiene una anotación válida, entonces sabemos que podemos llegar a la cantidad actual usando esa moneda encima de la solución que ya teníamos guardada. Comparamos esa posibilidad con lo mejor que llevábamos anotado hasta ahora para la cantidad actual, y nos quedamos con el número más chico.
+
+Repetimos esto probando todas las monedas para cada cantidad, hasta terminar de llenar toda la libreta. Al final, revisamos la anotación correspondiente a la cantidad objetivo. Si sigue marcada como no encontrado, significa que ninguna combinación de monedas logra esa cantidad exacta, y respondemos que es imposible. Si tiene un número anotado, esa es la respuesta: el mínimo de monedas necesario.
+
+Por qué esta complejidad
+
+El tiempo que toma el algoritmo depende de dos cosas: cuántas cantidades distintas tenemos que analizar, que es proporcional a la cantidad objetivo, y cuántas monedas distintas probamos en cada una, que es el tamaño del conjunto de monedas disponibles. Como para cada cantidad probamos todas las monedas, el trabajo total es el producto de esos dos números.
+
+En cuanto al espacio, solamente necesitamos guardar una anotación por cada cantidad posible, desde cero hasta el objetivo, así que el espacio que usamos crece de forma proporcional a la cantidad objetivo, sin importar cuántas monedas distintas tengamos disponibles.
+
+Errores comunes y tips de entrevista
+
+El error más común es intentar resolver este problema siempre eligiendo la moneda de mayor valor posible en cada paso, una estrategia conocida como greedy o voraz. Esa estrategia funciona con algunos conjuntos de monedas, como los billetes y monedas de uso cotidiano, pero falla con otros. Por ejemplo, si tienes monedas de uno, tres y cuatro, y necesitas juntar seis, la estrategia voraz elegiría primero la moneda de cuatro, y luego tendría que completar con dos monedas de uno, dando tres monedas en total; pero la respuesta óptima es usar dos monedas de tres, que solo son dos monedas. Por eso es importante explicar en la entrevista por qué se necesita programación dinámica y no basta con ser codicioso.
+
+Otro error frecuente es no manejar bien el caso de la cantidad cero, que siempre debe responder que se necesitan cero monedas, y el caso en que ninguna combinación es posible, que debe responder que es imposible, sin confundir ese caso con una cantidad de monedas igual a cero.
+
+También conviene tener cuidado con el valor que usamos para marcar todavía no encontrado: debe ser lo bastante grande para que nunca se confunda con una respuesta real, pero sin causar desbordamientos aritméticos si le sumamos uno en algún paso del cálculo.

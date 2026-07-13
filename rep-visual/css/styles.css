@@ -271,6 +271,57 @@ a:hover { text-decoration: underline; }
 .ds .arrow { color: var(--muted); font-size: .8rem; }
 @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+/* Arreglo 1D: índices y ventana deslizante / dos punteros */
+.arr { display: flex; align-items: flex-end; gap: 6px; flex-wrap: wrap; min-height: 66px; }
+.arr-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.arr-marker-row { height: 16px; display: flex; gap: 2px; }
+.arr-marker {
+  font-family: var(--mono);
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--amarillo);
+  line-height: 16px;
+}
+.arr .item {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: .9rem;
+  animation: pop .2s ease;
+}
+.arr .item.window { background: #24304a; border-color: var(--azul); color: var(--azul-soft); }
+.arr .item.hot { background: var(--azul); color: #fff; border-color: #fff; }
+.arr .item.done { opacity: .4; }
+.arr .item.match { background: #12331e; border-color: var(--verde); color: var(--verde); }
+.arr-index { font-size: .62rem; color: var(--muted); font-family: var(--mono); }
+
+/* Histograma vertical: Trapping Rain Water / Largest Rectangle */
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 160px; min-height: 160px; }
+.bar-col { display: flex; flex-direction: column-reverse; align-items: center; width: 26px; height: 100%; }
+.bar {
+  width: 100%;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 3px 3px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: .62rem;
+  color: var(--muted);
+  transition: height .2s;
+}
+.bar.hot { background: var(--azul); border-color: #fff; color: #fff; }
+.bar.done { opacity: .5; }
+.bar.water { background: rgba(31, 111, 235, .45); border-color: var(--azul); border-bottom: none; }
+
 /* SVG grafo / árbol */
 .svg-stage { width: 100%; max-width: 620px; }
 .svg-stage svg { width: 100%; height: auto; overflow: visible; }

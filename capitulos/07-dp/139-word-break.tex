@@ -1,0 +1,66 @@
+\problema{Word Break}{139}{src/07-dp/139-word-break.cpp}{M}
+
+Dada una cadena \texttt{s} y un diccionario \texttt{wordDict}, determina si
+\texttt{s} se puede partir en una secuencia de una o más palabras del
+diccionario (las palabras se pueden reutilizar tantas veces como haga
+falta).
+
+\paragraph{La idea, con un ejemplo de la vida real.} Imagina que recibes un
+mensaje de texto sin espacios, como \texttt{"leetcode"}, y tienes un
+diccionario de palabras válidas. Quieres saber si es posible insertar
+espacios en algunos lugares para que el mensaje quede formado completamente
+por palabras del diccionario, por ejemplo \texttt{"leet" + "code"}. La
+pregunta clave para resolverlo con \textbf{programación dinámica}
+(\emph{dynamic programming}, DP) es: ¿el prefijo del mensaje hasta cierta
+posición se puede partir bien? Si ya sabemos la respuesta para prefijos más
+cortos, podemos construir la respuesta para prefijos más largos.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+s = "leetcode", wordDict = ["leet", "code"]\\
+"leetcode" = "leet" + "code" -> true\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Guardamos el diccionario en un conjunto (\texttt{unordered\_set})
+        para poder buscar una palabra en tiempo promedio constante.
+  \item Creamos una tabla booleana \texttt{dp} de tamaño \texttt{n + 1},
+        donde \texttt{dp[i]} indica si el prefijo de \texttt{s} de longitud
+        \texttt{i} se puede partir completamente en palabras del
+        diccionario. \texttt{dp[0] = true} (la cadena vacía siempre se puede
+        ``partir'': caso base).
+  \item Para cada posición \texttt{i} de \texttt{1} a \texttt{n}, probamos
+        cada posible corte anterior \texttt{j} menor que \texttt{i}.
+  \item Si \texttt{dp[j]} es verdadero (el prefijo hasta \texttt{j} ya se
+        sabe partir bien) y el substring entre \texttt{j} e \texttt{i} está
+        en el diccionario, entonces \texttt{dp[i]} también es verdadero:
+        encontramos una forma válida de partir el prefijo de longitud
+        \texttt{i}.
+  \item La respuesta final es \texttt{dp[n]}, es decir, si la cadena
+        completa se puede partir.
+\end{enumerate}
+
+\lstinputlisting{src/07-dp/139-word-break.cpp}
+
+\complejidad{$O(n^2)$}{$O(n)$}
+
+\paragraph{¿Qué significa esa complejidad?} Para cada una de las $n$
+posiciones finales probamos hasta $n$ posibles puntos de corte, y comparar o
+construir cada substring toma tiempo proporcional a su longitud, así que en
+el peor caso el trabajo es cuadrático en el tamaño de la cadena. El espacio
+extra es lineal, para la tabla \texttt{dp} (el diccionario en sí no cuenta
+como espacio auxiliar del algoritmo, ya viene dado).
+
+\paragraph{Consejos para la entrevista (Amazon).} La trampa más común es
+asumir que el primer corte que funciona localmente (por ejemplo, tomar
+siempre la palabra más larga posible desde el inicio) lleva a la solución
+completa; con diccionarios que tienen palabras que se solapan, como
+\texttt{\{"cats", "cat", "sand", "and", "dog"\}} sobre la cadena
+\texttt{"catsandog"}, un corte greedy puede fallar aunque exista una
+partición válida en otra combinación de palabras. Por eso se necesita
+recordar, para CADA prefijo, si es alcanzable, en vez de intentar solo un
+camino. También conviene mencionar la variante recursiva con memoización
+como forma equivalente de llegar a la misma complejidad.

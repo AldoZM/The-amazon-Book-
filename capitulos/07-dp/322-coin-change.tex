@@ -1,0 +1,66 @@
+\problema{Coin Change}{322}{src/07-dp/322-coin-change.cpp}{M}
+
+Dado un arreglo \texttt{coins} con las denominaciones de monedas disponibles
+(cada denominación se puede usar tantas veces como se quiera) y un entero
+\texttt{amount}, calcula el número mínimo de monedas necesarias para juntar
+exactamente \texttt{amount}. Si no existe ninguna combinación que llegue
+exacto, devuelve \texttt{-1}.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Piensa en dar cambio en
+una caja registradora: quieres usar el menor número posible de monedas para
+completar una cantidad exacta. En vez de probar a fuerza bruta todas las
+combinaciones posibles de monedas (que crecen exponencialmente), resolvemos
+primero los montos pequeños y reutilizamos esas respuestas para construir los
+montos grandes. Esto es \textbf{programación dinámica} (\emph{dynamic
+programming}, DP): guardamos la respuesta óptima de cada subproblema (cada
+monto menor) para no recalcularla.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+coins = [1, 2, 5], amount = 11\\
+11 = 5 + 5 + 1 (3 monedas, es el mínimo)\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Creamos una tabla \texttt{dp} de tamaño \texttt{amount + 1}, donde
+        \texttt{dp[m]} representa el mínimo número de monedas para llegar
+        exacto al monto \texttt{m}. Inicializamos todo en un valor
+        ``infinito'' (representa ``todavía no sabemos cómo llegar a este
+        monto''), salvo \texttt{dp[0] = 0} (con cero monedas llegas al monto
+        cero).
+  \item Para cada monto \texttt{m} de \texttt{1} a \texttt{amount},
+        probamos cada moneda \texttt{c} del arreglo \texttt{coins}.
+  \item Si \texttt{c} cabe en \texttt{m} (es decir \texttt{c <= m}) y ya
+        sabemos cómo llegar a \texttt{m - c} (su valor en \texttt{dp} no es
+        infinito), entonces una forma de llegar a \texttt{m} es usar esa
+        solución y agregar una moneda \texttt{c} encima:
+        \texttt{dp[m] = min(dp[m], dp[m - c] + 1)}.
+  \item Al terminar, si \texttt{dp[amount]} sigue siendo infinito, no existe
+        ninguna combinación exacta y devolvemos \texttt{-1}; si no,
+        devolvemos \texttt{dp[amount]}.
+\end{enumerate}
+
+\lstinputlisting{src/07-dp/322-coin-change.cpp}
+
+\complejidad{$O(\text{amount} \times k)$, con $k$ el número de denominaciones}{$O(\text{amount})$}
+
+\paragraph{¿Qué significa esa complejidad?} Para cada uno de los
+\texttt{amount} montos posibles probamos las $k$ denominaciones disponibles,
+así que el trabajo total es proporcional al producto de ambos. El espacio es
+lineal en \texttt{amount} porque solo guardamos una tabla de una dimensión
+(no hace falta recordar qué moneda se usó en cada paso para resolver este
+problema, solo el conteo mínimo).
+
+\paragraph{Consejos para la entrevista (Amazon).} Es tentador proponer una
+solución \textbf{greedy} (usar siempre la moneda más grande que quepa), pero
+esa estrategia falla con denominaciones como \texttt{\{1, 3, 4\}} y
+\texttt{amount = 6}: greedy elegiría \texttt{4 + 1 + 1} (tres monedas)
+cuando la respuesta óptima es \texttt{3 + 3} (dos monedas). Vale la pena
+mencionar ese contraejemplo para justificar por qué se necesita DP. También
+conviene aclarar el caso límite \texttt{amount = 0} (la respuesta es
+\texttt{0}, sin usar ninguna moneda) y el caso en que ninguna combinación
+llega exacto (por ejemplo, monedas que solo suman números pares y un monto
+impar).

@@ -69,12 +69,20 @@ ORDEN_SLIDING_WINDOW_STACK = [
     "394-decode-string",
 ]
 
+ORDEN_DP = [
+    "322-coin-change",
+    "139-word-break",
+    "55-jump-game",
+    "5-longest-palindromic-substring",
+]
+
 CAPITULOS = [
     ("01-grafos", ORDEN_GRAFOS, "audiolibro-grafos.mp3"),
     ("02-arboles", ORDEN_ARBOLES, "audiolibro-arboles.mp3"),
     ("03-intervalos", ORDEN_INTERVALOS, "audiolibro-intervalos.mp3"),
     ("04-heaps-topk", ORDEN_HEAPS_TOPK, "audiolibro-heaps-topk.mp3"),
     ("06-sliding-window-stack", ORDEN_SLIDING_WINDOW_STACK, "audiolibro-sliding-window-stack.mp3"),
+    ("07-dp", ORDEN_DP, "audiolibro-dp.mp3"),
 ]
 
 

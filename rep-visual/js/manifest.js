@@ -4,6 +4,10 @@ window.MANIFEST = {
   blocks: [
     { id: "grafos", title: { es: "Bloque 1 · Grafos", en: "Block 1 · Graphs" } },
     { id: "arboles", title: { es: "Bloque 2 · Árboles", en: "Block 2 · Trees" } },
+    { id: "intervalos", title: { es: "Bloque 3 · Intervalos", en: "Block 3 · Intervals" } },
+    { id: "heaps-topk", title: { es: "Bloque 4 · Heaps y Top-K", en: "Block 4 · Heaps & Top-K" } },
+    { id: "sliding-window-stack", title: { es: "Bloque 6 · Sliding Window y Pilas", en: "Block 6 · Sliding Window & Stacks" } },
+    { id: "dp", title: { es: "Bloque 7 · Programación Dinámica", en: "Block 7 · Dynamic Programming" } },
   ],
   problems: [
     // ---- Grafos ----
@@ -40,5 +44,28 @@ window.MANIFEST = {
     { num: 105, title: "Build Tree (Pre+In)", dif: "M", block: "arboles", tags: ["recursión"], ready: true },
     { num: 337, title: "House Robber III", dif: "M", block: "arboles", tags: ["DP en árbol"], ready: true },
     { num: 297, title: "Serialize & Deserialize", dif: "H", block: "arboles", tags: ["BFS", "DFS"], ready: true },
+    // ---- Intervalos ----
+    { num: 56, title: "Merge Intervals", dif: "M", block: "intervalos", tags: ["sort", "intervalos"], ready: true },
+    { num: 253, title: "Meeting Rooms II", dif: "M", block: "intervalos", tags: ["sweep line", "min-heap"], ready: true },
+    { num: 2402, title: "Meeting Rooms III", dif: "H", block: "intervalos", tags: ["min-heap"], ready: true },
+    { num: 1094, title: "Car Pooling", dif: "M", block: "intervalos", tags: ["sweep line"], ready: true },
+    // ---- Heaps y Top-K ----
+    { num: 215, title: "Kth Largest Element", dif: "M", block: "heaps-topk", tags: ["min-heap"], ready: true },
+    { num: 347, title: "Top K Frequent Elements", dif: "M", block: "heaps-topk", tags: ["bucket sort", "heap"], ready: true },
+    { num: 973, title: "K Closest Points to Origin", dif: "M", block: "heaps-topk", tags: ["max-heap"], ready: true },
+    { num: 295, title: "Find Median from Data Stream", dif: "H", block: "heaps-topk", tags: ["min-heap", "max-heap"], ready: true },
+    { num: 23, title: "Merge k Sorted Lists", dif: "H", block: "heaps-topk", tags: ["min-heap", "lista enlazada"], ready: true },
+    { num: 621, title: "Task Scheduler", dif: "M", block: "heaps-topk", tags: ["max-heap", "cola"], ready: true },
+    // ---- Sliding Window y Pilas ----
+    { num: 3, title: "Longest Substring Without Repeating", dif: "M", block: "sliding-window-stack", tags: ["sliding window"], ready: true },
+    { num: 76, title: "Minimum Window Substring", dif: "H", block: "sliding-window-stack", tags: ["sliding window"], ready: true },
+    { num: 42, title: "Trapping Rain Water", dif: "H", block: "sliding-window-stack", tags: ["two pointers"], ready: true },
+    { num: 84, title: "Largest Rectangle in Histogram", dif: "H", block: "sliding-window-stack", tags: ["pila monótona"], ready: true },
+    { num: 394, title: "Decode String", dif: "M", block: "sliding-window-stack", tags: ["pila"], ready: true },
+    // ---- Programación Dinámica ----
+    { num: 322, title: "Coin Change", dif: "M", block: "dp", tags: ["DP"], ready: true },
+    { num: 139, title: "Word Break", dif: "M", block: "dp", tags: ["DP"], ready: true },
+    { num: 55, title: "Jump Game", dif: "M", block: "dp", tags: ["greedy"], ready: true },
+    { num: 5, title: "Longest Palindromic Substring", dif: "M", block: "dp", tags: ["two pointers"], ready: true },
   ],
 };

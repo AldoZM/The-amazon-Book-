@@ -32,6 +32,8 @@
     if (step.queue) items.push(Object.assign({ type: "queue", label: VIS.t("queue"), arrows: true }, normList(step.queue)));
     if (step.stack) items.push(Object.assign({ type: "stack", label: VIS.t("stack") }, normList(step.stack)));
     if (step.list) items.push(Object.assign({ type: "list", label: VIS.t("list") }, normList(step.list)));
+    if (step.array) items.push(Object.assign({ type: "array" }, step.array));
+    if (step.bars) items.push(Object.assign({ type: "bars" }, step.bars));
     return items;
   }
   function normList(x) { return Array.isArray(x) ? { items: x } : x; }

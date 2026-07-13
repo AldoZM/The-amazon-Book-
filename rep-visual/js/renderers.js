@@ -95,6 +95,65 @@
   VIS.renderers.stack = renderDS;
   VIS.renderers.list = renderDS;
 
+  /* --------------------------------------------------------------- ARREGLO */
+  // spec: { label, items:[{v,cls}], indices, windowRange:[l,r], markers:[{index,label,cls}] }
+  // Arreglo 1D con índice opcional debajo de cada celda, resaltado de un
+  // rango contiguo (ventana deslizante / dos punteros) y marcadores flotantes
+  // encima de índices específicos (ej. "L" / "R").
+  VIS.renderers.array = function (spec) {
+    const wrap = el("div", "arr");
+    const items = spec.items || [];
+    const [wl, wr] = spec.windowRange || [null, null];
+    const byIndex = {};
+    (spec.markers || []).forEach((m) => {
+      (byIndex[m.index] = byIndex[m.index] || []).push(m);
+    });
+    items.forEach((it, i) => {
+      const item = typeof it === "object" ? it : { v: it };
+      const cellWrap = el("div", "arr-cell");
+      const markRow = el("div", "arr-marker-row");
+      (byIndex[i] || []).forEach((m) => {
+        markRow.appendChild(el("span", "arr-marker " + (m.cls || ""), VIS.pick ? VIS.pick(m.label) : m.label));
+      });
+      cellWrap.appendChild(markRow);
+      let cls = item.cls || "";
+      if (wl != null && wr != null && i >= wl && i <= wr) cls += " window";
+      cellWrap.appendChild(el("div", "item " + cls, String(item.v)));
+      if (spec.indices) cellWrap.appendChild(el("div", "arr-index", String(i)));
+      wrap.appendChild(cellWrap);
+    });
+    return box(spec.label, wrap);
+  };
+
+  /* --------------------------------------------------------- HISTOGRAMA --- */
+  // spec: { label, items:[{h,cls}], indices, waterLevel:[n,...] }
+  // Barras verticales por altura; waterLevel[i] (opcional) pinta un tramo de
+  // "agua" encima de la barra i hasta ese nivel (Trapping Rain Water).
+  VIS.renderers.bars = function (spec) {
+    const wrap = el("div", "bars");
+    const items = spec.items || [];
+    const heights = items.map((it) => (typeof it === "object" ? it.h : it) || 0);
+    const water = spec.waterLevel || [];
+    const maxH = Math.max(1, ...heights, ...water);
+    items.forEach((it, i) => {
+      const item = typeof it === "object" ? it : { h: it };
+      const col = el("div", "bar-col");
+      const w = water[i] || 0;
+      if (w > item.h) {
+        const wEl = el("div", "bar water");
+        wEl.style.height = (((w - item.h) / maxH) * 100).toFixed(2) + "%";
+        col.appendChild(wEl);
+      }
+      const bEl = el("div", "bar " + (item.cls || ""));
+      bEl.style.height = ((item.h / maxH) * 100).toFixed(2) + "%";
+      bEl.appendChild(document.createTextNode(String(item.h)));
+      col.appendChild(bEl);
+      if (spec.indices) col.appendChild(el("div", "arr-index", String(i)));
+      wrap.appendChild(col);
+    });
+    return box(spec.label, wrap);
+  };
+
   /* ------------------------------------------------------------ VARIABLES */
   // spec: { vars: [{k, v, cls}] }  o  { vars: {k:v} }
   VIS.renderers.vars = function (spec) {

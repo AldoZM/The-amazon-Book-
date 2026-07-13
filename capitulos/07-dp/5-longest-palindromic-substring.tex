@@ -1,0 +1,68 @@
+\problema{Longest Palindromic Substring}{5}{src/07-dp/5-longest-palindromic-substring.cpp}{M}
+
+Dada una cadena \texttt{s}, encuentra el substring (secuencia de caracteres
+\emph{contiguos}) más largo que sea un palíndromo, es decir, que se lea
+igual de izquierda a derecha que de derecha a izquierda.
+
+\paragraph{La idea, con un ejemplo de la vida real.} Un palíndromo siempre
+es simétrico respecto a un punto central, como un espejo. Ese centro puede
+caer exactamente sobre un carácter (palíndromos de longitud impar, como
+\texttt{"aba"}) o justo entre dos caracteres (palíndromos de longitud par,
+como \texttt{"abba"}). La técnica de \textbf{expansión desde el centro} (una
+variante de \emph{two pointers}, dos punteros) consiste en probar, uno por
+uno, cada posible centro de la cadena, y desde ahí ir separando dos punteros
+hacia afuera mientras los caracteres que van quedando en los extremos sigan
+coincidiendo, igual que cuando revisas si una palabra es capicúa comparando
+letras desde el centro hacia las puntas.
+
+\begin{center}
+\ttfamily
+\begin{tabular}{l}
+s = "babad"\\
+centro en la 'a' del medio (índice 1) -> se expande a "bab"\\
+también existe "aba" como respuesta válida, de la misma longitud\\
+\end{tabular}
+\end{center}
+
+\paragraph{Cómo lo resuelve el código, paso a paso.}
+\begin{enumerate}
+  \item Para una cadena de longitud \texttt{n} hay \texttt{2n - 1} centros
+        posibles: \texttt{n} centros de un solo carácter y \texttt{n - 1}
+        centros ``entre pares'' de caracteres consecutivos.
+  \item Para cada centro, colocamos dos punteros \texttt{L} y \texttt{R}
+        sobre ese centro (iguales si el centro es un carácter, o adyacentes
+        si el centro es ``entre pares'').
+  \item Mientras \texttt{L} y \texttt{R} sigan dentro del rango de la cadena
+        y \texttt{s[L] == s[R]}, expandimos: \texttt{L} retrocede uno y
+        \texttt{R} avanza uno.
+  \item Al detenerse la expansión, el palíndromo válido más reciente es el
+        substring entre \texttt{L + 1} y \texttt{R - 1}.
+  \item Si esa longitud es mayor que la mejor encontrada hasta ahora,
+        actualizamos el inicio y la longitud del mejor palíndromo.
+  \item Al terminar de probar todos los centros, devolvemos el substring
+        guardado como el mejor.
+\end{enumerate}
+
+\lstinputlisting{src/07-dp/5-longest-palindromic-substring.cpp}
+
+\complejidad{$O(n^2)$}{$O(1)$ extra}
+
+\paragraph{¿Qué significa esa complejidad?} Hay \texttt{2n - 1} centros
+posibles, y cada expansión puede llegar a recorrer, en el peor caso, hasta
+\texttt{O(n)} pasos (por ejemplo, cuando toda la cadena es un solo
+palíndromo), así que el trabajo total es cuadrático. El espacio extra es
+constante porque solo se usan un puñado de variables (los dos punteros y las
+marcas del mejor resultado encontrado), sin ninguna tabla auxiliar, a
+diferencia de la solución alternativa de DP con tabla 2D, que sí gastaría
+espacio cuadrático.
+
+\paragraph{Consejos para la entrevista (Amazon).} Muchos candidatos proponen
+primero la tabla 2D de DP (\texttt{dp[i][j]} = ``¿el substring entre
+\texttt{i} y \texttt{j} es palíndromo?''), que es correcta pero usa espacio
+\texttt{O(n\textsuperscript{2})}; vale la pena mencionarla y luego señalar
+que expansión desde el centro llega al mismo tiempo con espacio constante.
+Un error común es olvidar los centros ``entre pares'' y solo probar centros
+de un carácter, lo que hace fallar casos de palíndromos de longitud par como
+\texttt{"cbbd"}. También conviene aclarar qué hacer ante empates de longitud
+(cualquier palíndromo de la longitud máxima es una respuesta válida, no hay
+una única correcta).

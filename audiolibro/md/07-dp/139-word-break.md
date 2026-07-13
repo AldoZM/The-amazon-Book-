@@ -1,0 +1,37 @@
+# 139. Word Break
+
+Dificultad: Media.
+
+## El problema, en palabras simples
+
+Te dan una cadena de texto pegada, sin espacios, y un diccionario de palabras válidas. La pregunta es si existe alguna forma de cortar esa cadena en pedazos, de tal manera que cada pedazo, de principio a fin, sea exactamente una palabra que aparece en el diccionario. Las palabras del diccionario se pueden repetir tantas veces como haga falta.
+
+## La idea central
+
+Piensa en un mensaje de texto que llegó sin espacios, algo como "estoesunmensaje", y tienes un diccionario de palabras conocidas. Quieres decidir si puedes insertar espacios en algunos lugares para que todo el mensaje quede formado por palabras válidas. La forma inteligente de resolverlo no es probar todas las combinaciones posibles de cortes, porque eso crece muchísimo entre más larga sea la cadena. En cambio, nos preguntamos, para cada punto dentro del mensaje: si me detengo justo aquí, ¿el pedazo que ya llevo hasta este punto se pudo formar completamente con palabras del diccionario? Si ya conocemos la respuesta para los puntos anteriores, cortos, podemos usar esa información para responder la pregunta en los puntos posteriores, más largos, sin tener que repetir trabajo. Esto también es programación dinámica, dynamic programming o DP, aplicada a una pregunta de sí o no en vez de a un número mínimo.
+
+## Cómo funciona el algoritmo, paso a paso
+
+Primero, guardamos todas las palabras del diccionario en una estructura que nos permita buscar si una palabra existe de forma muy rápida.
+
+Luego, preparamos una lista de banderas, una por cada posición posible dentro del mensaje, incluyendo la posición inicial, antes de cualquier letra. Cada bandera nos dirá si el pedazo del mensaje que termina justo en esa posición se puede formar completamente con palabras del diccionario. Marcamos la bandera de la posición inicial como verdadera, porque un pedazo vacío, sin ninguna letra, siempre se considera correctamente formado, sin necesidad de ninguna palabra.
+
+Después, recorremos las posiciones del mensaje de izquierda a derecha, una por una. Para cada posición que estamos analizando, revisamos todas las posiciones anteriores a ella. Para cada posición anterior, si su bandera ya está marcada como verdadera, eso significa que el pedazo hasta ahí se puede formar bien; entonces tomamos el fragmento del mensaje que va desde esa posición anterior hasta la posición actual, y revisamos si ese fragmento es exactamente una palabra del diccionario. Si lo es, entonces la posición actual también se puede formar bien, así que marcamos su bandera como verdadera y dejamos de revisar más posiciones anteriores para ella, porque ya encontramos una forma válida.
+
+Al terminar de recorrer todas las posiciones, revisamos la bandera de la última posición, la que corresponde al final completo del mensaje. Si está marcada como verdadera, la respuesta es que sí se puede partir el mensaje completo en palabras del diccionario; si no, la respuesta es que no se puede.
+
+## Por qué esta complejidad
+
+Para cada una de las posiciones del mensaje, revisamos todas las posiciones anteriores a ella, así que en el peor caso el número de comparaciones crece como el cuadrado de la longitud del mensaje. Además, comparar o extraer un fragmento del mensaje toma un tiempo proporcional a la longitud de ese fragmento, lo cual también contribuye al costo total, pero el factor dominante sigue siendo esa relación cuadrada entre posiciones.
+
+En cuanto al espacio, solo necesitamos guardar una bandera por cada posición del mensaje, así que el espacio adicional crece de forma proporcional a la longitud del mensaje, sin contar el espacio que ya ocupaba el diccionario original.
+
+## Errores comunes y tips de entrevista
+
+Un error común es pensar que basta con ir cortando el mensaje de manera codiciosa, tomando siempre la palabra más larga posible que coincida desde la posición actual. Esa estrategia puede fallar cuando el diccionario tiene palabras que se solapan entre sí; por ejemplo, si el diccionario contiene palabras como "gato", "gatos", "sol" y "solar", un corte hecho de manera apresurada puede dejarte atorado más adelante, aunque sí exista una forma válida de partir el mensaje completo usando otra combinación de palabras.
+
+Otro error es olvidar el caso de la cadena vacía, que siempre debe considerarse como correctamente formada, ya que no necesita ninguna palabra.
+
+También es fácil equivocarse al extraer los fragmentos de texto, sobre todo con los límites exactos de inicio y fin de cada pedazo; conviene verificar con cuidado, usando un ejemplo pequeño trazado a mano, que los índices que se están comparando corresponden exactamente al fragmento que se cree estar analizando.
+
+Por último, vale la pena mencionar en la entrevista que existe una versión equivalente de este algoritmo usando recursión con memoria, es decir, resolver el problema de manera recursiva pero guardando las respuestas ya calculadas para no repetirlas, lo cual llega al mismo resultado con la misma complejidad, solo que expresado de una forma distinta.

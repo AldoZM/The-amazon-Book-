@@ -1,0 +1,37 @@
+55. Jump Game
+
+Dificultad: Media.
+
+El problema, en palabras simples
+
+Tienes una fila de posiciones, y en cada posición hay un número que te dice cuántos pasos hacia adelante puedes avanzar como máximo desde ahí, en un solo salto. Empiezas en la primera posición, y quieres saber si existe alguna secuencia de saltos que te permita llegar hasta la última posición de la fila.
+
+La idea central
+
+Imagina que estás cruzando un río saltando de piedra en piedra, y cada piedra tiene grabado un número que indica cuántas piedras hacia adelante puedes brincar desde ahí. Podrías intentar explorar todas las rutas posibles de saltos, probando cada combinación, pero eso se vuelve muy lento entre más piedras haya. En cambio, hay una forma mucho más simple de pensarlo: en vez de preocuparte por la ruta exacta que sigues, solo necesitas llevar la cuenta de cuál es la piedra más lejana a la que podrías llegar, considerando todo lo que ya sabes que es alcanzable hasta el momento. Si en algún punto te das cuenta de que la siguiente piedra que necesitas revisar está más allá de esa marca de alcance máximo, entonces ya sabes que el cruce es imposible, porque ninguna piedra anterior, de las que sí puedes pisar, logra llegar tan lejos.
+
+Cómo funciona el algoritmo, paso a paso
+
+Primero, definimos una variable que representa el alcance máximo que hemos logrado hasta el momento, y la iniciamos en cero, porque al principio solo estamos parados en la primera posición.
+
+Después, recorremos las posiciones de la fila una por una, de izquierda a derecha. Para cada posición que visitamos, primero comprobamos algo importante: si esa posición está más allá del alcance máximo que llevábamos hasta ahora, entonces no hay forma de haber llegado hasta aquí, y de inmediato respondemos que es imposible cruzar.
+
+Si la posición actual sí está dentro del alcance ya logrado, entonces consideramos qué pasaría si saltáramos desde aquí: sumamos la posición actual más el número de pasos que se puede saltar desde ella, y si ese resultado es mayor que el alcance máximo que llevábamos, actualizamos el alcance máximo con ese nuevo valor más lejano.
+
+Repetimos este proceso para cada posición de la fila, siempre revisando primero si la posición es alcanzable, y luego actualizando el alcance máximo si conviene. Si logramos recorrer toda la fila sin encontrarnos con una posición inalcanzable, entonces la respuesta es que sí es posible llegar hasta el final.
+
+Por qué esta complejidad
+
+En cuanto al tiempo, recorremos la fila de posiciones una sola vez, de principio a fin, y en cada posición hacemos solamente una comparación y, como mucho, una actualización de una variable. No hay ciclos anidados ni repeticiones de trabajo, así que el tiempo total crece de forma proporcional al número de posiciones en la fila.
+
+En cuanto al espacio, solo necesitamos recordar un único número, el alcance máximo logrado hasta el momento, sin importar cuántas posiciones tenga la fila. Por eso el espacio adicional que usamos es constante, no depende del tamaño de la entrada.
+
+Errores comunes y tips de entrevista
+
+Un error frecuente es intentar resolver este problema con una tabla completa que registre, para cada posición, si es alcanzable o no, revisando hacia atrás todas las posiciones que podrían saltar hasta ella. Esa estrategia sí funciona, y es válido mencionarla primero para mostrar que entiendes el problema desde ese ángulo, pero usa más tiempo y más espacio de los necesarios; la solución más elegante, y la que se espera en una entrevista, es la que usa solamente el alcance máximo, sin ninguna tabla.
+
+Otro error común es confundirse con una posición que tiene un valor de cero pasos: un cero en medio de la fila no siempre bloquea el camino, porque si una posición anterior ya tenía alcance suficiente para saltar por encima de esa posición con cero, el cruce sigue siendo posible. El cero solo es un problema cuando ninguna posición previa logra rebasarlo.
+
+También conviene mencionar el caso límite de una fila con una sola posición: en ese caso ya estás parado en el destino desde el principio, sin necesidad de saltar, así que la respuesta siempre es que sí se puede llegar.
+
+Por último, vale la pena explicar por qué la estrategia de quedarte solo con el alcance máximo es suficiente, sin perder información importante: cualquier posición dentro de ese alcance es alcanzable de alguna forma, y lo único que importa para seguir avanzando es cuál es el punto más lejano posible, no el camino exacto que se siguió para llegar ahí.
